@@ -215,8 +215,8 @@ export default function DashboardPage() {
             </Button>
           </div>
           <Button onClick={() => setUploadModal(true)}>
-            <Upload className="h-4 w-4 mr-2" />
-            Upload File
+            <Upload className="h-4 w-4" />
+            <span className="hidden sm:block ml-2">Upload File</span>
           </Button>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { Fragment, use, useEffect, useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -40,7 +40,7 @@ import { useAppDispatch } from "@/store/store"
 import useScreenSize from "@/hooks/use-screen-size"
 
 export function Header() {
-
+    const router = useRouter()
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const { user, logout } = useAuth()
     const dispatch = useAppDispatch()
@@ -72,8 +72,6 @@ export function Header() {
     const handleSidebarToggle = () => {
         dispatch(toggleSidebar(null))
     }
-
-    const handleLogout = () => {}
 
     useEffect(() => {
         if (screenSize === "xs" || screenSize === "sm") {

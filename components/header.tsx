@@ -73,6 +73,8 @@ export function Header() {
         dispatch(toggleSidebar(null))
     }
 
+    const handleLogout = () => {}
+
     useEffect(() => {
         if (screenSize === "xs" || screenSize === "sm") {
             dispatch(toggleSidebar(false))

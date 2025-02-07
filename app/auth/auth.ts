@@ -83,5 +83,8 @@ export const useAuth = create<AuthState>((set) => ({
     })
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+
+    // Redirect to login page
+    window.location.href = '/login'
   }
 }))

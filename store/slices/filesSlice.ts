@@ -43,6 +43,7 @@ const initialState: FilesState = {
 // Mock API call
 const fetchFilesFromAPI = async (page: number, limit: number = 20) => {
   await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
+  console.log(page)
   
   const totalItems = 100 // Mock total number of files
   const start = (page - 1) * limit

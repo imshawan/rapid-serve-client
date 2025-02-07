@@ -1,10 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Progress } from "@/components/ui/progress"
-import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -19,23 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -44,10 +24,10 @@ import { useAppDispatch, useAppSelector } from "@/store/store"
 import { fetchFiles, deleteFile } from "@/store/slices/filesSlice"
 import { useInView } from "react-intersection-observer"
 import { generateUUID } from "@/lib/utils"
+import { UploadDialog } from "@/components/ui/upload-dialog"
+import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
 
 export default function DashboardPage() {
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
   const [uploadModal, setUploadModal] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; fileId: string | null }>({
@@ -60,7 +40,7 @@ export default function DashboardPage() {
   })
   const { toast } = useToast()
   const dispatch = useAppDispatch()
-  const { files, loading, hasMore } = useAppSelector(state => state.files)
+  const { files, loading, hasMore, currentPage } = useAppSelector(state => state.files)
   const { ref, inView } = useInView()
 
   const handleShare = (fileName: string) => {
@@ -69,34 +49,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (inView && hasMore && !loading) {
-      dispatch(fetchFiles(1))
+      dispatch(fetchFiles(currentPage))
     }
   }, [inView, hasMore, loading, dispatch])
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-    setUploadProgress(0)
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev === null || prev >= 100) {
-          clearInterval(interval)
-          setIsUploading(false)
-          setUploadModal(false)
-          toast({
-            title: "Upload complete",
-            description: `${file.name} has been uploaded successfully.`
-          })
-          return null
-        }
-        return prev + 10
-      })
-    }, 500)
-  }
 
   const handleDelete = (fileId: string) => {
     setDeleteConfirmation({ isOpen: true, fileId })
@@ -233,70 +188,10 @@ export default function DashboardPage() {
       <div ref={ref} className="h-10" />
 
       {/* Upload Dialog */}
-      <Dialog open={uploadModal} onOpenChange={setUploadModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Upload File</DialogTitle>
-            <DialogDescription>
-              Choose a file to upload to your cloud storage.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="border-2 border-dashed rounded-lg p-8 text-center space-y-4">
-              <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
-              <div>
-                <Input
-                  type="file"
-                  className="hidden"
-                  id="file-upload"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-                <Label htmlFor="file-upload">
-                  <div className="space-y-2 cursor-pointer">
-                    <p className="text-sm text-muted-foreground">
-                      Drag and drop your files here, or click to select files
-                    </p>
-                    <Button variant="secondary" disabled={isUploading}>
-                      Choose File
-                    </Button>
-                  </div>
-                </Label>
-              </div>
-            </div>
-            {uploadProgress !== null && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Uploading...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <Progress value={uploadProgress} />
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <UploadDialog open={uploadModal} setOpen={setUploadModal} />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog 
-        open={deleteConfirmation.isOpen} 
-        onOpenChange={(isOpen) => setDeleteConfirmation({ isOpen, fileId: null })}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete File</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to move this file to trash? You can restore it from the trash bin later.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              Move to Trash
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog confirmation={deleteConfirmation} setConfirmation={setDeleteConfirmation} onDeleteConfirm={confirmDelete} />
 
       <ShareDialog
         isOpen={shareDialog.isOpen}

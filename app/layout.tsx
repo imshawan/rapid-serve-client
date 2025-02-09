@@ -8,8 +8,8 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'RapidServe - Secure File Storage',
-  description: 'Store, share, and manage your files securely',
+  title: 'RapidServe - Enterprise CDN Solution',
+  description: 'Enterprise-grade content distribution network for seamless file storage and delivery',
 }
 
 export default function RootLayout({

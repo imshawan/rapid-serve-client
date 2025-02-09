@@ -1,24 +1,22 @@
 import { Rocket } from "lucide-react";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { contactInfo } from "@/common/meta";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-
+import { useToast } from "@/hooks/use-toast"
 
 export function Contact() {
+  const {toast} = useToast();
+  const [submitted, setSubmitted] = useState(false)
+  const [contactData, setContactData] = useState({ email: "", query: "", })
 
-  const [submitted, setSubmitted] = useState(false);
-  const [email, setEmail] = useState("");
-  const [query, setQuery] = useState("");
-  const [contactData, setContactData] = useState({ email: "", query: "" });
-
-  const isEmailValid = email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-  const isQueryValid = query.length >= 10;
+  const isEmailValid = useMemo(() => contactData.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/), [contactData.email])
+  const isQueryValid = useMemo(() => contactData.query?.length >= 10, [contactData.query])
 
   const handleOnChange = (e: any) => {
     const { name, value } = e.target;
-    setContactData((prev) => ({ ...prev, [name]: value }));
+    setContactData((prev) => ({ ...prev, [name]: value }))
     setSubmitted(false);
   }
 
@@ -27,7 +25,11 @@ export function Contact() {
     setSubmitted(true);
 
     if (isEmailValid && isQueryValid) {
-      alert("Form submitted successfully!");
+      toast({
+        title: "Form submitted successfully!",
+        description: "We've received your message. Give us some moment, we'll respond back showtly.",
+        variant: "success"
+      })
     }
   };
 

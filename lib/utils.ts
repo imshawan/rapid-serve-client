@@ -12,3 +12,11 @@ export function generateUUID() {
     return v.toString(16);
   });
 }
+
+export function getJsonFromLocalstorage(key: string) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || '');
+  } catch (error) {
+    return null;
+  }
+}

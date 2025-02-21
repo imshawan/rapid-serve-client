@@ -29,8 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { RotateCcw, MoreVertical, Trash2, Grid, List } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useAppDispatch, useAppSelector } from "@/store/store"
-import { restoreFile, permanentlyDeleteFile } from "@/store/slices/filesSlice"
+import { useAppDispatch, useAppSelector } from "@/store"
+import { restoreFile, permanentlyDeleteFile } from "@/store/slices/files"
 
 export default function TrashPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')

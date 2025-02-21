@@ -22,7 +22,7 @@ import type { StringValue } from "ms";
  * @param {T} [defaultValue] - The default value to return if the key is not found.
  * @returns {T} - The environment variable value cast to the given type, or the default value.
  */
-const getEnvValue = <T>(key: string, defaultValue?: T): T => {
+export const getEnvValue = <T>(key: string, defaultValue?: T): T => {
     const value = process.env[key];
 
     if (value === undefined || value === null) {

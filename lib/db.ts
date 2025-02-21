@@ -31,12 +31,14 @@ export async function initializeDbConnection() {
         return cached.conn;
     }
 
+    const connectionUri = getMongoURI();
+
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
         };
 
-        cached.promise = mongoose.connect(getMongoURI(), opts).then((mongoose) => {
+        cached.promise = mongoose.connect(connectionUri, opts).then((mongoose) => {
             return mongoose;
         });
     }
@@ -64,7 +66,7 @@ export async function withCache<T>(
         }
 
         // Try to get data from cache
-        const cachedData = await redis.get(key);
+        const cachedData = await redis?.get(key);
         if (cachedData) {
             const parsedData = JSON.parse(cachedData);
             lruCache.set(key, parsedData, { ttl: expirationSeconds * 1000 }); // Also store in LRU
@@ -76,7 +78,7 @@ export async function withCache<T>(
 
         // Store in both Redis (distributive cache) and LRU Cache
         lruCache.set(key, data, { ttl: expirationSeconds * 1000 });
-        await redis.setEx(key, expirationSeconds, JSON.stringify(data));
+        await redis?.setEx(key, expirationSeconds, JSON.stringify(data));
 
         return data;
     } catch (error) {

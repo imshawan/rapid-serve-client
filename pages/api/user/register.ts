@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { initializeDbConnection } from '@/lib/db';
 import { User } from '@/lib/models/user';
-import { generateToken } from '@/lib/middlewares/auth';
+import { generateToken } from '@/lib/auth/jwt-utils';
 import { formatApiResponse, ApiError, HttpStatus, ErrorCode } from '@/lib/api/response';
 import { validateRequest } from '@/lib/api/validator';
 import { z } from 'zod';

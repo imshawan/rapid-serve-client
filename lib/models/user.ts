@@ -172,7 +172,7 @@ userSchema.pre('save', async function (next) {
         lruCache.delete(key)
 
         // Delete from Redis
-        await redis.del(key)
+        await redis?.del(key)
     })
 });
 

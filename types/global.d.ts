@@ -1,5 +1,6 @@
 import { Document } from "mongoose"
 import { NextApiRequest } from "next"
+import { createClient, RedisClientType } from 'redis';
 
 export { }
 
@@ -9,6 +10,8 @@ declare global {
         conn: mongoose.Connection | null
         promise: Promise<mongoose.Connection> | null
     }
+    
+    var redis: RedisClientType | null;
 
     interface JwtClaims {
         userId: string;

@@ -49,10 +49,11 @@ function* registerSaga(action: PayloadAction<{ name: string; email: string; pass
     yield put(loginSuccess({ token: response.data.token, user: response.data.user }))
 
     if ("function" === typeof action.payload.onSuccess) {
-      action.payload.onSuccess()
+      action.payload.onSuccess(true)
     }
   } catch (error: any) {
     yield put(requestFailure(error.response?.data?.message || "Registration failed"))
+    action.payload.onSuccess()
   }
 }
 

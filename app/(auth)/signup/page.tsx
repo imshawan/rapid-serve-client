@@ -59,24 +59,16 @@ export default function SignupPage() {
   })
 
   const handleSignup = async (data: SignupFormData) => {
-    try {
-      register(data, () => router.push('/dashboard'))
-
-    } catch (error: any) {
-      let title, message;
-      if (error instanceof ApiFailureError) {
-        title = error.code;
-        message = error.message;
-      } else {
-        message = error.message || "Registration failed. Please try again."
-      }
-
-      toast({
-        title: title || "Error",
-        description: message,
-        variant: "destructive"
+    await new Promise((resolve) => {
+      register(data, (success: boolean) => {
+        if (success) {
+          router.push('/dashboard')
+          // Resolve not required as we are moving to homepage
+        } else {
+          resolve(null)
+        }
       })
-    }
+    })
   }
 
   return (

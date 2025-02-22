@@ -41,7 +41,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
-  const {loadUserProfile} = useUser()
+  const { loadUserProfile } = useUser()
   const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
 
@@ -54,27 +54,17 @@ export default function LoginPage() {
   })
 
   const handleLogin = async (data: LoginFormData) => {
-    try {
-      login(data, () => {
-        router.push('/dashboard')
-        loadUserProfile()
+    await new Promise((resolve) => {
+      login(data, (success: boolean) => {
+        if (success) {
+          router.push('/dashboard')
+          loadUserProfile()
+          // Resolve not required as we are moving to homepage
+        } else {
+          resolve(null)
+        }
       })
-      
-    } catch (error: any) {
-      let title = 'Error'
-      let message = 'An unexpected error occurred'
-
-      if (error instanceof ApiFailureError) {
-        title = error.code
-        message = error.message
-      }
-
-      toast({
-        title,
-        description: message,
-        variant: 'destructive',
-      })
-    }
+    })
   }
 
   return (

@@ -33,10 +33,10 @@ import {
     Menu,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useAuth } from "@/app/auth/auth"
+import { useAuth } from "@/hooks/use-auth"
 import { SearchDialog } from "./ui/search-dialog"
-import { toggleSidebar } from "@/store/slices/appSlice"
-import { useAppDispatch } from "@/store/store"
+import { toggleSidebar } from "@/store/slices/app"
+import { useAppDispatch } from "@/store"
 import useScreenSize from "@/hooks/use-screen-size"
 
 export function Header() {
@@ -45,6 +45,10 @@ export function Header() {
     const { user, logout } = useAuth()
     const dispatch = useAppDispatch()
     const {screenSize} = useScreenSize()
+
+    const handleLogout = () => {
+        logout(() => router.push("/login"))
+    }
 
     const notifications = [
         {
@@ -153,7 +157,7 @@ export function Header() {
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="relative ml-2 h-8 w-8 rounded-full">
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src={user?.avatar} alt={user?.name} />
+                                            <AvatarImage src={user?.profilePicture} alt={user?.name} />
                                             <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
                                         </Avatar>
                                     </Button>
@@ -175,7 +179,7 @@ export function Header() {
                                         </DropdownMenuItem>
                                     ))}
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={logout} className="text-destructive">
+                                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                                         <LogOut className="mr-2 h-4 w-4" />
                                         <span>Log out</span>
                                     </DropdownMenuItem>

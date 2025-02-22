@@ -22,7 +22,7 @@ import {
   Upload,
   FileText,
 } from "lucide-react"
-import { useAppSelector } from "@/store/store"
+import { useAppSelector } from "@/store"
 
 export function Sidebar() {
     const pathname = usePathname()

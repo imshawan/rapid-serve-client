@@ -20,12 +20,13 @@ import { ShareDialog } from "@/components/ui/share-dialog"
 import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
-import { useAppDispatch, useAppSelector } from "@/store/store"
-import { fetchFiles, deleteFile } from "@/store/slices/filesSlice"
+import { useAppDispatch, useAppSelector } from "@/store"
+import { deleteFile } from "@/store/slices/files"
 import { useInView } from "react-intersection-observer"
 import { generateUUID } from "@/lib/utils"
 import { UploadDialog } from "@/components/ui/upload-dialog"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
+import { useFiles } from "@/hooks/use-files"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -39,8 +40,8 @@ export default function DashboardPage() {
     fileName: ""
   })
   const { toast } = useToast()
+  const {files, loading, hasMore, currentPage, loadFiles } = useFiles()
   const dispatch = useAppDispatch()
-  const { files, loading, hasMore, currentPage } = useAppSelector(state => state.files)
   const { ref, inView } = useInView()
 
   const handleShare = (fileName: string) => {
@@ -49,7 +50,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (inView && hasMore && !loading) {
-      dispatch(fetchFiles(currentPage))
+      // dispatch(fetchFiles(currentPage))
+      loadFiles({currentPage, limit: 10})
     }
   }, [inView, hasMore, loading, dispatch])
 

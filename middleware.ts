@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { verifyToken } from './lib/auth/jwt-utils'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
                     request.nextUrl.pathname.startsWith('/signup')
@@ -12,6 +13,10 @@ export function middleware(request: NextRequest) {
   }
 
   if (token && isAuthPage) {
+    if (!await verifyToken(token)) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
@@ -22,6 +27,8 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/login',
-    '/signup'
+    '/signup',
+    '/api/user/:path*',
+    '/api/files/:path*'
   ]
 }

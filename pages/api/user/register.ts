@@ -1,50 +1,43 @@
-import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
+import { initializeDbConnection } from '@/lib/db';
 import { User } from '@/lib/models/user';
 import { generateToken } from '@/lib/auth/jwt-utils';
 import { formatApiResponse, ApiError, HttpStatus, ErrorCode } from '@/lib/api/response';
 import { validateRequest } from '@/lib/api/validator';
 import { z } from 'zod';
-import { initializeDbConnection } from "@/lib/db";
+import { serialize } from "cookie";
 import { isProduction } from "@/lib/config";
 
-const loginSchema = z.object({
+const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const startTime = Date.now();
-    if (req.method !== "POST") {
-        return res.status(405).json({ message: "Method not allowed" });
-    }
-
     try {
-        const data = await validateRequest(loginSchema, await req.body);
-
-        const { email, password } = data;
+        const data = await validateRequest(registerSchema, req.body);
+        const { email, password, name } = data;
 
         await initializeDbConnection();
 
-        // Find user with all the fields including password
-        const user = await User.findOne({ email }).setOptions({ includeAll: true }) as IUser
-        if (!user) {
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             throw new ApiError(
-                ErrorCode.UNAUTHORIZED,
-                'Invalid credentials',
-                HttpStatus.UNAUTHORIZED
+                ErrorCode.CONFLICT,
+                'Email already registered',
+                HttpStatus.CONFLICT
             );
         }
 
-        // Verify password
-        const isValid = await user.comparePassword(password);
-        if (!isValid) {
-            throw new ApiError(
-                ErrorCode.UNAUTHORIZED,
-                'Invalid credentials',
-                HttpStatus.UNAUTHORIZED
-            );
-        }
+        // Create new user
+        const user = await User.create({
+            email,
+            password,
+            name,
+        });
 
         // Generate JWT token
         const token = await generateToken(user);
@@ -60,22 +53,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             })
         );
 
-        // Return user payload (without token)
         return formatApiResponse(res, {
             token,
             user: {
-                id: user._id,
+                _id: user._id,
                 email: user.email,
                 name: user.name,
                 role: user.role,
-                profilePicture: user.profilePicture
             },
-        }, String(req.url), startTime, HttpStatus.OK);
+        }, String(req.url), startTime, HttpStatus.CREATED);
     } catch (error) {
         if (error instanceof ApiError) {
             return formatApiResponse(res, error, String(req.url), startTime, error.status);
         }
-        console.log(error)
-        return formatApiResponse(res, error as Error, String(req.url), startTime, HttpStatus.INTERNAL_SERVER_ERROR);
+        return formatApiResponse(res, error as Error, String(req.url), startTime);
     }
 }

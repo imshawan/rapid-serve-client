@@ -1,28 +1,46 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
+import { useUser } from "@/hooks/use-user"
+import { useForm } from "react-hook-form"
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form"
+import { useAuth } from "@/hooks/use-auth"
+
+const profileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState({
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-  })
-  const { toast } = useToast()
+  const { updateUserData } = useUser()
+  const {user: profile} = useAuth()
+  console.log("profile", profile)
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
-    e.preventDefault()
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been updated successfully."
-    })
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: profile?.name || "",
+    },
+  });
+
+  const updateData = (data: Partial<IUser>) => {
+    return new Promise<void>((resolve, reject) => {
+      updateUserData(data, (success: boolean) => {
+        success ? resolve() : reject();
+      });
+    });
   }
+
+  const handleUpdateProfile = async (data: Partial<IUser>) => {
+    await updateData(data);
+  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -36,34 +54,50 @@ export default function ProfilePage() {
         <CardContent>
           <div className="flex items-center space-x-4 mb-6">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={profile.avatar} alt={profile.name} />
-              <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={profile?.profilePicture} alt={profile?.name} />
+              <AvatarFallback>{profile?.name?.charAt(0)}</AvatarFallback>
             </Avatar>
             <Button variant="outline">Change Avatar</Button>
           </div>
-          
-          <form onSubmit={handleUpdateProfile} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                value={profile.name}
-                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-              />
-            </div>
 
-            <Button type="submit">Update Profile</Button>
-          </form>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleUpdateProfile)} className="space-y-4">
+              <CardContent className="space-y-4">
+                {/* Full Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your full name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profile?.email}
+                    disabled
+                  />
+                </div>
+              </CardContent>
+
+              {/* Submit Button */}
+              <CardFooter className="flex justify-end">
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? "Updating..." : "Update Profile"}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
         </CardContent>
       </Card>
 
@@ -80,12 +114,12 @@ export default function ProfilePage() {
               <Label htmlFor="current-password">Current Password</Label>
               <Input id="current-password" type="password" />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="new-password">New Password</Label>
               <Input id="new-password" type="password" />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="confirm-password">Confirm New Password</Label>
               <Input id="confirm-password" type="password" />

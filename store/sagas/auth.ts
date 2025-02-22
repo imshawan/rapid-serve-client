@@ -19,7 +19,7 @@ function* loginSaga(action: PayloadAction<{ email: string; password: string, onS
     }
     yield put(loginSuccess({ token: response.data.token, user: response.data.user }));
     if ("function" == typeof action.payload.onSuccess) {
-      action.payload.onSuccess()
+      action.payload.onSuccess(true)
     }
   } catch (error: any) {
     yield put(loginFailure());
@@ -28,6 +28,8 @@ function* loginSaga(action: PayloadAction<{ email: string; password: string, onS
       description: error.message,
       variant: "destructive",
     })
+
+    action.payload.onSuccess(false)
   }
 }
 

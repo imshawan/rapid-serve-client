@@ -55,6 +55,8 @@ export async function initializeDbConnection() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     };
 
     cached.promise = mongoose.connect(connectionUri, opts).then((mongoose) => {
@@ -64,6 +66,7 @@ export async function initializeDbConnection() {
 
   try {
     cached.conn = await cached.promise;
+    console.log("\nConnected to MongoDb at", new Date(), "\n")
   } catch (e) {
     cached.promise = null;
     throw e;

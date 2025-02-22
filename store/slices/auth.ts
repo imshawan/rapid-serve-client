@@ -1,4 +1,4 @@
-import { getJsonFromLocalstorage } from "@/lib/utils"
+import { getJsonFromLocalstorage, updateJsonFromLocalStorage } from "@/lib/utils"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
 interface User {
@@ -64,8 +64,16 @@ const authSlice = createSlice({
     },
     logoutRequest: (state, payload: PayloadAction<{onSuccess: Function}>) => {},
     loginRequest: (state, action: PayloadAction<{ email: string; password: string, onSuccess: Function }>) => {},
+    profilePictureUpdate: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.profilePicture = action.payload
+        if (typeof window !== "undefined") {
+          updateJsonFromLocalStorage("user", state.user)
+        }
+      }
+    }
   },
 })
 
-export const { logout, setLoading, loginSuccess, loginFailure, logoutSuccess, logoutRequest, loginRequest } = authSlice.actions
+export const { logout, setLoading, loginSuccess, loginFailure, logoutSuccess, logoutRequest, loginRequest, profilePictureUpdate } = authSlice.actions
 export default authSlice.reducer

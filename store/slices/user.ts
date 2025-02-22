@@ -83,6 +83,12 @@ const userSlice = createSlice({
       state.loading = false;
     },
     updateProfileRequest: (state, action: PayloadAction<{ user: Partial<UserStateType>, onSuccess: Function }>) => { },
+    updateProfilePictureRequest: (state, action: PayloadAction<{ data: FormData, onSuccess: Function, onError: Function }>) => { },
+    updateProfilePictureSuccess: (state, action: PayloadAction<string>) => {
+      if (state.user) {
+        state.user.profilePicture = action.payload;
+      }
+    },
     requestFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;
       state.error = action.payload;
@@ -99,7 +105,9 @@ export const {
   updateProfileRequest,
   requestStart,
   requestFailure,
-  loadProfileRequest
+  loadProfileRequest,
+  updateProfilePictureRequest,
+  updateProfilePictureSuccess
 } = userSlice.actions;
 
 export default userSlice.reducer;

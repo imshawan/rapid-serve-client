@@ -11,6 +11,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form"
 import { useAuth } from "@/hooks/use-auth"
+import { useRef, useState } from "react"
+import { toast } from "@/hooks/use-toast"
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -19,9 +21,60 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
-  const { updateUserData } = useUser()
-  const {user: profile} = useAuth()
-  console.log("profile", profile)
+  const { updateUserData, updateProfilePicture } = useUser()
+  const { user: profile } = useAuth()
+
+  const [avatar, setAvatar] = useState(profile?.profilePicture || "");
+  const [loading, setLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] as unknown as Blob
+    if (!file) return;
+
+    // Validate file type and size (must be image, max 5MB)
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Only image files are allowed!",
+        description: "Please upload an image file.",
+        variant: "destructive",
+      })
+      return;
+    }
+    if (Number(file.size) > (5 * 1024 * 1024)) {
+      toast({
+        title: "File size exceeds 5MB limit.",
+        description: "Please upload a smaller file.",
+        variant: "destructive",
+      })
+      return;
+    }
+
+    // Show preview before uploading
+    const imageUrl = URL.createObjectURL(file);
+    setAvatar(imageUrl);
+
+    // Upload to API
+    await uploadAvatar(file);
+  };
+
+  // Open file browser when button is clicked
+  const handleChangeAvatar = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Upload image to API
+  const uploadAvatar = async (file: Blob) => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("picture", file);
+
+    await new Promise((resolve) => {
+      updateProfilePicture({ data: formData }, resolve, resolve)
+    })
+
+    setLoading(false);
+  };
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -54,10 +107,27 @@ export default function ProfilePage() {
         <CardContent>
           <div className="flex items-center space-x-4 mb-6">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={profile?.profilePicture} alt={profile?.name} />
+              <AvatarImage src={avatar} alt={profile?.name} />
               <AvatarFallback>{profile?.name?.charAt(0)}</AvatarFallback>
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                  <div className="h-6 w-6 border-2 border-gray-300 border-t-white rounded-full animate-spin"></div>
+                </div>
+              )}
             </Avatar>
-            <Button variant="outline">Change Avatar</Button>
+            {/* Loading Overlay */}
+
+            {/* Hidden File Input */}
+            <Input
+              type="file"
+              ref={fileInputRef}
+              accept="image/jpeg, image/png, image/gif"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <Button variant="outline" onClick={handleChangeAvatar} disabled={loading}>
+              {loading ? "Uploading..." : "Change Avatar"}
+            </Button>
           </div>
 
           <Form {...form}>

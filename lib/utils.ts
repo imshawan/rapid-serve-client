@@ -20,3 +20,16 @@ export function getJsonFromLocalstorage(key: string) {
     return null;
   }
 }
+
+export function updateJsonFromLocalStorage(key: string, value: Object) {
+  try {
+    let existing = getJsonFromLocalstorage(key);
+    if (!existing) {
+      existing = {};
+    }
+    const updated = { ...existing, ...value };
+    localStorage.setItem(key, JSON.stringify(updated));
+  } catch (error) {
+    return null;
+  }
+}

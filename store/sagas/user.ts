@@ -8,10 +8,11 @@ import {
   registerRequest,
   updateProfileRequest,
   loadProfileRequest,
+  updateProfilePictureRequest,
 } from "@/store/slices/user";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { toast } from "@/hooks/use-toast";
-import { loginSuccess } from "../slices/auth";
+import { loginSuccess, profilePictureUpdate } from "../slices/auth";
 
 function* registerSaga(action: PayloadAction<{ name: string; email: string; password: string, onSuccess: Function }>): Generator<any, void, ApiResponse<any>> {
   try {
@@ -117,9 +118,40 @@ function* loadProfileSaga(): Generator<any, void, ApiResponse<any>> {
   }
 }
 
+function* updateProfilePicture(action: PayloadAction<{ data: FormData; onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(userApi.updateProfilePicture, action.payload.data);
+    console.log("loading response->", response)
+
+    if (!response.success && response.error) {
+      let { code, message } = response.error;
+
+      toast({
+        title: code || "Profile picture update failed",
+        description: message || "Please check your details and try again.",
+        variant: "destructive",
+      })
+
+      return action.payload.onError()
+    }
+
+    yield put(updateProfileSuccess(response.data.user))
+    yield put(profilePictureUpdate(response.data.url))
+    action.payload.onSuccess()
+  } catch (error: any) {
+    toast({
+      title: error.response?.data?.code || "Error",
+      description: error.response?.data?.message || "Profile picture update failed",
+      variant: "destructive",
+    })
+    action.payload.onError()
+  }
+}
+
 // Watcher saga
 export default function* userSaga(): Generator {
   yield takeLatest(registerRequest.type, registerSaga);
   yield takeLatest(updateProfileRequest.type, updateProfileSaga);
   yield takeLatest(loadProfileRequest.type, loadProfileSaga);
+  yield takeLatest(updateProfilePictureRequest.type, updateProfilePicture);
 }

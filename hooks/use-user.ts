@@ -1,5 +1,5 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { loadProfileRequest, registerRequest, updateProfileRequest } from "@/store/slices/user";
+import { loadProfileRequest, registerRequest, updateProfilePictureRequest, updateProfileRequest } from "@/store/slices/user";
 import { useCallback } from "react";
 
 export const useUser = () => {
@@ -16,6 +16,10 @@ export const useUser = () => {
 
     loadUserProfile: useCallback(() => {
       dispatch(loadProfileRequest());
+    }, [dispatch]),
+
+    updateProfilePicture: useCallback((payload: {data: FormData}, onSuccess: Function, onError: Function) => {
+      dispatch(updateProfilePictureRequest({...payload, onSuccess, onError}));
     }, [dispatch]),
 
     user: useAppSelector((state: RootState) => state.user.user),

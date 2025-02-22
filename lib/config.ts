@@ -78,11 +78,11 @@ export const getJwtExpiry = (): StringValue => getEnvValue("JWT_EXPIRES_IN", "7d
 // Retrieves Amazon S3 configuration for file storage
 export const getS3ConnectionConfig = () => ({
     credentials: {
-        accessKeyId: getEnvValue("AWS_ACCESS_KEY_ID"),
-        secretAccessKey: getEnvValue("AWS_SECRET_ACCESS_KEY"),
+        accessKeyId: getEnvValue("AWS_ACCESS_KEY_ID", ""),
+        secretAccessKey: getEnvValue("AWS_SECRET_ACCESS_KEY", ""),
     },
-    region: getEnvValue("AWS_REGION"),
+    region: getEnvValue("AWS_REGION", "ap-south-1"),
 });
 
 // Retrieves the Amazon S3 bucket name
-export const getS3BucketName = (): string => getEnvValue("AWS_S3_BUCKET_NAME");
+export const getS3BucketName = (): string => getEnvValue("AWS_S3_BUCKET_NAME", "");

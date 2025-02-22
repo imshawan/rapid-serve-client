@@ -66,7 +66,6 @@ export async function initializeDbConnection() {
 
   try {
     cached.conn = await cached.promise;
-    console.log("\nConnected to MongoDb at", new Date(), "\n")
   } catch (e) {
     cached.promise = null;
     throw e;

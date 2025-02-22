@@ -15,7 +15,7 @@ function* loginSaga(action: PayloadAction<{ email: string; password: string, onS
         variant: "destructive",
       })
 
-      return
+      return action.payload.onSuccess(false)
     }
     yield put(loginSuccess({ token: response.data.token, user: response.data.user }));
     if ("function" == typeof action.payload.onSuccess) {

@@ -27,7 +27,7 @@ function* registerSaga(action: PayloadAction<{ name: string; email: string; pass
           })
         });
 
-        return
+        return action.payload.onSuccess(false)
       }
 
       toast({
@@ -36,7 +36,7 @@ function* registerSaga(action: PayloadAction<{ name: string; email: string; pass
         variant: "destructive",
       })
 
-      return
+      return action.payload.onSuccess(false)
     }
 
     toast({

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, SetStateAction, Dispatch } from "react"
+import { useState, useEffect, useRef, SetStateAction, Dispatch, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { splitFileIntoChunks, calculateSHA256 } from "@/lib/utils/chunk"
 
 interface UploadDialogProps {
   open: boolean
@@ -20,12 +21,75 @@ interface UploadDialogProps {
   onUploadComplete?: (file: File) => void
 }
 
-export function UploadDialog({open, setOpen}: UploadDialogProps) {
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+export function UploadDialog({ open, setOpen }: UploadDialogProps) {
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadModal, setUploadModal] = useState(false)
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setUploadProgress(0);
+      setStatus('idle');
+    }
+  };
+
+  const uploadFile = useCallback(async () => {
+    if (!file) return;
+
+    try {
+      setStatus('uploading');
+      const chunks = splitFileIntoChunks(file);
+      const chunkHashes = await Promise.all(chunks.map(calculateSHA256));
+
+      // Step 1: Register upload and get pre-signed URLs
+      const registerResponse = await fetch('/api/upload/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileSize: file.size,
+          chunkHashes,
+        }),
+      });
+
+      if (!registerResponse.ok) throw new Error('Registration failed');
+      const { fileId, uploadUrls } = await registerResponse.json();
+
+      // Step 2: Upload chunks using pre-signed URLs
+      let completedChunks = 0;
+      await Promise.all(
+        uploadUrls.map(async ({ hash, url }: {hash: string; url: string}, index: number) => {
+          const chunk = chunks[chunkHashes.indexOf(hash)];
+          const response = await fetch(url, {
+            method: 'POST',
+            body: chunk,
+          });
+
+          if (!response.ok) throw new Error(`Chunk upload failed: ${hash}`);
+          completedChunks++;
+          setUploadProgress((completedChunks / chunks.length) * 100);
+        })
+      );
+
+      // Step 3: Confirm upload completion
+      const completeResponse = await fetch('/api/upload/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId }),
+      });
+
+      if (!completeResponse.ok) throw new Error('Completion failed');
+      setStatus('success');
+    } catch (error) {
+      console.error('Upload error:', error);
+      setStatus('error');
+    }
+  }, [file]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -36,7 +100,7 @@ export function UploadDialog({open, setOpen}: UploadDialogProps) {
 
     // Simulate upload progress
     const interval = setInterval(() => {
-      setUploadProgress((prev) => {
+      setUploadProgress((prev: any) => {
         if (prev === null || prev >= 100) {
           clearInterval(interval)
           setIsUploading(false)

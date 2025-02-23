@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 const s3Credentials = getS3ConnectionConfig()
 const bucket = getS3BucketName()
-const s3 = new S3Client(s3Credentials);
+export const s3 = new S3Client(s3Credentials);
 
 export const uploadToS3 = async (fileName: string, fileBuffer: Buffer, fileType: string): Promise<string> => {
   try {

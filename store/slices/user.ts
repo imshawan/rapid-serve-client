@@ -1,4 +1,4 @@
-import { getJsonFromLocalstorage } from "@/lib/utils";
+import { getJsonFromLocalstorage } from "@/lib/utils/common";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UserStateType {

@@ -17,7 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return await get(req, res);
 
     default:
-      return formatApiResponse(res, new Error("Method Not Allowed"), String(req.url), undefined, 405);
+      return formatApiResponse(res, new ApiError(ErrorCode.METHOD_NOT_ALLOWED, "Method Not Allowed", HttpStatus.METHOD_NOT_ALLOWED), String(req.url));
   }
 }
 

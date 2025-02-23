@@ -1,4 +1,4 @@
-import { getJsonFromLocalstorage, updateJsonFromLocalStorage } from "@/lib/utils"
+import { getJsonFromLocalstorage, updateJsonFromLocalStorage } from "@/lib/utils/common"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
 interface User {

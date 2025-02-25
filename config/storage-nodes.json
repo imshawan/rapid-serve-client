@@ -1,0 +1,28 @@
+{
+    "nodes": [
+        {
+            "id": "node-1",
+            "name": "US East (Virginia)",
+            "region": "ap-south-1",
+            "status": "active",
+            "bucket": "rapid-serve-cdn",
+            "replicationFactor": 2
+        },
+        {
+            "id": "node-2",
+            "name": "Asia Pacific (Singapore)",
+            "region": "ap-south-1",
+            "status": "active",
+            "bucket": "rapid-serve-cdn",
+            "replicationFactor": 2
+        },
+        {
+            "id": "node-3",
+            "name": "Asia Pacific (Mumbai)",
+            "region": "ap-south-1",
+            "status": "active",
+            "bucket": "rapid-serve-cdn",
+            "replicationFactor": 2
+        }
+    ]
+}

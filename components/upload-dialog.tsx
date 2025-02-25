@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, SetStateAction, Dispatch, useCallback } from "react"
+import { useState, useRef, SetStateAction, Dispatch, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
@@ -11,9 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { FileText } from "lucide-react"
+import { AlertCircle, CheckCircle, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { splitFileIntoChunks, calculateSHA256 } from "@/lib/utils/chunk"
+import { uploader } from "@/services/api/chunk-upload"
 
 interface UploadDialogProps {
   open: boolean
@@ -23,103 +24,85 @@ interface UploadDialogProps {
 
 export function UploadDialog({ open, setOpen }: UploadDialogProps) {
   const [uploadProgress, setUploadProgress] = useState<number>(0)
-  const [isUploading, setIsUploading] = useState(false)
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [file, setFile] = useState<File | null>(null)
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
+    const selectedFile = e.target.files?.[0]
     if (selectedFile) {
-      setFile(selectedFile);
-      setUploadProgress(0);
-      setStatus('idle');
+      setFile(selectedFile)
+      setUploadProgress(0)
+      setStatus('idle')
     }
-  };
+  }
 
   const uploadFile = useCallback(async () => {
-    if (!file) return;
+    if (!file) return
 
     try {
-      setStatus('uploading');
-      const chunks = splitFileIntoChunks(file);
-      const chunkHashes = await Promise.all(chunks.map(calculateSHA256));
+      setStatus('uploading')
+      setUploadProgress(0)
+
+      const chunks = splitFileIntoChunks(file)
+      const chunkHashes = await Promise.all(chunks.map(calculateSHA256))
 
       // Step 1: Register upload and get pre-signed URLs
-      const registerResponse = await fetch('/api/upload/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileSize: file.size,
-          chunkHashes,
-        }),
-      });
+      const registerResponse = await uploader.register({
+        fileName: file.name,
+        fileSize: file.size,
+        chunkHashes,
+      })
 
-      if (!registerResponse.ok) throw new Error('Registration failed');
-      const { fileId, uploadUrls } = await registerResponse.json();
-
-      // Step 2: Upload chunks using pre-signed URLs
-      let completedChunks = 0;
-      await Promise.all(
-        uploadUrls.map(async ({ hash, url }: {hash: string; url: string}, index: number) => {
-          const chunk = chunks[chunkHashes.indexOf(hash)];
-          const response = await fetch(url, {
-            method: 'POST',
-            body: chunk,
-          });
-
-          if (!response.ok) throw new Error(`Chunk upload failed: ${hash}`);
-          completedChunks++;
-          setUploadProgress((completedChunks / chunks.length) * 100);
+      if (!registerResponse.success) throw new Error('File Registration failed')
+      const { fileId, uploadChunks, missingChunks } = registerResponse.data as FileUploadStatus
+      if (!missingChunks.length) {
+        toast({
+          title: "Duplication Warning",
+          description: `${file.name} already exists in your drive`,
+          variant: "warning",
         })
-      );
+        setStatus('success')
+        return
+      }
 
-      // Step 3: Confirm upload completion
-      const completeResponse = await fetch('/api/upload/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId }),
-      });
+      // Step 3: Upload missing chunks
+      const totalChunks = uploadChunks.length
+      let completedChunks = 0
 
-      if (!completeResponse.ok) throw new Error('Completion failed');
-      setStatus('success');
-    } catch (error) {
-      console.error('Upload error:', error);
-      setStatus('error');
+      for (const uploadChunk of uploadChunks) {
+        const {hash, token} = uploadChunk
+        const chunkIndex = chunkHashes.indexOf(hash)
+        const chunk = chunks[chunkIndex]
+        
+        const formData = new FormData()
+        formData.append('chunk', chunk)
+
+        await uploader.upload({ params: { token, fileId, hash }, chunk: formData })
+
+        completedChunks++
+        setUploadProgress((completedChunks / totalChunks) * 100)
+      }
+
+      // // Step 3: Confirm upload completion
+      await uploader.markComplete(fileId)
+
+      setStatus('success')
+    } catch (error: any) {
+      console.error('Upload failed:', error)
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      })
+      setStatus('error')
     }
   }, [file]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-    setUploadProgress(0)
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev: any) => {
-        if (prev === null || prev >= 100) {
-          clearInterval(interval)
-          setIsUploading(false)
-          setOpen(false)
-          toast({
-            title: "Upload complete",
-            description: `${file.name} has been uploaded successfully.`
-          })
-          return null
-        }
-        return prev + 10
-      })
-    }, 500)
-  }
-
-
   return (
     <Dialog modal={true} open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]" onPointerDownOutside={(event) => event.preventDefault()}>
+      <DialogContent className="h-full sm:h-auto sm:min-w-[60%] lg:min-w-[40%]" onPointerDownOutside={(event) => event.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Upload File</DialogTitle>
           <DialogDescription>
@@ -134,8 +117,8 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
                 type="file"
                 className="hidden"
                 id="file-upload"
-                onChange={handleFileUpload}
-                disabled={isUploading}
+                onChange={handleFileChange}
+                disabled={status === "uploading"}
                 ref={fileInputRef}
               />
               <Label htmlFor="file-upload">
@@ -143,20 +126,53 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
                   <p className="text-sm text-muted-foreground">
                     Drag and drop your files here, or click to select files
                   </p>
-                  <Button variant="secondary" onClick={() => fileInputRef.current ? fileInputRef.current.click() : null} disabled={isUploading}>
+                  <Button variant="secondary" onClick={() => fileInputRef.current ? fileInputRef.current.click() : null} disabled={status === "uploading"}>
                     Choose File
                   </Button>
                 </div>
               </Label>
             </div>
           </div>
-          {uploadProgress !== null && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Uploading...</span>
-                <span>{uploadProgress}%</span>
+
+          {file && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">{file.name}</span>
+                <span className="text-sm">
+                  {(Number(file.size) / (1024 * 1024)).toFixed(2)} MB
+                </span>
               </div>
-              <Progress value={uploadProgress} />
+
+              <Progress value={uploadProgress} className="w-full" />
+
+              {status === 'idle' && (
+                <Button
+                  onClick={uploadFile}
+                  className="w-full py-2 px-4 transition-colors"
+                >
+                  Start Upload
+                </Button>
+              )}
+
+              {status === 'uploading' && (
+                <div className="flex items-center justify-center text-blue-400">
+                  <span className="animate-pulse">Uploading...</span>
+                </div>
+              )}
+
+              {status === 'success' && (
+                <div className="flex items-center justify-center text-green-400">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  <span>Upload complete!</span>
+                </div>
+              )}
+
+              {status === 'error' && (
+                <div className="flex items-center justify-center text-red-400">
+                  <AlertCircle className="w-5 h-5 mr-2" />
+                  <span>Upload failed. Please try again.</span>
+                </div>
+              )}
             </div>
           )}
         </div>

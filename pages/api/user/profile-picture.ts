@@ -56,7 +56,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Generate unique file name and upload to S3
     const fileExtension = file.mimetype.split('/')[1];
     const fileName = `profile_pictures/${uuidv4()}.${fileExtension}`;
-    const s3Url = await uploadToS3(fileName, file.buffer, file.mimetype);
+    const s3Url = await uploadToS3(fileName, file.buffer, file.mimetype, true);
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user?.userId,

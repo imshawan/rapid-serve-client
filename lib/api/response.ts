@@ -99,12 +99,15 @@ export class ApiFailureError extends Error {
 export function formatApiResponse<T>(
     resp: NextApiResponse,
     input: T | Error,
-    path: string,
+    path?: string,
     startTime?: number,
     status?: number
 ): void {
     const timestamp = new Date().toISOString();
     const duration = startTime ? Date.now() - startTime : undefined;
+    const url = String(resp.req.url);
+
+    path = path || url;
 
     // Handle errors
     if (input instanceof Error) {

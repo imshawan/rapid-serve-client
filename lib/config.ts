@@ -76,7 +76,7 @@ export const getJwtSecret = (): string => getEnvValue("JWT_SECRET");
 export const getJwtExpiry = (): StringValue => getEnvValue("JWT_EXPIRES_IN", "7d") as StringValue;
 
 // Retrieves Amazon S3 configuration for file storage
-export const getS3ConnectionConfig = () => ({
+export const getAwsConnectionConfig = () => ({
     credentials: {
         accessKeyId: getEnvValue("AWS_ACCESS_KEY_ID", ""),
         secretAccessKey: getEnvValue("AWS_SECRET_ACCESS_KEY", ""),

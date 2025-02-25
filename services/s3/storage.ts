@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { redis } from '@/lib/db'
 import { getAwsConnectionConfig, getS3BucketName } from '../../lib/config'
 import storageConfig from '@/config/storage-nodes.json'
-import { UploadToken } from '@/lib/models/upload'
+import { Token } from '@/lib/models/upload'
 
 const BUCKET_NAME = getS3BucketName()
 const TOKEN_EXPIRY = 3600; // 1 hour in seconds
@@ -109,7 +109,7 @@ export async function validateUploadToken(
     if (!token) {
       return false
     }
-    const tokenData = await UploadToken.findOne({ token })
+    const tokenData = await Token.findOne({ token })
     if (!tokenData) {
       return false
     }
@@ -126,7 +126,7 @@ export async function validateUploadToken(
     }
 
     // Token is valid, delete it to prevent reuse
-    await UploadToken.deleteOne({ token })
+    await Token.deleteOne({ token })
     return true
   } catch (error) {
     console.error('Error validating upload token:', error)
@@ -135,7 +135,7 @@ export async function validateUploadToken(
 }
 
 /**
- * Generates a secure upload token for a file chunk.
+ * Generates a secure upload/download token for a file chunk.
  * 
  * @param {string} fileId - The file ID.
  * @param {string} hash - The hash of the file chunk.
@@ -145,10 +145,10 @@ export async function validateUploadToken(
  * 
  * @author Shawan Mandal <github@imshawan.dev>
  */
-export async function generateUploadToken(fileId: string, hash: string, contentType?: string): Promise<string> {
+export async function generateToken(fileId: string, hash: string, contentType?: string): Promise<string> {
   try {
     // Check if chunk already exists (query the database instead of S3)
-    const existingChunk = await UploadToken.findOne({ fileId, hash }) as UploadToken
+    const existingChunk = await Token.findOne({ fileId, hash }) as Token
     if (existingChunk) {
       throw new Error("Chunk already exists")
     }
@@ -164,7 +164,7 @@ export async function generateUploadToken(fileId: string, hash: string, contentT
     }
 
     // Store token in MongoDB with TTL index
-    await UploadToken.create(tokenData)
+    await Token.create(tokenData)
 
     return token
   } catch (error) {

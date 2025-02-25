@@ -8,6 +8,6 @@ const UploadTokenSchema = new mongoose.Schema({
 });
 
 
-export const UploadToken = mongoose.models.UploadToken || mongoose.model('UploadToken', UploadTokenSchema);
+export const Token = mongoose.models.Token || mongoose.model('Token', UploadTokenSchema);
 
-export type UploadToken = InferSchemaType<typeof UploadTokenSchema>;
+export type Token = InferSchemaType<typeof UploadTokenSchema>;

@@ -4,7 +4,7 @@ import { File, Chunk } from '@/lib/models/upload';
 import { authMiddleware } from '@/lib/middlewares';
 import { NextApiRequest, NextApiResponse } from 'next/types';
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from '@/lib/api/response';
-import { generateUploadToken, selectStorageNode } from '@/services/s3/storage';
+import { generateToken, selectStorageNode } from '@/services/s3/storage';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -39,7 +39,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Generate pre-signed chunks with token for missing chunks
     const uploadChunks = await Promise.all(missingChunks.map(async (hash: string) => {
-      const token = await generateUploadToken(fileId, hash);
+      const token = await generateToken(fileId, hash);
       return { hash, token };
     }));
 

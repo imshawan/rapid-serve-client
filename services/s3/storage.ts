@@ -9,6 +9,7 @@ const BUCKET_NAME = getS3BucketName()
 const TOKEN_EXPIRY = 3600; // 1 hour in seconds
 const { credentials } = getAwsConnectionConfig()
 const s3Clients = new WeakMap<StorageNode, S3Client>()
+const validTokenActions = Token.schema.path("action").options.enum as string[]
 
 // Initialize nodes with load counters
 const STORAGE_NODES: StorageNode[] = storageConfig.nodes.map(node => ({
@@ -139,18 +140,26 @@ export async function validateUploadToken(
  * 
  * @param {string} fileId - The file ID.
  * @param {string} hash - The hash of the file chunk.
+ * @param {string} actionType - The action type ('upload' or 'download').
  * @param {string} [contentType] - The content type of the chunk.
  * @returns {Promise<string>} The generated token.
  * @throws {Error} If the chunk already exists or token generation fails.
  * 
  * @author Shawan Mandal <github@imshawan.dev>
  */
-export async function generateToken(fileId: string, hash: string, contentType?: string): Promise<string> {
+export async function generateToken(fileId: string, hash: string, actionType: 'upload' | 'download' = 'upload', contentType?: string): Promise<string> {
   try {
     // Check if chunk already exists (query the database instead of S3)
-    const existingChunk = await Token.findOne({ fileId, hash }) as Token
+    const existingChunk = await Token.findOne({ fileId, hash, action: actionType })
+    
     if (existingChunk) {
-      throw new Error("Chunk already exists")
+      existingChunk.expiresAt = getTokenExpirationDuration()
+      await existingChunk.save()
+      return existingChunk.token
+    }
+
+    if (!validTokenActions.includes(actionType)) {
+      throw new Error("Invalid action type")
     }
 
     // Generate a secure token
@@ -159,7 +168,8 @@ export async function generateToken(fileId: string, hash: string, contentType?: 
       fileId,
       token,
       hash,
-      expiresAt: Date.now() + TOKEN_EXPIRY * 1000, // Auto-expiry timestamp
+      expiresAt: getTokenExpirationDuration(), // Auto-expiry timestamp
+      action: actionType,
       contentType,
     }
 
@@ -228,4 +238,12 @@ function getS3Client(node: StorageNode): S3Client {
     }))
   }
   return s3Clients.get(node)!
+}
+
+/**
+ * Calculates the expiration duration for a token.
+ * @returns {number} The expiration duration in milliseconds.
+ */
+function getTokenExpirationDuration(): number {
+  return Date.now() + TOKEN_EXPIRY * 1000
 }

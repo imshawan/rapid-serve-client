@@ -1,6 +1,11 @@
-import mongoose, { InferSchemaType } from 'mongoose';
+import softDelete from "@/lib/db/plugins/soft-delete";
+import mongoose, { InferSchemaType } from "mongoose";
 
 const fileSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
   fileId: {
     type: String,
     required: true,
@@ -14,23 +19,32 @@ const fileSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  isStarred: {
+    type: Boolean,
+    default: false,
+  },
+  type: {
+    type: String,
+    enum: ["file", "folder"],
+    required: true,
+  },
   chunkHashes: [{
     type: String,
-    required: true,
   }],
   storageNode: {
     type: String,
-    required: true,
   },
   status: {
     type: String,
-    enum: ['pending', 'complete'],
-    default: 'pending',
+    enum: ["pending", "complete"],
+    default: "pending",
   },
 }, {
   timestamps: true,
 });
 
-export const File = mongoose.models.File || mongoose.model('File', fileSchema);
+fileSchema.plugin(softDelete)
+
+export const File = mongoose.models.File || mongoose.model("File", fileSchema);
 
 export type File = InferSchemaType<typeof fileSchema>;

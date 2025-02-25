@@ -8,4 +8,8 @@ export const endpoints = {
   METADATA_REGISTER: "/api/upload/chunk/register",
   CHUNK_UPLOAD: "/api/upload/chunk/{{fileId}}/{{hash}}?token={{token}}",
   UPLOAD_COMPLETE: "/api/upload/complete",
+
+  LOAD_FILES: "/api/files/list?{{queryParams}}",
+  DOWNLOAD_FILE: "/api/download/{{fileId}}",
+  DELETE_FILE: "/api/file/{{fileId}}/delete"
 }

@@ -12,7 +12,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     await initializeDbConnection();
+    
     const { fileId } = req.query as { [key: string]: string };
+    const userId = String(req.user?.userId)
 
     // Get file record
     const file = await File.findOne({ fileId }) as File
@@ -24,7 +26,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const chunkTokens = await Promise.all(
       file.chunkHashes.map(async (hash) => ({
         hash,
-        token: await generateToken(fileId, hash)
+        token: await generateToken(fileId, hash, userId)
       }))
     );
 

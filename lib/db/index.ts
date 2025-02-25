@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { createClient, RedisClientType } from "redis";
 import { LRUCache } from "lru-cache";
 import { BSON } from "bson";
-import { getMongoURI, getRedisURI } from "./config";
+import { getMongoURI, getRedisURI } from "../config";
 
 // Check if Redis connection exists globally
 const globalForRedis = global as unknown as { redis: RedisClientType | null };

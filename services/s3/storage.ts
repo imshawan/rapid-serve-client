@@ -147,11 +147,11 @@ export async function validateUploadToken(
  * 
  * @author Shawan Mandal <github@imshawan.dev>
  */
-export async function generateToken(fileId: string, hash: string, actionType: 'upload' | 'download' = 'upload', contentType?: string): Promise<string> {
+export async function generateToken(fileId: string, hash: string, userId: string, actionType: 'upload' | 'download' = 'upload', contentType?: string): Promise<string> {
   try {
     // Check if chunk already exists (query the database instead of S3)
-    const existingChunk = await Token.findOne({ fileId, hash, action: actionType })
-    
+    const existingChunk = await Token.findOne({ fileId, hash, action: actionType, userId })
+
     if (existingChunk) {
       existingChunk.expiresAt = getTokenExpirationDuration()
       await existingChunk.save()
@@ -165,6 +165,7 @@ export async function generateToken(fileId: string, hash: string, actionType: 'u
     // Generate a secure token
     const token = crypto.randomBytes(32).toString("hex")
     const tokenData = {
+      userId,
       fileId,
       token,
       hash,

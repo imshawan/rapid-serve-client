@@ -1,9 +1,13 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import type {File} from  "@/lib/models/upload/file"
+import { SoftDeleteFields } from '@/lib/db/plugins/soft-delete';
+
+type TFile = File & SoftDeleteFields
 
 interface FilesState {
-  files: File[];
+  files: TFile[];
   starredFiles: string[];
-  deletedFiles: Record<string, { deletedAt: string; originalPath: string }>;
+  deletedFiles: Record<string, { deletedAt: Date; }>;
   loading: boolean;
   error: string | null;
   currentPage: number;
@@ -30,34 +34,34 @@ const filesSlice = createSlice({
   name: 'files',
   initialState,
   reducers: {
-    setFiles: (state, action: PayloadAction<File[]>) => {
+    setFiles: (state, action: PayloadAction<TFile[]>) => {
       state.files = action.payload;
     },
     deleteFile: (state, action: PayloadAction<string>) => {
       const fileId = action.payload;
-      const file = state.files.find(f => f.id === fileId);
+      const file = state.files.find(f => f.fileId === fileId);
       if (file) {
         file.isDeleted = true;
-        file.deletedAt = new Date().toISOString();
+        file.deletedAt = new Date();
         state.deletedFiles[fileId] = {
           deletedAt: file.deletedAt,
-          originalPath: file.path,
+          // originalPath: file.path,
         };
       }
     },
     restoreFile: (state, action: PayloadAction<string>) => {
       const fileId = action.payload;
-      const file = state.files.find(f => f.id === fileId);
+      const file = state.files.find(f => f.fileId === fileId);
       if (file) {
-        file.isDeleted = false;
-        file.deletedAt = undefined;
-        file.path = state.deletedFiles[fileId]?.originalPath || file.path;
+        // file.isDeleted = false;
+        // file.deletedAt = undefined;
+        // file.path = state.deletedFiles[fileId]?.originalPath || file.path;
         delete state.deletedFiles[fileId];
       }
     },
     permanentlyDeleteFile: (state, action: PayloadAction<string>) => {
       const fileId = action.payload;
-      state.files = state.files.filter(f => f.id !== fileId);
+      state.files = state.files.filter(f => f.fileId !== fileId);
       delete state.deletedFiles[fileId];
     },
     toggleStarred: (state, action: PayloadAction<string>) => {
@@ -77,12 +81,13 @@ const filesSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    fetchFilesSuccess: (state, action: PayloadAction<{ files: File[]; totalPages: number; hasMore: boolean }>) => {
+    fetchFilesSuccess: (state, action: PayloadAction<Pagination>) => {
+      console.log(action.payload)
       state.loading = false;
-      state.files = [...state.files, ...action.payload.files];
+      state.files = [...state.files, ...action.payload.data];
       state.totalPages = action.payload.totalPages;
-      state.hasMore = action.payload.hasMore;
-      state.currentPage += 1;
+      state.hasMore = action.payload.currentPage > (action.payload.end + 1);
+      state.currentPage = action.payload.currentPage;
     },
     fetchFilesFailure: (state, action: PayloadAction<string>) => {
       state.loading = false;

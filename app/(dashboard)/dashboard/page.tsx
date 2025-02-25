@@ -23,7 +23,7 @@ import { Card } from "@/components/ui/card"
 import { useAppDispatch, useAppSelector } from "@/store"
 import { deleteFile } from "@/store/slices/files"
 import { useInView } from "react-intersection-observer"
-import { generateUUID } from "@/lib/utils/common"
+import { formatBytes, generateUUID } from "@/lib/utils/common"
 import { UploadDialog } from "@/components/upload-dialog"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
 import { useFiles } from "@/hooks/use-files"
@@ -49,11 +49,15 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    if (inView && hasMore && !loading) {
-      // dispatch(fetchFiles(currentPage))
-      loadFiles({currentPage, limit: 10})
-    }
-  }, [inView, hasMore, loading, dispatch])
+    loadFiles({currentPage, limit: 10})
+  }, [])
+
+  // useEffect(() => {
+  //   if (inView && hasMore && !loading) {
+  //     // dispatch(fetchFiles(currentPage))
+  //     loadFiles({currentPage, limit: 10})
+  //   }
+  // }, [inView, hasMore, loading, dispatch])
 
   const handleDelete = (fileId: string) => {
     setDeleteConfirmation({ isOpen: true, fileId })
@@ -73,23 +77,23 @@ export default function DashboardPage() {
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {files.filter(file => !file.isDeleted).map((file) => (
-        <Card key={generateUUID()} className="p-4 hover:shadow-lg transition-shadow">
+        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center space-y-2">
             <div className="text-4xl">{file.type === 'folder' ? '📁' : '📄'}</div>
-            <div className="text-sm font-medium truncate w-full text-center">{file.name}</div>
-            <div className="text-xs text-muted-foreground">{file.size}</div>
+            <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
+            <div className="text-xs text-muted-foreground">{formatBytes(file.fileSize)}</div>
             <div className="flex space-x-2">
               <Button size="icon" variant="ghost">
                 <Download className="h-4 w-4" />
               </Button>
-              <Button size="icon" variant="ghost" onClick={() => handleShare(file.name)}>
+              <Button size="icon" variant="ghost" onClick={() => handleShare(file.fileName)}>
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button 
                 size="icon" 
                 variant="ghost" 
                 className="text-destructive"
-                onClick={() => handleDelete(file.id)}
+                onClick={() => handleDelete(file.fileId)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -112,11 +116,11 @@ export default function DashboardPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {files.filter(file => !file.isDeleted).map((file) => (
-            <TableRow key={generateUUID()}>
-              <TableCell>{file.name}</TableCell>
-              <TableCell>{file.size}</TableCell>
-              <TableCell>{new Date(file.modified).toLocaleDateString()}</TableCell>
+          {files.filter((file: { isDeleted: any }) => !file.isDeleted).map((file) => (
+            <TableRow key={file.fileId}>
+              <TableCell>{file.fileName}</TableCell>
+              <TableCell>{formatBytes(file.fileSize)}</TableCell>
+              <TableCell>{new Date(file.updatedAt).toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -129,13 +133,13 @@ export default function DashboardPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(file.name)}>
+                    <DropdownMenuItem onClick={() => handleShare(file.fileName)}>
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
                     <DropdownMenuItem 
                       className="text-destructive"
-                      onClick={() => handleDelete(file.id)}
+                      onClick={() => handleDelete(file.fileId)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete

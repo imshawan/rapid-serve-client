@@ -1,6 +1,7 @@
 import mongoose, { InferSchemaType } from "mongoose"
 
 const UploadTokenSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
   token: { type: String, required: true, unique: true },
   fileId: { type: String, required: true },
   hash: { type: String, required: true },

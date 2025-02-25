@@ -11,10 +11,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     await initializeDbConnection();
+
+    const userId = String(req.user?.userId)
     const { fileId } = await req.body;
 
     // Get file record
-    const file = await File.findOne({ fileId })
+    const file = await File.findOne({ fileId, userId })
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
@@ -22,7 +24,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Verify all chunks are present
     const chunkCount = await Chunk.countDocuments({
       fileId,
-      hash: { $in: file.chunkHashes }
+      hash: { $in: file.chunkHashes },
+      userId
     });
 
     if (chunkCount !== file.chunkHashes.length) {

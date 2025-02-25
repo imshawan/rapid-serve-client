@@ -19,9 +19,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await initializeDbConnection();
 
+    const userId = String(req.user?.userId)
     const { fileId, hash, token } = req.query as { [key: string]: string };
 
-    const existingFile = await withCache(fileId, async () => await FileModel.findOne({fileId})) as FileModelType
+    const existingFile = await withCache(fileId, async () => await FileModel.findOne({fileId, userId})) as FileModelType
     if (!existingFile) {
       return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "File not found", HttpStatus.BAD_REQUEST))
     }
@@ -49,7 +50,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     //   chunks.push(chunk);
     // }
     // const buffer = Buffer.concat(chunks)
-    let node = getStorageNodeById(existingFile.storageNode)
+    let node = getStorageNodeById(String(existingFile.storageNode))
     if (!node) {
       node = await selectStorageNode()
     }
@@ -63,6 +64,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     await uploadChunkByNode(fileId, hash, file.buffer, node)
 
     await Chunk.create({
+      userId,
       fileId,
       hash,
       storageNode: node.id,

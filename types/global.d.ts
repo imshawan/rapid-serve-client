@@ -137,6 +137,20 @@ declare global {
     buffer: Buffer;
   }
   
+  interface Pagination {
+    data: any[];
+    currentPage: number;
+    limit: number;
+    totalPages: number;
+    totalItems: number;
+    navigation: {
+        current: string;
+        next: string | null;
+        previous: string | null;
+    };
+    start: number;
+    end: number;
+}
 
 }
 

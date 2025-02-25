@@ -1,6 +1,10 @@
 import mongoose, { InferSchemaType } from 'mongoose';
 
 const chunkSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+    required: true,
+  },
   fileId: {
     type: String,
     required: true,

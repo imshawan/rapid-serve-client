@@ -28,6 +28,7 @@ import { UploadDialog } from "@/components/upload-dialog"
 import { Download as DownloadDialog } from "@/components/download"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
 import { useFiles } from "@/hooks/use-files"
+import FileIcon from "@/components/dashboard/file-icon"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -91,7 +92,7 @@ export default function DashboardPage() {
       {files.filter(file => !file.isDeleted).map((file) => (
         <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center space-y-2">
-            <div className="text-4xl">{file.type === 'folder' ? '📁' : '📄'}</div>
+            <FileIcon fileName={file.fileName} fileType={file.type} />
             <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
             <div className="text-xs text-muted-foreground">{formatBytes(file.fileSize)}</div>
             <div className="flex space-x-2">

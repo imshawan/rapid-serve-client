@@ -205,7 +205,7 @@ export function Download() {
                         className="sm:text-xs text-xxs"
                         style={{color: "hsl(var(--destructive-foreground))"}}
                       >
-                        {fileData.file.status === "complete" ? "Healthy" : "Corrupted"}
+                        {fileData.file.status === "complete" ? "Healthy" : "Incomplete"}
                       </Badge>
                     </div>
                   </div>

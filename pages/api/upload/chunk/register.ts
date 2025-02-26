@@ -25,6 +25,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const existingHashes = new Set(existingChunks.map(chunk => chunk.hash))
     const missingChunks = chunkHashes.filter((hash: any) => !existingHashes.has(hash))
 
+    // If nothing to upload than why go ahead in the upload process?
+    // returning from this point
+    if (missingChunks.length === 0) {
+      return formatApiResponse(res, { fileId: null, missingChunks, existingChunks: Array.from(existingHashes), uploadChunks: [] })
+    }
+
     // Select storage node for new chunks
     const node = await selectStorageNode()
 

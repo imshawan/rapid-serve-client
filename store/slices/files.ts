@@ -13,6 +13,8 @@ interface FilesState {
   currentPage: number;
   totalPages: number;
   hasMore: boolean;
+  downloadOpen: boolean;
+  fileMeta: FileMetaResponse | null
 }
 
 const initialState: FilesState = {
@@ -24,6 +26,8 @@ const initialState: FilesState = {
   currentPage: 1,
   totalPages: 1,
   hasMore: true,
+  downloadOpen: false,
+  fileMeta: null
 };
 
 // Mock API call
@@ -93,6 +97,13 @@ const filesSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    fetchFileMeta: (state, action: PayloadAction<{fileId: string, onSuccess: Function, onError: Function}>) => {},
+    setFileMeta: (state, action: PayloadAction<FileMetaResponse>) => {
+      state.fileMeta = action.payload
+    },
+    setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
+      state.downloadOpen = action.payload
+    }
   },
 });
 
@@ -106,5 +117,8 @@ export const {
   fetchFilesRequest,
   fetchFilesSuccess,
   fetchFilesFailure,
+  fetchFileMeta,
+  setFileMeta,
+  setDownloaderOpen
 } = filesSlice.actions;
 export default filesSlice.reducer;

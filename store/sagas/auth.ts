@@ -1,6 +1,6 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import { loginRequest, loginSuccess, loginFailure, logoutRequest, logoutSuccess } from "../slices/auth";
-import { auth } from "@/services/api"; // API service file
+import { auth } from "@/services/api/auth";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { toast } from "@/hooks/use-toast";
 

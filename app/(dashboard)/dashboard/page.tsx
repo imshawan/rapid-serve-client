@@ -25,6 +25,7 @@ import { deleteFile } from "@/store/slices/files"
 import { useInView } from "react-intersection-observer"
 import { formatBytes, generateUUID } from "@/lib/utils/common"
 import { UploadDialog } from "@/components/upload-dialog"
+import { Download as DownloadDialog } from "@/components/download"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
 import { useFiles } from "@/hooks/use-files"
 
@@ -39,8 +40,9 @@ export default function DashboardPage() {
     isOpen: false,
     fileName: ""
   })
+  const [metaLoading, setMetaLoading] = useState("")
   const { toast } = useToast()
-  const {files, loading, hasMore, currentPage, loadFiles } = useFiles()
+  const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen } = useFiles()
   const dispatch = useAppDispatch()
   const { ref, inView } = useInView()
 
@@ -48,8 +50,18 @@ export default function DashboardPage() {
     setShareDialog({ isOpen: true, fileName })
   }
 
+  const handleDownload = (fileId: string) => {
+    setMetaLoading(fileId)
+    loadFileMeta(fileId, () => {
+      setDownloadOpen(true)
+      setMetaLoading("")
+    }, () => {
+      setMetaLoading("")
+    })
+  }
+
   useEffect(() => {
-    loadFiles({currentPage, limit: 10})
+    loadFiles({ currentPage, limit: 10 })
   }, [])
 
   // useEffect(() => {
@@ -73,7 +85,7 @@ export default function DashboardPage() {
       setDeleteConfirmation({ isOpen: false, fileId: null })
     }
   }
-  
+
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {files.filter(file => !file.isDeleted).map((file) => (
@@ -83,15 +95,19 @@ export default function DashboardPage() {
             <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
             <div className="text-xs text-muted-foreground">{formatBytes(file.fileSize)}</div>
             <div className="flex space-x-2">
-              <Button size="icon" variant="ghost">
-                <Download className="h-4 w-4" />
+              <Button size="icon" variant="ghost" onClick={() => handleDownload(file.fileId)}>
+                {(metaLoading === file.fileId) ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
               </Button>
               <Button size="icon" variant="ghost" onClick={() => handleShare(file.fileName)}>
                 <Share2 className="h-4 w-4" />
               </Button>
-              <Button 
-                size="icon" 
-                variant="ghost" 
+              <Button
+                size="icon"
+                variant="ghost"
                 className="text-destructive"
                 onClick={() => handleDelete(file.fileId)}
               >
@@ -123,13 +139,17 @@ export default function DashboardPage() {
               <TableCell>{new Date(file.updatedAt).toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
+                  {(metaLoading === file.fileId) ? (
+                    <div className="animate-spin rounded-full ml-2 h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                  ) : (
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  )}
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem disabled={(metaLoading === file.fileId)} onClick={() => handleDownload(file.fileId)}>
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
@@ -137,7 +157,7 @@ export default function DashboardPage() {
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       className="text-destructive"
                       onClick={() => handleDelete(file.fileId)}
                     >
@@ -204,6 +224,8 @@ export default function DashboardPage() {
         onClose={() => setShareDialog({ isOpen: false, fileName: "" })}
         fileName={shareDialog.fileName}
       />
+
+      <DownloadDialog />
     </div>
   )
 }

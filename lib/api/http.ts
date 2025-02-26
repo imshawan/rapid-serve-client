@@ -114,6 +114,31 @@ export default function createHttpHandler(baseURL: string = "") {
     },
 
     /**
+   * @function getFile
+   * @description Downloads a file using a GET request and handles both binary and JSON responses.
+   * @param {string} url - The endpoint URL.
+   * @param {RequestInit} [config={}] - Optional request configuration.
+   * @returns {Promise<ArrayBuffer | ApiResponse<T>>} - Returns an ArrayBuffer for files or JSON for errors.
+   */
+    async getFile<T>(url: string, config: RequestInit = {}): Promise<Response | ApiResponse<T>> {
+      const response = await fetch(baseURL + url, {
+        method: "GET",
+        ...config,
+        headers: {
+          ...config.headers,
+        },
+      });
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return await response.json(); // Return JSON error response
+      }
+
+      return response //  Let the client handle the type of response they want
+    },
+
+
+    /**
      * @function put
      * @description Makes a PUT request with JSON or form data.
      * @param {string} url - The endpoint URL.

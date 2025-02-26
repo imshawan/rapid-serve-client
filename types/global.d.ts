@@ -1,6 +1,7 @@
 import { Document } from "mongoose"
 import { NextApiRequest } from "next"
 import { createClient, RedisClientType } from 'redis';
+import type { File } from "@/lib/models/upload";
 
 export { }
 
@@ -84,18 +85,18 @@ declare global {
     comparePassword(candidatePassword: string): Promise<boolean>
   }
 
-  interface File {
-    id: string
-    name: string
-    type: string
-    size: string
-    modified: string
-    path: string
-    isStarred: boolean
-    isDeleted: boolean
-    deletedAt?: string
-    originalPath?: string
-  }
+  // interface File {
+  //   id: string
+  //   name: string
+  //   type: string
+  //   size: string
+  //   modified: string
+  //   path: string
+  //   isStarred: boolean
+  //   isDeleted: boolean
+  //   deletedAt?: string
+  //   originalPath?: string
+  // }
 
   interface UploadUrl {
     url: string;
@@ -119,6 +120,13 @@ declare global {
   interface UploadChunk {
     hash: string;
     token: string;
+  }
+
+  interface FileMetaResponse {
+    success: boolean; 
+    chunks: UploadChunk[];
+    file: File;
+    mimeType: string;
   }
 
   interface FileUploadStatus {

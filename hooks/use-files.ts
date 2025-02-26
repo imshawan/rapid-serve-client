@@ -1,5 +1,5 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { fetchFilesRequest } from "@/store/slices/files";
+import { fetchFileMeta, fetchFilesRequest, setDownloaderOpen, setFileMeta } from "@/store/slices/files";
 import { useCallback } from "react";
 
 export const useFiles = () => {
@@ -9,6 +9,12 @@ export const useFiles = () => {
     return {
         loadFiles: useCallback((payload: {currentPage: number, limit: number}) => {
             dispatch(fetchFilesRequest(payload));
+        }, [dispatch]),
+        loadFileMeta: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
+            dispatch(fetchFileMeta({fileId, onSuccess, onError}));
+        }, [dispatch]),
+        setDownloadOpen: useCallback((isOpen: boolean) => {
+            dispatch(setDownloaderOpen(isOpen));
         }, [dispatch]),
 
         ...files

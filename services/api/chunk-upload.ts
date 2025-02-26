@@ -3,7 +3,7 @@ import { endpoints } from "./endpoints";
 import { parseRouteParams } from "@/lib/utils/common";
 
 export const uploader = {
-    register: async (payload: { fileName: string; fileSize: string; chunkHashes: string[] }) => {
+    register: async (payload: { fileName: string; fileSize: number; chunkHashes: string[] }) => {
         return await http.post<FileUploadStatus>(endpoints.METADATA_REGISTER, payload) as ApiResponse<FileUploadStatus>
     },
 

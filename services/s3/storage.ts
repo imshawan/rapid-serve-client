@@ -1,9 +1,9 @@
-import { S3Client, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
-import crypto from 'crypto'
-import { redis } from '@/lib/db'
-import { getAwsConnectionConfig, getS3BucketName } from '../../lib/config'
-import storageConfig from '@/config/storage-nodes.json'
-import { Token } from '@/lib/models/upload'
+import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import crypto from "crypto"
+import { getAwsConnectionConfig, getS3BucketName } from "../../lib/config"
+import storageConfig from "@/config/storage-nodes.json"
+import { Token } from "@/lib/models/upload"
+import { Readable } from "stream"
 
 const BUCKET_NAME = getS3BucketName()
 const TOKEN_EXPIRY = 3600; // 1 hour in seconds
@@ -14,7 +14,7 @@ const validTokenActions = Token.schema.path("action").options.enum as string[]
 // Initialize nodes with load counters
 const STORAGE_NODES: StorageNode[] = storageConfig.nodes.map(node => ({
   ...node,
-  status: node.status as 'active' | 'maintenance' | 'offline',
+  status: node.status as "active" | "maintenance" | "offline",
   load: 0
 }));
 
@@ -29,9 +29,9 @@ const STORAGE_NODES: StorageNode[] = storageConfig.nodes.map(node => ({
  */
 export async function selectStorageNode(): Promise<StorageNode> {
   // Filter active nodes
-  const activeNodes = STORAGE_NODES.filter(node => node.status === 'active')
+  const activeNodes = STORAGE_NODES.filter(node => node.status === "active")
   if (activeNodes.length === 0) {
-    throw new Error('No active storage nodes available')
+    throw new Error("No active storage nodes available")
   }
 
   // Select node with lowest load
@@ -77,15 +77,15 @@ export async function uploadChunkByNode(fileId: string, hash: string, buffer: Bu
       Bucket: getBucket(node),
       Key: `${node.id}/${fileId}/${hash}`,
       Body: buffer,
-      ContentType: 'application/octet-stream',
+      ContentType: "application/octet-stream",
       Metadata: {
-        'node-region': node.region,
-        'node-id': node.id,
-        'node-name': node.name
+        "node-region": node.region,
+        "node-id": node.id,
+        "node-name": node.name
       },
     }))
   } catch (error) {
-    console.error('Error uploading to S3:', error)
+    console.error("Error uploading to S3:", error)
     throw new Error(`Failed to upload chunk to storage node ${node.name} (${node.id}) in region ${node.region}`)
   }
 }
@@ -130,7 +130,7 @@ export async function validateUploadToken(
     await Token.deleteOne({ token })
     return true
   } catch (error) {
-    console.error('Error validating upload token:', error)
+    console.error("Error validating upload token:", error)
     return false
   }
 }
@@ -140,14 +140,14 @@ export async function validateUploadToken(
  * 
  * @param {string} fileId - The file ID.
  * @param {string} hash - The hash of the file chunk.
- * @param {string} actionType - The action type ('upload' or 'download').
+ * @param {string} actionType - The action type ("upload" or "download").
  * @param {string} [contentType] - The content type of the chunk.
  * @returns {Promise<string>} The generated token.
  * @throws {Error} If the chunk already exists or token generation fails.
  * 
  * @author Shawan Mandal <github@imshawan.dev>
  */
-export async function generateToken(fileId: string, hash: string, userId: string, actionType: 'upload' | 'download' = 'upload', contentType?: string): Promise<string> {
+export async function generateToken(fileId: string, hash: string, userId: string, actionType: "upload" | "download" = "upload", contentType?: string): Promise<string> {
   try {
     // Check if chunk already exists (query the database instead of S3)
     const existingChunk = await Token.findOne({ fileId, hash, action: actionType, userId })
@@ -208,6 +208,67 @@ export async function verifyChunkUpload(
     return true
   } catch (error) {
     return false
+  }
+}
+
+export async function getChunkFromBucket(fileId: string, hash: string, nodeId: string): Promise<Uint8Array> {
+  const node = STORAGE_NODES.find(n => n.id === nodeId)
+  if (!node) {
+    throw new Error(`Storage node ${nodeId} not found`)
+  }
+
+  try {
+    const s3Client = getS3Client(node)
+    const response = await s3Client.send(new GetObjectCommand({
+      Bucket: node.bucket,
+      Key: `${node.id}/${fileId}/${hash}`,
+    }))
+
+    if (!response.Body) {
+      throw new Error("No data received from S3")
+    }
+
+    return new Uint8Array(await response.Body.transformToByteArray())
+  } catch (error) {
+    console.error("Error downloading from S3:", error)
+    throw new Error(`Failed to download chunk from storage node`)
+  }
+}
+
+/**
+ * Fetches a chunk from an S3 storage node and returns a readable stream.
+ * This avoids loading large files into memory, improving performance.
+ *
+ * @param fileId - The unique identifier of the file.
+ * @param hash - The hash representing the chunk.
+ * @param nodeId - The storage node ID.
+ * @returns A readable stream containing the chunk data.
+ * @throws Error if the storage node is not found or if fetching fails.
+ */
+export async function getChunkStreamFromBucket( fileId: string, hash: string, nodeId: string): Promise<Readable> {
+  const node = STORAGE_NODES.find(n => n.id === nodeId);
+  if (!node) {
+    throw new Error(`Storage node ${nodeId} not found`);
+  }
+
+  try {
+    const s3Client = getS3Client(node);
+    const response = await s3Client.send(
+      new GetObjectCommand({
+        Bucket: node.bucket,
+        Key: `${node.id}/${fileId}/${hash}`,
+      })
+    );
+
+    if (!response.Body) {
+      throw new Error("No data received from S3");
+    }
+
+    // Return the S3 response body as a readable stream
+    return response.Body as Readable;
+  } catch (error) {
+    console.error(`Error streaming from S3 [Node: ${nodeId}, Key: ${fileId}/${hash}]`, error);
+    throw new Error("Failed to stream chunk from storage node");
   }
 }
 

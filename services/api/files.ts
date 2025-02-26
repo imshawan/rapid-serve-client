@@ -7,5 +7,5 @@ export const files = {
   fetchFiles: async (page: number, limit: number = 20, fields?: string[]) => {
     let queryParams = new URLSearchParams({ limit: String(limit), page: String(page) }).toString()
     return await http.get(parseRouteParams(endpoints.LOAD_FILES, {queryParams}))
-  }
+  },
 }

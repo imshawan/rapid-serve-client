@@ -14,6 +14,6 @@ export const files = {
   },
 
   deleteFilePermanently: async (fileId: string) => {
-    return await http.delete<{ fileId: string, deleted: boolean, errors: boolean, total: number }>(parseRouteParams(endpoints.DELETE_FILE, { fileId }))
+    return await http.delete<{ fileId: string, deleted: boolean, errors: boolean, total: number }>(parseRouteParams(endpoints.DELETE_FILE_PERMANENTLY, { fileId }))
   }
 }

@@ -12,5 +12,6 @@ export const endpoints = {
   LOAD_FILES: "/api/files/list?{{queryParams}}",
   DOWNLOAD_FILE: "/api/download/{{fileId}}",
   DOWNLOAD_CHUNK: "/api/download/{{fileId}}/{{hash}}?token={{token}}",
-  DELETE_FILE: "/api/files/{{fileId}}"
+  DELETE_FILE: "/api/files/{{fileId}}",
+  DELETE_FILE_PERMANENTLY: "/api/files/{{fileId}}/permanent"
 }

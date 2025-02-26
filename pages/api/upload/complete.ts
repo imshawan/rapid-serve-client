@@ -3,6 +3,8 @@ import { initializeDbConnection } from '@/lib/db';
 import { Chunk, File } from '@/lib/models/upload';
 import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
+import { getStorageNodeById, verifyChunkUpload } from "@/services/s3/storage";
+import { Document } from "mongoose";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -16,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { fileId } = await req.body;
 
     // Get file record
-    const file = await File.findOne({ fileId, userId })
+    const file = await File.findOne({ fileId, userId }) as Document & File
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
@@ -27,13 +29,22 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       hash: { $in: file.chunkHashes },
       userId
     });
+    let chunksInDisk = 0, totalChunks = file.chunkHashes.length;
 
-    if (chunkCount !== file.chunkHashes.length) {
-      return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "Missing chunks", HttpStatus.BAD_REQUEST))
+    await Promise.all(file.chunkHashes.map(async (hash) => {
+      let node = getStorageNodeById(String(file.storageNode))
+      if (!node) return;
+      if (await verifyChunkUpload(fileId, hash, node)) {
+        chunksInDisk += 1;
+      }
+    }))
+
+    if (chunkCount !== totalChunks || chunksInDisk != totalChunks) {
+      return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "Missing chunks in drive, please delete the file and re-upload", HttpStatus.BAD_REQUEST))
     }
 
     // Mark file as complete
-    file.status = 'complete';
+    file.status = 'complete'
     await file.save();
 
     return formatApiResponse(res, { success: true, file })

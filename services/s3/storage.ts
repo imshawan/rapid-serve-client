@@ -194,15 +194,11 @@ export async function generateToken(fileId: string, hash: string, userId: string
  * 
  * @author Shawan Mandal <github@imshawan.dev>
  */
-export async function verifyChunkUpload(
-  fileId: string,
-  hash: string,
-  node: StorageNode
-): Promise<boolean> {
+export async function verifyChunkUpload(fileId: string, hash: string, node: StorageNode): Promise<boolean> {
   try {
     const s3Client = getS3Client(node)
     await s3Client.send(new HeadObjectCommand({
-      Bucket: BUCKET_NAME,
+      Bucket: node.bucket,
       Key: `${node.id}/${fileId}/${hash}`,
     }))
     return true
@@ -245,7 +241,7 @@ export async function getChunkFromBucket(fileId: string, hash: string, nodeId: s
  * @returns A readable stream containing the chunk data.
  * @throws Error if the storage node is not found or if fetching fails.
  */
-export async function getChunkStreamFromBucket( fileId: string, hash: string, nodeId: string): Promise<Readable> {
+export async function getChunkStreamFromBucket(fileId: string, hash: string, nodeId: string): Promise<Readable> {
   const node = STORAGE_NODES.find(n => n.id === nodeId);
   if (!node) {
     throw new Error(`Storage node ${nodeId} not found`);

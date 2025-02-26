@@ -36,7 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Create new file record with unique ID
     const fileId = uuidv4()
-    await File.create({
+    const file = await File.create({
       userId,
       fileId,
       fileName,
@@ -53,7 +53,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return { hash, token }
     }))
 
-    return formatApiResponse(res, { fileId, missingChunks, existingChunks: Array.from(existingHashes), uploadChunks })
+    return formatApiResponse(res, { fileId, missingChunks, existingChunks: Array.from(existingHashes), uploadChunks, file })
   } catch (error) {
     console.error("Error in register:", error)
     return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error while registering file chunks", HttpStatus.INTERNAL_SERVER_ERROR))

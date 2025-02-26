@@ -36,7 +36,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     file.status = 'complete';
     await file.save();
 
-    return formatApiResponse(res, { success: true })
+    return formatApiResponse(res, { success: true, file })
   } catch (error: any) {
     console.error("Error in chunk upload:", error);
     return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error in chunk upload", HttpStatus.INTERNAL_SERVER_ERROR))

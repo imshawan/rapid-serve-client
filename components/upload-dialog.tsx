@@ -29,6 +29,16 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
   const [file, setFile] = useState<File | null>(null)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
 
+  const reset = () => {
+    setFile(null)
+    setUploadProgress(0)
+    setStatus('idle')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+    setOpen(false)
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
@@ -88,7 +98,12 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
       // // Step 3: Confirm upload completion
       await uploader.markComplete(fileId)
 
-      setStatus('success')
+      // setStatus('success')
+      toast({
+        title: "Upload successful",
+        description: `${file.name} has been uploaded successfully`,
+        variant: "success",
+      })
     } catch (error: any) {
       console.error('Upload failed:', error)
       toast({
@@ -97,6 +112,8 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         variant: "destructive",
       })
       setStatus('error')
+    } finally {
+      reset()
     }
   }, [file]);
 
@@ -160,12 +177,12 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
                 </div>
               )}
 
-              {status === 'success' && (
+              {/* {status === 'success' && (
                 <div className="flex items-center justify-center text-green-400">
                   <CheckCircle className="w-5 h-5 mr-2" />
                   <span>Upload complete!</span>
                 </div>
-              )}
+              )} */}
 
               {status === 'error' && (
                 <div className="flex items-center justify-center text-red-400">

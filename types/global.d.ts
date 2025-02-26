@@ -134,6 +134,7 @@ declare global {
     missingChunks: string[];
     existingChunks: string[];
     uploadChunks: UploadChunk[];
+    file: File
   }
 
   interface MulterFile {

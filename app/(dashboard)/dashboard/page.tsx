@@ -33,7 +33,7 @@ import FileIcon from "@/components/dashboard/file-icon"
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; fileId: string | null, fileName: string |null }>({
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; fileId: string | null, fileName: string | null }>({
     isOpen: false,
     fileId: null,
     fileName: null
@@ -79,7 +79,7 @@ export default function DashboardPage() {
 
   const confirmDelete = () => {
     if (deleteConfirmation.fileId) {
-      deleteFile(deleteConfirmation.fileId, () =>  {
+      deleteFile(deleteConfirmation.fileId, () => {
         toast({
           title: "File moved to trash",
           description: deleteConfirmation.fileName + " has been moved to the trash bin."
@@ -92,7 +92,13 @@ export default function DashboardPage() {
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {files.filter(file => !file.isDeleted).map((file) => (
-        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
+        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
+          {/* Overlay Loader */}
+          {file.isUploading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 rounded-lg">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
+            </div>
+          )}
           <div className="flex flex-col items-center space-y-2">
             <FileIcon fileName={file.fileName} fileType={file.type} />
             <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>

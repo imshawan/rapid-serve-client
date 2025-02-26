@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import type {File} from  "@/lib/models/upload/file"
 import { SoftDeleteFields } from "@/lib/db/plugins/soft-delete";
 
-type TFile = File & SoftDeleteFields
+export type TFile = File & SoftDeleteFields & {isUploading?: boolean}
 
 interface FilesState {
   files: TFile[];
@@ -109,6 +109,14 @@ const filesSlice = createSlice({
       console.log(action.payload)
       state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
     },
+    addFileToList: (state, action: PayloadAction<File & {isUploading?: boolean}>) => {
+      let fileIndex = state.files.findIndex(f => f.fileId === action.payload.fileId)
+      if (fileIndex !== -1) {
+        state.files[fileIndex] = action.payload as TFile
+      } else {
+        state.files = [(action.payload as TFile), ...state.files]
+      }
+    }
   },
 });
 
@@ -126,6 +134,7 @@ export const {
   setFileMeta,
   setDownloaderOpen,
   deleteFileRequest,
-  deleteFileSuccess
+  deleteFileSuccess,
+  addFileToList
 } = filesSlice.actions;
 export default filesSlice.reducer;

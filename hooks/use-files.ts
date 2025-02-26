@@ -1,6 +1,7 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { deleteFile, fetchFileMeta, fetchFilesRequest, setDownloaderOpen, setFileMeta, deleteFileRequest } from "@/store/slices/files";
+import { fetchFileMeta, fetchFilesRequest, setDownloaderOpen, deleteFileRequest, addFileToList } from "@/store/slices/files";
 import { useCallback } from "react";
+import type { File } from "@/lib/models/upload";
 
 export const useFiles = () => {
     const dispatch = useAppDispatch();
@@ -18,6 +19,9 @@ export const useFiles = () => {
         }, [dispatch]),
         deleteFile: useCallback((fileId: string, onSuccess: Function) => {
             dispatch(deleteFileRequest({fileId, onSuccess}));
+        }, [dispatch]),
+        appendUpdatedFile: useCallback((file: File & {isUploading?: boolean}) => {
+            dispatch(addFileToList(file));
         }, [dispatch]),
 
         ...files

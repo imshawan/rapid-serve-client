@@ -1,4 +1,4 @@
-import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
 import crypto from "crypto"
 import { getAwsConnectionConfig, getS3BucketName } from "../../lib/config"
 import storageConfig from "@/config/storage-nodes.json"
@@ -265,6 +265,35 @@ export async function getChunkStreamFromBucket(fileId: string, hash: string, nod
   } catch (error) {
     console.error(`Error streaming from S3 [Node: ${nodeId}, Key: ${fileId}/${hash}]`, error);
     throw new Error("Failed to stream chunk from storage node");
+  }
+}
+
+/**
+ * Deletes a chunk from an S3 storage node.
+ *
+ * @param fileId - The unique identifier of the file.
+ * @param hash - The hash representing the chunk.
+ * @param nodeId - The storage node ID.
+ * @throws Error if the storage node is not found or deletion fails.
+ */
+export async function deleteChunkFromBucket(fileId: string, hash: string, nodeId: string): Promise<void> {
+  const node = STORAGE_NODES.find(n => n.id === nodeId);
+  if (!node) {
+    throw new Error(`Storage node ${nodeId} not found`);
+  }
+
+  try {
+    const s3Client = getS3Client(node);
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: node.bucket,
+        Key: `${node.id}/${fileId}/${hash}`,
+      })
+    );
+
+  } catch (error) {
+    console.error(`Error deleting from S3 [Node: ${nodeId}, Key: ${fileId}/${hash}]`, error);
+    throw new Error("Failed to delete chunk from storage node");
   }
 }
 

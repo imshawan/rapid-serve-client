@@ -1,5 +1,5 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { fetchFileMeta, fetchFilesRequest, setDownloaderOpen, setFileMeta } from "@/store/slices/files";
+import { deleteFile, fetchFileMeta, fetchFilesRequest, setDownloaderOpen, setFileMeta, deleteFileRequest } from "@/store/slices/files";
 import { useCallback } from "react";
 
 export const useFiles = () => {
@@ -15,6 +15,9 @@ export const useFiles = () => {
         }, [dispatch]),
         setDownloadOpen: useCallback((isOpen: boolean) => {
             dispatch(setDownloaderOpen(isOpen));
+        }, [dispatch]),
+        deleteFile: useCallback((fileId: string, onSuccess: Function) => {
+            dispatch(deleteFileRequest({fileId, onSuccess}));
         }, [dispatch]),
 
         ...files

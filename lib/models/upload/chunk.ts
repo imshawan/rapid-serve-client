@@ -1,4 +1,5 @@
-import mongoose, { InferSchemaType } from 'mongoose';
+import softDelete, { SoftDeleteModel } from '@/lib/db/plugins/soft-delete';
+import mongoose, { InferSchemaType, Document } from 'mongoose';
 
 const chunkSchema = new mongoose.Schema({
   userId: {
@@ -13,7 +14,6 @@ const chunkSchema = new mongoose.Schema({
   hash: {
     type: String,
     required: true,
-    unique: true,
   },
   storageNode: {
     type: String,
@@ -29,6 +29,8 @@ const chunkSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-export const Chunk = mongoose.models.Chunk || mongoose.model('Chunk', chunkSchema);
+chunkSchema.plugin(softDelete)
 
 export type Chunk = InferSchemaType<typeof chunkSchema>;
+
+export const Chunk = (mongoose.models.Chunk as SoftDeleteModel<Chunk & Document>) || mongoose.model<Chunk, SoftDeleteModel<Chunk & Document>>('Chunk', chunkSchema);

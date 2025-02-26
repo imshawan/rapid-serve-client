@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import type {File} from  "@/lib/models/upload/file"
-import { SoftDeleteFields } from '@/lib/db/plugins/soft-delete';
+import { SoftDeleteFields } from "@/lib/db/plugins/soft-delete";
 
 type TFile = File & SoftDeleteFields
 
@@ -35,7 +35,7 @@ const initialState: FilesState = {
 
 // Redux Slice
 const filesSlice = createSlice({
-  name: 'files',
+  name: "files",
   initialState,
   reducers: {
     setFiles: (state, action: PayloadAction<TFile[]>) => {
@@ -103,7 +103,12 @@ const filesSlice = createSlice({
     },
     setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
       state.downloadOpen = action.payload
-    }
+    },
+    deleteFileRequest: (state, action: PayloadAction<{fileId: string, onSuccess: Function}>) => {},
+    deleteFileSuccess: (state, action: PayloadAction<{fileId: string}>) => {
+      console.log(action.payload)
+      state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
+    },
   },
 });
 
@@ -119,6 +124,8 @@ export const {
   fetchFilesFailure,
   fetchFileMeta,
   setFileMeta,
-  setDownloaderOpen
+  setDownloaderOpen,
+  deleteFileRequest,
+  deleteFileSuccess
 } = filesSlice.actions;
 export default filesSlice.reducer;

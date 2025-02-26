@@ -5,51 +5,68 @@
  * @date 15-02-2025
  */
 
-import { Schema, Document } from 'mongoose';
-import type { File } from '@/lib/models/upload';
+import { Schema, Document, Model } from 'mongoose';
 
 interface SoftDeleteOptions {
-    includeDeleted?: boolean;
+  includeDeleted?: boolean;
 }
 
 export interface SoftDeleteFields {
-    isDeleted: boolean;
-    deletedAt: Date | null;
+  isDeleted: boolean;
+  deletedAt: Date | null;
 }
 
-interface SoftDeleteDocument extends Document<File>, SoftDeleteFields {
-    delete: () => Promise<void>;
-    restore: () => Promise<void>;
+export interface SoftDeleteDocument extends Document, SoftDeleteFields {
+  delete: () => Promise<void>;
+  restore: () => Promise<void>;
 } 
 
-export default function softDelete(schema: Schema, options: SoftDeleteOptions = {}): void {
-    if (Array.isArray(options) || typeof options !== 'object') {
-        options = {};
-    }
+export interface SoftDeleteModel<T extends Document> extends Model<T> {
+  deleteManySoft: (filter: Record<string, any>) => Promise<void>;
+  restoreMany: (filter: Record<string, any>) => Promise<void>;
+}
 
-    schema.add({
-        isDeleted: { type: Boolean, default: false },
-        deletedAt: { type: Date, default: null },
+export default function softDelete<T extends Document>(schema: Schema<T>, options: SoftDeleteOptions = {}): void {
+  if (Array.isArray(options) || typeof options !== 'object') {
+    options = {};
+  }
+
+  // Add soft delete fields
+  schema.add({
+    isDeleted: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null },
+  } as any);
+  
+  // Instance Methods
+  schema.methods.delete = async function (): Promise<void> {
+    this.isDeleted = true;
+    this.deletedAt = new Date();
+    await this.save();
+  };
+
+  schema.methods.restore = async function (): Promise<void> {
+    this.isDeleted = false;
+    this.deletedAt = null;
+    await this.save();
+  };
+
+  // Static Methods (Soft Delete for Multiple Records)
+  schema.statics.deleteManySoft = async function (filter: Record<string, any>): Promise<void> {
+    await this.updateMany(filter, { $set: { isDeleted: true, deletedAt: new Date() } });
+  };
+
+  // Static Methods (Restore Soft Deleted Records)
+  schema.statics.restoreMany = async function (filter: Record<string, any>): Promise<void> {
+    await this.updateMany(filter, { $set: { isDeleted: false, deletedAt: null } });
+  };
+
+  // Middleware to exclude soft deleted documents
+  if (!options.includeDeleted) {
+    schema.pre(/^find/, function (this: any, next) {
+      if (!this.getQuery().includeDeleted) {
+        this.where({ isDeleted: false });
+      }
+      next();
     });
-
-    schema.methods.delete = async function (this: SoftDeleteDocument): Promise<void> {
-        this.isDeleted = true;
-        this.deletedAt = new Date();
-        await this.save();
-    };
-
-    schema.methods.restore = async function (this: SoftDeleteDocument): Promise<void> {
-        this.isDeleted = false;
-        this.deletedAt = null;
-        await this.save();
-    };
-
-    if (!options?.includeDeleted) {
-        schema.pre(/^find/, function (this: any, next) {
-            if (!this.getQuery().includeDeleted) {
-                this.where({ isDeleted: false });
-            }
-            next();
-        });
-    }
+  }
 }

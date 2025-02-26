@@ -18,6 +18,7 @@ interface DeleteConfirmationDialogProps {
   setConfirmation: Dispatch<SetStateAction<{
     isOpen: boolean;
     fileId: string | null;
+    fileName: string | null;
   }>>
   onDeleteConfirm?: () => void
 }
@@ -26,7 +27,7 @@ export function DeleteConfirmationDialog({ confirmation, setConfirmation, onDele
   return (
     <AlertDialog
       open={confirmation.isOpen}
-      onOpenChange={(isOpen) => setConfirmation({ isOpen, fileId: null })}
+      onOpenChange={(isOpen) => setConfirmation({ isOpen, fileId: null, fileName: null })}
     >
       <AlertDialogContent>
         <AlertDialogHeader>

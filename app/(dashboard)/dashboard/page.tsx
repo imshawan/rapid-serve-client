@@ -21,7 +21,7 @@ import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText } 
 import { useToast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
 import { useAppDispatch, useAppSelector } from "@/store"
-import { deleteFile } from "@/store/slices/files"
+// import { deleteFile } from "@/store/slices/files"
 import { useInView } from "react-intersection-observer"
 import { formatBytes, generateUUID } from "@/lib/utils/common"
 import { UploadDialog } from "@/components/upload-dialog"
@@ -33,9 +33,10 @@ import FileIcon from "@/components/dashboard/file-icon"
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; fileId: string | null }>({
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; fileId: string | null, fileName: string |null }>({
     isOpen: false,
-    fileId: null
+    fileId: null,
+    fileName: null
   })
   const [shareDialog, setShareDialog] = useState<{ isOpen: boolean; fileName: string }>({
     isOpen: false,
@@ -43,7 +44,7 @@ export default function DashboardPage() {
   })
   const [metaLoading, setMetaLoading] = useState("")
   const { toast } = useToast()
-  const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen } = useFiles()
+  const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen, deleteFile } = useFiles()
   const dispatch = useAppDispatch()
   const { ref, inView } = useInView()
 
@@ -72,18 +73,19 @@ export default function DashboardPage() {
   //   }
   // }, [inView, hasMore, loading, dispatch])
 
-  const handleDelete = (fileId: string) => {
-    setDeleteConfirmation({ isOpen: true, fileId })
+  const handleDelete = (fileId: string, fileName: string) => {
+    setDeleteConfirmation({ isOpen: true, fileId, fileName })
   }
 
   const confirmDelete = () => {
     if (deleteConfirmation.fileId) {
-      dispatch(deleteFile(deleteConfirmation.fileId))
-      toast({
-        title: "File moved to trash",
-        description: "The file has been moved to the trash bin."
+      deleteFile(deleteConfirmation.fileId, () =>  {
+        toast({
+          title: "File moved to trash",
+          description: deleteConfirmation.fileName + " has been moved to the trash bin."
+        })
+        setDeleteConfirmation({ isOpen: false, fileId: null, fileName: null })
       })
-      setDeleteConfirmation({ isOpen: false, fileId: null })
     }
   }
 
@@ -110,7 +112,7 @@ export default function DashboardPage() {
                 size="icon"
                 variant="ghost"
                 className="text-destructive"
-                onClick={() => handleDelete(file.fileId)}
+                onClick={() => handleDelete(file.fileId, file.fileName)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -160,7 +162,7 @@ export default function DashboardPage() {
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
-                      onClick={() => handleDelete(file.fileId)}
+                      onClick={() => handleDelete(file.fileId, file.fileName)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete

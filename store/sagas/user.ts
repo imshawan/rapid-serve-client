@@ -98,8 +98,6 @@ function* loadProfileSaga(): Generator<any, void, ApiResponse<any>> {
   try {
     yield put(requestStart());
     const response = yield call(userApi.getUserProfile);
-    console.log("loading response->", response)
-
     if (!response.success && response.error) {
       let { code, message } = response.error;
 
@@ -121,8 +119,6 @@ function* loadProfileSaga(): Generator<any, void, ApiResponse<any>> {
 function* updateProfilePicture(action: PayloadAction<{ data: FormData; onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
   try {
     const response = yield call(userApi.updateProfilePicture, action.payload.data);
-    console.log("loading response->", response)
-
     if (!response.success && response.error) {
       let { code, message } = response.error;
 

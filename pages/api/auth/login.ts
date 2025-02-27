@@ -79,7 +79,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (error instanceof ApiError) {
             return formatApiResponse(res, error, String(req.url), startTime, error.status);
         }
-        console.log(error)
         return formatApiResponse(res, error as Error, String(req.url), startTime, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

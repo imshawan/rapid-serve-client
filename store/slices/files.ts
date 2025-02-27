@@ -86,7 +86,6 @@ const filesSlice = createSlice({
       state.error = null;
     },
     fetchFilesSuccess: (state, action: PayloadAction<Pagination>) => {
-      console.log(action.payload)
       state.loading = false;
       state.files = [...state.files, ...action.payload.data];
       state.totalPages = action.payload.totalPages;

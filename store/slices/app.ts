@@ -18,7 +18,6 @@ export const appSlice = createSlice({
             state.darkMode = !state.darkMode
         },
         toggleSidebar: (state, {payload=null}) => {
-            console.log("toggleSidebar -> payload", payload)
             if (payload !== null) {
                 state.sidebarOpen = payload
                 return

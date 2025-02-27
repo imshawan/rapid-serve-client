@@ -20,10 +20,8 @@ import { ShareDialog } from "@/components/ui/share-dialog"
 import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
-import { useAppDispatch, useAppSelector } from "@/store"
-// import { deleteFile } from "@/store/slices/files"
 import { useInView } from "react-intersection-observer"
-import { formatBytes, generateUUID } from "@/lib/utils/common"
+import { formatBytes } from "@/lib/utils/common"
 import { UploadDialog } from "@/components/upload-dialog"
 import { Download as DownloadDialog } from "@/components/download"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
@@ -43,9 +41,9 @@ export default function DashboardPage() {
     fileName: ""
   })
   const [metaLoading, setMetaLoading] = useState("")
+  const [deleting, setDeleting] = useState("")
   const { toast } = useToast()
   const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen, deleteFile } = useFiles()
-  const dispatch = useAppDispatch()
   const { ref, inView } = useInView()
 
   const handleShare = (fileName: string) => {
@@ -79,19 +77,22 @@ export default function DashboardPage() {
 
   const confirmDelete = () => {
     if (deleteConfirmation.fileId) {
+      setDeleting(deleteConfirmation.fileId)
       deleteFile(deleteConfirmation.fileId, () => {
         toast({
           title: "File moved to trash",
           description: deleteConfirmation.fileName + " has been moved to the trash bin."
         })
         setDeleteConfirmation({ isOpen: false, fileId: null, fileName: null })
-      })
+      },
+        () => setDeleting("")
+      )
     }
   }
 
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {files.filter(file => !file.isDeleted).map((file) => (
+      {files.map((file) => (
         <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
           {/* Overlay Loader */}
           {file.isUploading && (
@@ -119,8 +120,13 @@ export default function DashboardPage() {
                 variant="ghost"
                 className="text-destructive"
                 onClick={() => handleDelete(file.fileId, file.fileName)}
+                disabled={deleting === file.fileId}
               >
-                <Trash2 className="h-4 w-4" />
+                {(deleting === file.fileId) ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
@@ -148,7 +154,7 @@ export default function DashboardPage() {
               <TableCell>{new Date(file.updatedAt).toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
-                  {(metaLoading === file.fileId) ? (
+                  {((metaLoading || deleting) === file.fileId) ? (
                     <div className="animate-spin rounded-full ml-2 h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
                   ) : (
                     <DropdownMenuTrigger asChild>

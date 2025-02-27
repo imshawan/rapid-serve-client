@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import type {File} from  "@/lib/models/upload/file"
+import type { File } from "@/lib/models/upload/file"
 import { SoftDeleteFields } from "@/lib/db/plugins/soft-delete";
 
-export type TFile = File & SoftDeleteFields & {isUploading?: boolean}
+export type TFile = File & SoftDeleteFields & { isUploading?: boolean }
 
 interface FilesState {
   files: TFile[];
@@ -81,7 +81,7 @@ const filesSlice = createSlice({
       state.currentPage = 1;
       state.hasMore = true;
     },
-    fetchFilesRequest: (state, action: PayloadAction<{currentPage: number, limit: number}>) => {
+    fetchFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => {
       state.loading = true;
       state.error = null;
     },
@@ -97,19 +97,19 @@ const filesSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    fetchFileMeta: (state, action: PayloadAction<{fileId: string, onSuccess: Function, onError: Function}>) => {},
+    fetchFileMeta: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     setFileMeta: (state, action: PayloadAction<FileMetaResponse>) => {
       state.fileMeta = action.payload
     },
     setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
       state.downloadOpen = action.payload
     },
-    deleteFileRequest: (state, action: PayloadAction<{fileId: string, onSuccess: Function}>) => {},
-    deleteFileSuccess: (state, action: PayloadAction<{fileId: string}>) => {
+    deleteFileRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
+    deleteFileSuccess: (state, action: PayloadAction<{ fileId: string }>) => {
       console.log(action.payload)
       state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
     },
-    addFileToList: (state, action: PayloadAction<File & {isUploading?: boolean}>) => {
+    addFileToList: (state, action: PayloadAction<File & { isUploading?: boolean }>) => {
       let fileIndex = state.files.findIndex(f => f.fileId === action.payload.fileId)
       if (fileIndex !== -1) {
         state.files[fileIndex] = action.payload as TFile

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ShareDialog } from "@/components/ui/share-dialog"
-import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText } from "lucide-react"
+import { Upload, MoreVertical, Download, Share2, Trash2, Grid, List, FileText, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Card } from "@/components/ui/card"
 import { useInView } from "react-intersection-observer"
@@ -27,6 +27,9 @@ import { Download as DownloadDialog } from "@/components/download"
 import { DeleteConfirmationDialog } from "@/components/ui/delete-confirmation"
 import { useFiles } from "@/hooks/use-files"
 import FileIcon from "@/components/dashboard/file-icon"
+import { NoFilesState } from "@/components/dashboard/no-files"
+import { CreateFolderDialog } from "@/components/create-folder-dialog"
+import { File } from "@/lib/models/upload"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -42,8 +45,9 @@ export default function DashboardPage() {
   })
   const [metaLoading, setMetaLoading] = useState("")
   const [deleting, setDeleting] = useState("")
+  const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const { toast } = useToast()
-  const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen, deleteFile } = useFiles()
+  const { files, loading, hasMore, currentPage, loadFiles, loadFileMeta, setDownloadOpen, deleteFile, appendUpdatedFile } = useFiles()
   const { ref, inView } = useInView()
 
   const handleShare = (fileName: string) => {
@@ -57,6 +61,31 @@ export default function DashboardPage() {
       setMetaLoading("")
     }, () => {
       setMetaLoading("")
+    })
+  }
+
+  const handleCreateFolder = () => {
+    setCreateFolderOpen(true)
+  }
+
+  const createFolder = (name: string) => {
+    const newFolder = {
+      fileId: crypto.randomUUID(),
+      fileName: name,
+      fileSize: 0,
+      isStarred: false,
+      type: "folder",
+      status: "complete",
+      parentId: "", // Root level folder
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+
+    appendUpdatedFile(newFolder as File)
+
+    toast({
+      title: "Folder created",
+      description: `"${name}" has been created successfully.`,
     })
   }
 
@@ -91,9 +120,10 @@ export default function DashboardPage() {
   }
 
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+
       {files.map((file) => (
-        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
+        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative w-full mx-auto">
           {/* Overlay Loader */}
           {file.isUploading && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 rounded-lg">
@@ -143,16 +173,29 @@ export default function DashboardPage() {
             <TableHead>Name</TableHead>
             <TableHead>Size</TableHead>
             <TableHead>Modified</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {files.filter((file: { isDeleted: any }) => !file.isDeleted).map((file) => (
-            <TableRow key={file.fileId}>
-              <TableCell>{file.fileName}</TableCell>
+            <TableRow key={file.fileId} className="group">
+              <TableCell className="flex items-center gap-2">
+
+                <FileIcon fileName={file.fileName} fileType={file.type} className="w-5 h-5" />
+                <span className="font-medium truncate">{file.fileName}</span>
+              </TableCell>
               <TableCell>{formatBytes(file.fileSize)}</TableCell>
               <TableCell>{new Date(file.updatedAt).toLocaleDateString()}</TableCell>
-              <TableCell>
+              <TableCell className="col-span-1 flex items-center justify-center gap-1">
+                <button
+                  className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-background transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // onToggleStar(folder.fileId)
+                  }}
+                >
+                  <Star className={`h-4 w-4 ${file.isStarred ? 'fill-yellow-400 text-yellow-400' : 'text-black-400'}`} />
+                </button>
                 <DropdownMenu>
                   {((metaLoading || deleting) === file.fileId) ? (
                     <div className="animate-spin rounded-full ml-2 h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
@@ -192,7 +235,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">My Files</h1>
+        <div className="">
+          <h1 className="text-3xl font-bold">Your Files</h1>
+          <p className="text-muted-foreground">Manage and organize your workspace</p>
+        </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center border rounded-lg p-1">
             <Button
@@ -217,12 +263,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {viewMode === 'grid' ? <GridView /> : <ListView />}
-
-      {loading && (
-        <div className="flex justify-center p-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      {files.length > 0 ? (viewMode === 'grid' ? <GridView /> : <ListView />) : (
+        loading ? (
+          <div className="flex justify-center p-4 h-[calc(100vh-400px)] items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : <NoFilesState onUpload={() => setUploadModal(true)} onCreateFolder={handleCreateFolder} />
       )}
 
       {/* Intersection Observer target */}
@@ -238,6 +284,13 @@ export default function DashboardPage() {
         isOpen={shareDialog.isOpen}
         onClose={() => setShareDialog({ isOpen: false, fileName: "" })}
         fileName={shareDialog.fileName}
+      />
+
+      <CreateFolderDialog
+        open={createFolderOpen}
+        onOpenChange={setCreateFolderOpen}
+        onCreateFolder={createFolder}
+      // existingFolderNames={folders.map(f => f.fileName)}
       />
 
       <DownloadDialog />

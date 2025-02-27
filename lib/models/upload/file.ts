@@ -1,5 +1,5 @@
-import softDelete, { SoftDeleteModel } from '@/lib/db/plugins/soft-delete';
-import mongoose, { InferSchemaType, Document } from 'mongoose';
+import softDelete, { SoftDeleteModel } from '@/lib/db/plugins/soft-delete'
+import mongoose, { InferSchemaType, Document } from 'mongoose'
 
 const fileSchema = new mongoose.Schema({
   userId: {
@@ -39,12 +39,16 @@ const fileSchema = new mongoose.Schema({
     enum: ["pending", "complete"],
     default: "pending",
   },
+  parentId: {
+    type: String,
+    default: null,
+  }
 }, {
   timestamps: true,
-});
+})
 
 fileSchema.plugin(softDelete)
 
-export const File = (mongoose.models.File as SoftDeleteModel<File & Document>) || mongoose.model<File, SoftDeleteModel<File & Document>>("File", fileSchema);
+export const File = (mongoose.models.File as SoftDeleteModel<File & Document>) || mongoose.model<File, SoftDeleteModel<File & Document>>("File", fileSchema)
 
-export type File = InferSchemaType<typeof fileSchema>;
+export type File = InferSchemaType<typeof fileSchema>

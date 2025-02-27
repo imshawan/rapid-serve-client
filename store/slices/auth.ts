@@ -1,15 +1,17 @@
 import { getJsonFromLocalstorage, updateJsonFromLocalStorage } from "@/lib/utils/common"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-interface User {
+export interface AuthUser {
   id: string
   name: string
   email: string
   profilePicture?: string
+  storageUsed: number
+  storageLimit: number
 }
 
 interface AuthState {
-  user: User | null
+  user: AuthUser | null
   token: string | null
   isAuthenticated: boolean
   loading: boolean
@@ -71,9 +73,17 @@ const authSlice = createSlice({
           updateJsonFromLocalStorage("user", state.user)
         }
       }
-    }
+    },
+    userUpdate: (state, action: PayloadAction<Partial<AuthUser>>) => {
+      if (state.user) {
+        state.user = {...state.user, ...action.payload}
+        if (typeof window !== "undefined") {
+          updateJsonFromLocalStorage("user", state.user)
+        }
+      }
+    },
   },
 })
 
-export const { logout, setLoading, loginSuccess, loginFailure, logoutSuccess, logoutRequest, loginRequest, profilePictureUpdate } = authSlice.actions
+export const { logout, setLoading, loginSuccess, loginFailure, logoutSuccess, logoutRequest, loginRequest, profilePictureUpdate, userUpdate } = authSlice.actions
 export default authSlice.reducer

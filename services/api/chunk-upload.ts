@@ -12,6 +12,6 @@ export const uploader = {
     },
 
     markComplete: async (fileId: string) => {
-        return await http.post(endpoints.UPLOAD_COMPLETE, {fileId})
+        return await http.post(endpoints.UPLOAD_COMPLETE, {fileId}) as ApiResponse<any>
     }
 }

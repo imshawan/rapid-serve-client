@@ -7,6 +7,8 @@ import { validateRequest } from '@/lib/api/validator';
 import { z } from 'zod';
 import { initializeDbConnection } from "@/lib/db";
 import { isProduction } from "@/lib/config";
+import app from "@/config/app.json";
+import { parseSizeToBytes } from "@/lib/utils/common";
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -68,7 +70,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 email: user.email,
                 name: user.name,
                 role: user.role,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                storageUsed: user.storageUsed,
+                storageLimit: parseSizeToBytes(app.maxStoragePerUser)
             },
         }, String(req.url), startTime, HttpStatus.OK);
     } catch (error) {

@@ -4,7 +4,7 @@ import { SoftDeleteDocument } from "@/lib/db/plugins/soft-delete"
 import { File, Chunk } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
-import { deleteChunkFromBucket } from "@/services/s3/storage"
+import { decrementStorageUsageCount } from "@/lib/user"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await initializeDbConnection(); // Ensure DB connection exists
@@ -29,28 +29,16 @@ async function deleteFile(req: NextApiRequest, res: NextApiResponse) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
 
-    await Promise.all([
+    const [, , updated] = await Promise.all([
       file.delete(),
       Chunk.deleteManySoft({
         hash: { $in: file.chunkHashes },
         userId
-      })
+      }),
+      decrementStorageUsageCount(userId, file.fileSize)
     ])
 
-    // let errors = 0, deleted = 0, total = file.chunkHashes.length;
-
-    // As of now tested deletion peremanently from s3
-    // await Promise.all(file.chunkHashes.map(async chunk => {
-    //   try {
-    //     await deleteChunkFromBucket(file.fileId, chunk, String(file.storageNode))
-    //     deleted++
-    //   } catch (e) {
-    //     console.log(e)
-    //     errors++
-    //   }
-    // }))
-
-    return formatApiResponse(res, { fileId }, "File deleted successfully", HttpStatus.OK)
+    return formatApiResponse(res, { fileId, used: updated?.storageUsed || 0 }, "File deleted successfully", HttpStatus.OK)
 
   } catch (error) {
     return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error in deleting file", HttpStatus.INTERNAL_SERVER_ERROR))

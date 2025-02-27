@@ -116,3 +116,31 @@ export function timeAgo(date: Date): string {
 
   return `${value} ${shortUnit} ago` // Example: "2 hrs ago"
 }
+
+/**
+ * Converts a human-readable storage size string (e.g., "100MB", "1KB", "2MB", "11GB") to bytes.
+ * @param {string} sizeStr - The size string (case-insensitive, e.g., "100MB", "2GB").
+ * @returns {number} - The equivalent size in bytes.
+ * @throws {Error} - If the input format is invalid.
+ */
+export function parseSizeToBytes(sizeStr: string): number {
+  const units: { [key: string]: number } = {
+    b: 1,
+    kb: 1024,
+    mb: 1024 ** 2,
+    gb: 1024 ** 3,
+    tb: 1024 ** 4,
+  };
+
+  // Extract the numeric value and unit from the string (e.g., "100MB" -> ["100", "MB"])
+  const match = sizeStr.toLowerCase().match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb|tb)$/);
+
+  if (!match) {
+    throw new Error(`Invalid size format: ${sizeStr}`);
+  }
+
+  const value = parseFloat(match[1]); // Extract number (e.g., 100)
+  const unit = match[2]; // Extract unit (e.g., "MB")
+
+  return value * units[unit]; // Convert to bytes
+}

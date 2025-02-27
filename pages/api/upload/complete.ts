@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
 import { getStorageNodeById, verifyChunkUpload } from "@/services/s3/storage";
 import { Document } from "mongoose";
+import { incrementStorageUsageCount } from "@/lib/user";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -45,9 +46,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Mark file as complete
     file.status = 'complete'
-    await file.save();
+    
+    const [_, updatedUser] = await Promise.all([
+      file.save(),
+      incrementStorageUsageCount(userId, file.fileSize)
+    ])
 
-    return formatApiResponse(res, { success: true, file })
+    return formatApiResponse(res, { success: true, file, used: updatedUser?.storageUsed || 0 })
   } catch (error: any) {
     console.error("Error in chunk upload:", error);
     return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error in chunk upload", HttpStatus.INTERNAL_SERVER_ERROR))

@@ -106,7 +106,6 @@ const filesSlice = createSlice({
     },
     deleteFileRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     deleteFileSuccess: (state, action: PayloadAction<{ fileId: string }>) => {
-      console.log(action.payload)
       state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
     },
     addFileToList: (state, action: PayloadAction<File & { isUploading?: boolean }>) => {

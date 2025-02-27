@@ -26,16 +26,28 @@ import { useAppSelector } from "@/store"
 import { useFiles } from "@/hooks/use-files"
 import type { File } from "@/lib/models/upload"
 import { toast } from "@/hooks/use-toast"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { CreateFolderDialog } from "./create-folder-dialog"
+import { useAuth } from "@/hooks/use-auth"
+import { formatBytes } from "@/lib/utils/common"
+import { Progress } from "./ui/progress"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { sidebarOpen } = useAppSelector(state => state.app)
   const { appendUpdatedFile } = useFiles()
+  const {user} = useAuth()
 
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const [open, setOpen] = useState(false)
+
+  const used = useMemo(() => formatBytes(Number(user?.storageUsed || 0)), [user])
+  const total = useMemo(() => formatBytes(Number(user?.storageLimit || 0)), [user])
+  const percentage = useMemo(() => {
+    const used = Number(user?.storageUsed || 0)
+    const total = Number(user?.storageLimit || 0)
+    return Math.round((used / total) * 100)
+  }, [user])
 
   const handleCreateFolder = () => {
     setCreateFolderOpen(true)
@@ -125,19 +137,17 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="pt-4 border-t">
+        {user && <div className="pt-4 border-t">
           <div className="space-y-2">
             <div className="text-xs font-semibold text-muted-foreground uppercase">
               Storage
             </div>
             <div className="space-y-2">
-              <div className="text-sm">23.4 GB of 100 GB used</div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div className="h-full bg-primary" style={{ width: '23.4%' }} />
-              </div>
+              <div className="text-sm">{used} of {total} used</div>
+                <Progress value={percentage} className="h-3" />
             </div>
           </div>
-        </div>
+        </div>}
       </div>
 
       <CreateFolderDialog

@@ -1,6 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, { InferSchemaType } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { lruCache, redis } from '../db';
+import app from "@/config/app.json"
+import { parseSizeToBytes } from '../utils/common';
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -36,7 +38,7 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     storageLimit: {
       type: Number,
-      default: 5 * 1024 * 1024 * 1024, // 5GB for free users
+      default: parseSizeToBytes(app.maxStoragePerUser)
     },
     isEmailVerified: {
       type: Boolean,
@@ -223,3 +225,5 @@ userSchema.methods.comparePassword = async function (
 };
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
+
+export type User = InferSchemaType<typeof userSchema>

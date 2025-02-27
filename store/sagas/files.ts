@@ -3,6 +3,7 @@ import { takeLatest, put, call } from "redux-saga/effects"
 import { fetchFilesFailure, fetchFilesRequest, fetchFilesSuccess, fetchFileMeta, setFileMeta, deleteFileSuccess, deleteFileRequest } from "../slices/files"
 import { files,downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
+import { userUpdate } from "../slices/auth"
 
 function* fetchFilesSaga(action: PayloadAction<{currentPage: number, limit: number}>): Generator<any, void, ApiResponse<any>> {
     try {
@@ -31,7 +32,14 @@ function* fetchFileMetaSaga(action: PayloadAction<{fileId: string, onSuccess: Fu
 function* deleteFileSaga(action: PayloadAction<{fileId: string, onSuccess: Function, onError: Function}>): Generator<any, void, ApiResponse<any>> {
     try {
         const response = yield call(files.deleteFile, action.payload.fileId)
+        if (!response.success) {
+            throw new Error(response.error?.message)
+        }
+
         yield put(deleteFileSuccess(response.data))
+        if (response.data && !isNaN(response.data.used)) {
+            yield put(userUpdate({storageUsed: response.data.used}))
+        }
         action.payload.onSuccess()
     } catch (error) {
         toast({

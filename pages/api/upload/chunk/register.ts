@@ -1,10 +1,13 @@
 import { v4 as uuidv4 } from "uuid"
-import { initializeDbConnection } from "@/lib/db"
+import { initializeDbConnection, withCache } from "@/lib/db"
 import { File, Chunk } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { NextApiRequest, NextApiResponse } from "next/types"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { generateToken, selectStorageNode } from "@/services/s3/storage"
+import { User } from "@/lib/models/user"
+import { parseSizeToBytes } from "@/lib/utils/common"
+import app from "@/config/app.json"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -13,14 +16,29 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     await initializeDbConnection()
-    const { fileName, fileSize, chunkHashes } = req.body
+    const { fileName, fileSize, chunkHashes, parentId } = req.body
     const userId = String(req.user?.userId)
 
     // Check for existing chunks
-    const existingChunks = await Chunk.find({
-      hash: { $in: chunkHashes },
-      userId
-    }).select("hash storageNode")
+    const [existingChunks, user] = await Promise.all([
+      Chunk.find({
+        hash: { $in: chunkHashes },
+        userId
+      }).select("hash storageNode"),
+      withCache<IUser | null>(userId, async () => await User.findById(userId))
+    ])
+
+    if (user) {
+      const storageLimit = parseSizeToBytes(app.maxStoragePerUser)
+      const { storageUsed } = user
+      if ((storageUsed + fileSize) > storageLimit) {
+        return formatApiResponse(
+          res, 
+          new ApiError(ErrorCode.PAYMENT_REQUIRED, "Cannot upload this file as your storage limit exceeded quota of " + app.maxStoragePerUser.toUpperCase(), 
+          HttpStatus.PAYMENT_REQUIRED)
+        )
+      }
+    }
 
     const existingHashes = new Set(existingChunks.map(chunk => chunk.hash))
     const missingChunks = chunkHashes.filter((hash: any) => !existingHashes.has(hash))
@@ -39,6 +57,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const file = await File.create({
       userId,
       fileId,
+      parentId,
       fileName,
       fileSize,
       chunkHashes,

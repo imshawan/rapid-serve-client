@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import { splitFileIntoChunks, calculateSHA256 } from "@/lib/utils/chunk"
 import { uploader } from "@/services/api/chunk-upload"
 import { useFiles } from "@/hooks/use-files"
+import { useAuth } from "@/hooks/use-auth"
 
 interface UploadDialogProps {
   open: boolean
@@ -31,6 +32,7 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [isMinimized, setIsMinimized] = useState<boolean>(false)
   const { appendUpdatedFile } = useFiles()
+  const {updateAuthUser} = useAuth()
 
   const reset = () => {
     setFile(null)
@@ -68,7 +70,15 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         chunkHashes,
       })
 
-      if (!registerResponse.success) throw new Error('File Registration failed')
+      if (!registerResponse.success) {
+        toast({
+          title: registerResponse.error?.code || "Upload failed",
+          description: registerResponse.error?.message || "File registeration failed",
+          variant: "destructive",
+        })
+        reset()
+        return
+      }
       const { fileId, uploadChunks, missingChunks, file: registeredFile } = registerResponse.data as FileUploadStatus
       if (!missingChunks.length) {
         toast({
@@ -102,7 +112,19 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
       }
 
       // // Step 3: Confirm upload completion
-      await uploader.markComplete(fileId)
+      const resp = await uploader.markComplete(fileId)
+      if (!resp.success) {
+        toast({
+          title: resp.error?.code || "Upload failed",
+          description: resp.error?.message || "File upload failed",
+          variant: "destructive",
+        })
+        reset()
+        return
+      }
+      if (resp.data && resp.data.used) {
+        updateAuthUser({storageUsed: resp.data.used})
+      }
 
       appendUpdatedFile(registeredFile)
 

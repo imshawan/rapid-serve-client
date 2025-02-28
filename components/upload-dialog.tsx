@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, FileText, Maximize2, Minus, X } from "lucide-react"
+import { AlertCircle, CheckCircle, FileText, Loader, Maximize2, Minus, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { splitFileIntoChunks, calculateSHA256 } from "@/lib/utils/chunk"
 import { uploader } from "@/services/api/chunk-upload"
@@ -31,12 +31,14 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
   const [file, setFile] = useState<File | null>(null)
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [isMinimized, setIsMinimized] = useState<boolean>(false)
+  const [restoredBreakpoint, setRestoredBreakpoint] = useState(0)
   const { appendUpdatedFile } = useFiles()
-  const {updateAuthUser} = useAuth()
+  const { updateAuthUser } = useAuth()
 
   const reset = () => {
     setFile(null)
     setUploadProgress(0)
+    setRestoredBreakpoint(0)
     setStatus('idle')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -79,7 +81,7 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         reset()
         return
       }
-      const { fileId, uploadChunks, missingChunks, file: registeredFile } = registerResponse.data as FileUploadStatus
+      const { fileId, uploadChunks, existingChunks, missingChunks, file: registeredFile } = registerResponse.data as FileUploadStatus
       if (!missingChunks.length) {
         toast({
           title: "Duplication Warning",
@@ -94,8 +96,12 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
       appendUpdatedFile({ ...registeredFile, isUploading: true })
 
       // Step 3: Upload missing chunks
-      const totalChunks = uploadChunks.length
-      let completedChunks = 0
+      const totalChunks = (missingChunks.length + existingChunks.length)
+      let completedChunks = existingChunks.length
+      let percent = ((completedChunks / totalChunks) * 100)
+
+      setUploadProgress(percent)
+      setRestoredBreakpoint(percent)
 
       for (const uploadChunk of uploadChunks) {
         const { hash, token } = uploadChunk
@@ -123,7 +129,7 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         return
       }
       if (resp.data && resp.data.used) {
-        updateAuthUser({storageUsed: resp.data.used})
+        updateAuthUser({ storageUsed: resp.data.used })
       }
 
       appendUpdatedFile(registeredFile)
@@ -223,11 +229,15 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
             {file && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{file.name}</span>
+                  <span className="text-sm text-gray-600">{file?.name}</span>
                   <span className="text-sm">
-                    {(Number(file.size) / (1024 * 1024)).toFixed(2)} MB
+                    {(Number(file?.size) / (1024 * 1024)).toFixed(2)} MB
                   </span>
                 </div>
+                {restoredBreakpoint > 0 && <div className="flex items-center space-x-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  <span className="text-sm font-medium">Restored {restoredBreakpoint}% from the last upload</span>
+                </div>}
                 <Progress value={uploadProgress} className="w-full" />
                 {status === 'idle' && (
                   <Button
@@ -239,7 +249,10 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
                 )}
                 {status === 'uploading' && (
                   <div className="flex items-center justify-center text-blue-400">
-                    <span className="animate-pulse">Uploading...</span>
+                    <span>
+                      <Loader className="h-5 w-5 animate-spin mr-1" />
+                    </span>
+                    <span className="">Uploading...</span>
                   </div>
                 )}
                 {/* {status === 'success' && (

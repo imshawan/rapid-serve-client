@@ -20,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const fieldSelection = (fieldArray.length ? fieldArray.join(" ") : "") + "-chunkHashes -storageNode"
 
   const [files, total] = await Promise.all([
-    File.find({userId})
+    File.find({userId, status: "complete"})
       .select(fieldSelection)
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber)

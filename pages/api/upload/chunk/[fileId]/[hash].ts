@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { initializeDbConnection, withCache } from '@/lib/db';
 import { Chunk, File as FileModel } from '@/lib/models/upload';
 import type {File as FileModelType} from '@/lib/models/upload'
-import { getStorageNodeById, selectStorageNode, uploadChunkByNode, validateUploadToken } from '@/services/s3/storage';
+import { getStorageNodeById, selectStorageNode, uploadChunkByNode, validateUploadToken, verifyChunkUpload } from '@/services/s3/storage';
 import { calculateSHA256 } from '@/lib/utils/chunk';
 import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
@@ -62,6 +62,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     await uploadChunkByNode(fileId, hash, file.buffer, node)
+    await verifyChunkUpload(fileId, hash, node)
 
     await Chunk.create({
       userId,

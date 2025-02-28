@@ -6,6 +6,13 @@ export type TFile = File & SoftDeleteFields & { isUploading?: boolean }
 
 interface FilesState {
   files: TFile[];
+  searchedFiles: {
+    files: TFile[];
+    search: string;
+    currentPage: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
   starredFiles: string[];
   deletedFiles: Record<string, { deletedAt: Date; }>;
   loading: boolean;
@@ -19,6 +26,13 @@ interface FilesState {
 
 const initialState: FilesState = {
   files: [],
+  searchedFiles: {
+    files: [],
+    search: "",
+    currentPage: 1,
+    totalPages: 1,
+    hasMore: false
+  },
   starredFiles: [],
   deletedFiles: {},
   loading: false,
@@ -96,6 +110,13 @@ const filesSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    searchFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number, search: string }>) => { },
+    searchFilesSuccess: (state, action: PayloadAction<Pagination>) => {
+      state.searchedFiles.files = action.payload.data;
+      state.searchedFiles.totalPages = action.payload.totalPages;
+      state.searchedFiles.hasMore = action.payload.currentPage > (action.payload.end + 1);
+      state.searchedFiles.currentPage = action.payload.currentPage;
+    },
     fetchFileMeta: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     setFileMeta: (state, action: PayloadAction<FileMetaResponse>) => {
       state.fileMeta = action.payload
@@ -133,6 +154,8 @@ export const {
   setDownloaderOpen,
   deleteFileRequest,
   deleteFileSuccess,
-  addFileToList
+  addFileToList,
+  searchFilesRequest,
+  searchFilesSuccess
 } = filesSlice.actions;
 export default filesSlice.reducer;

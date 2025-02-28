@@ -11,12 +11,13 @@ interface FileIconProps {
   fileName: string
   fileType: string // "folder" or "file"
   className?: string
+  outerClassName?: string
 }
 
-const FileIcon: React.FC<FileIconProps> = ({ fileName, fileType, className }) => {
+const FileIcon: React.FC<FileIconProps> = ({ fileName, fileType, className, outerClassName }) => {
   if (fileType === "folder") {
     return (
-      <div className="flex-shrink-0 p-3 rounded-full bg-blue-500/10">
+      <div className={cn("flex-shrink-0 p-3 rounded-full bg-blue-500/10", outerClassName)}>
         <Folder className={cn("text-blue-500 w-8 h-8", className)} />
       </div>
     )
@@ -171,7 +172,7 @@ const FileIcon: React.FC<FileIconProps> = ({ fileName, fileType, className }) =>
   }
 
   return (
-    <div className={`flex-shrink-0 p-3 rounded-full ${bgColorMap[extension] || "bg-gray-200"}`}>
+    <div className={cn(`flex-shrink-0 p-3 rounded-full ${bgColorMap[extension] || "bg-gray-200"}`, outerClassName)}>
       {iconMap[extension] || <File className={cn("text-blue-500 w-10 h-10", className)} />}
     </div>
   )

@@ -4,8 +4,11 @@ import { parseRouteParams } from "@/lib/utils/common"
 
 
 export const files = {
-  fetchFiles: async (page: number, limit: number = 20, fields?: string[]) => {
-    let queryParams = new URLSearchParams({ limit: String(limit), page: String(page) }).toString()
+  fetchFiles: async (page: number, limit: number = 20, search?: string, fields?: string[]) => {
+    let query: any = { limit: String(limit), page: String(page) }
+    if (search) query['search'] = search;
+
+    let queryParams = new URLSearchParams(query).toString()
     return await http.get(parseRouteParams(endpoints.LOAD_FILES, { queryParams }))
   },
 

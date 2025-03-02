@@ -15,6 +15,8 @@ import {
   setFileLoading,
   loadTrashSuccess,
   loadTrashRequest,
+  deleteFromTrashRequest,
+  deleteFromTrash,
 } from "../slices/files";
 import { files, downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
@@ -117,6 +119,28 @@ function* loadFilesInTrashSaga(action: PayloadAction<{ currentPage: number, limi
   }
 }
 
+function* restoreFileFromTrashSaga(action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.restoreFile, action.payload.fileId)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(deleteFromTrash(response.data))
+    action.payload.onSuccess()
+
+    if (response.data && !isNaN(response.data.used)) {
+      yield put(userUpdate({ storageUsed: response.data.used }))
+    }
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to restore file",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
+}
+
 export default function* watchFilesSaga() {
   yield takeLatest(fetchFilesRequest.type, fetchFilesSaga)
   yield takeLatest(fetchFileMeta.type, fetchFileMetaSaga)
@@ -124,4 +148,5 @@ export default function* watchFilesSaga() {
   yield takeLatest(searchFilesRequest.type, searchedFilesSaga)
   yield takeLatest(fileRenameRequest.type, updateFileNameSaga)
   yield takeLatest(loadTrashRequest.type, loadFilesInTrashSaga)
+  yield takeLatest(deleteFromTrashRequest.type, restoreFileFromTrashSaga)
 }

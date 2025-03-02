@@ -30,7 +30,7 @@ import {
 import { RotateCcw, MoreVertical, Trash2, Grid, List } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAppDispatch, useAppSelector } from "@/store"
-import { restoreFile, permanentlyDeleteFile } from "@/store/slices/files"
+import { permanentlyDeleteFile } from "@/store/slices/files"
 import { useFiles } from "@/hooks/use-files"
 import FileIcon from "@/components/dashboard/file-icon"
 import { formatBytes } from "@/lib/utils/common"
@@ -39,16 +39,21 @@ export default function TrashPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [processing, setProcessing] = useState("")
   const { toast } = useToast()
-  const { loadFilesInTrash, trash } = useFiles()
+  const { loadFilesInTrash, trash, restoreFile } = useFiles()
   const dispatch = useAppDispatch()
 
   const handleRestore = (fileId: string) => {
-    dispatch(restoreFile(fileId))
-    toast({
-      title: "File Restored",
-      description: "The file has been restored to its original location."
-    })
+    setProcessing(fileId)
+    restoreFile(fileId, () => {
+      toast({
+        title: "File Restored",
+        description: "The file has been restored.",
+        variant: "success"
+      })
+      setProcessing("")
+    }, () => setProcessing(""))
   }
 
   const handleDeletePermanently = (fileId: string) => {
@@ -73,7 +78,12 @@ export default function TrashPage() {
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {trash.files.map((file) => (
-        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
+        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
+          {(processing === "all" || processing === file.fileId) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 rounded-lg">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
+            </div>
+          )}
           <div className="flex flex-col items-center space-y-2">
             <FileIcon fileName={file.fileName} fileType={file.type} />
             <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
@@ -132,9 +142,11 @@ export default function TrashPage() {
               <TableCell className="p-2 px-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                    {
+                      (processing === file.fileId || processing === "all") ? (
+                        <div className="animate-spin rounded-full ml-2 h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                      ) : <MoreVertical className="h-5 w-5" />
+                    }
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleRestore(file.fileId)}>

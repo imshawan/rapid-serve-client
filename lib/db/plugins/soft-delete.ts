@@ -58,7 +58,8 @@ export default function softDelete<T extends Document>(schema: Schema<T>): void 
 
   // Middleware to exclude soft deleted documents
   schema.pre(/^find/, function (this: any, next) {
-    if (!this.get("includeDeleted")) {
+    const includeDeleted = this.get("includeDeleted") || (this.options && this.options.includeDeleted);
+    if (!includeDeleted) {
       this.where({ isDeleted: false });
     }
     next();

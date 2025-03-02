@@ -191,7 +191,11 @@ const filesSlice = createSlice({
       } else {
         state.files = [(action.payload as TFile), ...state.files]
       }
-    }
+    },
+    deleteFromTrashRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => {},
+    deleteFromTrash: (state, action: PayloadAction<{fileId: string, used: number}>) => {
+      state.trash.files = state.trash.files.filter(f => f.fileId !== action.payload.fileId)
+    },
   },
 });
 
@@ -210,6 +214,8 @@ export const {
   setDownloaderOpen,
   deleteFileRequest,
   deleteFileSuccess,
+  deleteFromTrashRequest,
+  deleteFromTrash,
   addFileToList,
   searchFilesRequest,
   searchFilesSuccess,

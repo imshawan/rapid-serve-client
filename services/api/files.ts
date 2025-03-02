@@ -30,5 +30,9 @@ export const files = {
 
     let queryParams = new URLSearchParams(query).toString()
     return await http.get(parseRouteParams(endpoints.LOAD_FILES, { queryParams }))
+  },
+
+  restoreFile: async (fileId: string) => {
+    return await http.patch<{fileId: string, used: number}>(parseRouteParams(endpoints.RESTORE_FILE, { fileId }), {})
   }
 }

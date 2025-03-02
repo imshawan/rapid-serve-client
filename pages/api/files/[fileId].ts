@@ -51,7 +51,7 @@ async function deleteFile(req: NextApiRequest, res: NextApiResponse) {
     // Get file record
     const file = await File.findOne({ fileId, userId }) as SoftDeleteDocument & File
     if (!file) {
-      return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
+      return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "File not found", HttpStatus.BAD_REQUEST))
     }
 
     const [, , updated] = await Promise.all([

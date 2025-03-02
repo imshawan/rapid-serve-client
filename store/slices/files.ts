@@ -22,6 +22,11 @@ interface FilesState {
   hasMore: boolean;
   downloadOpen: boolean;
   fileMeta: FileMetaResponse | null
+  shareOpen: {isOpen: boolean, fileName: string};
+  fileInfoOpen: {isOpen: boolean, file: TFile | null};
+  renameOpen: {isOpen: boolean, file: TFile | null};
+  previewOpen: {isOpen: boolean, file: TFile | null};
+  deleteOpen: {isOpen: boolean, fileId: string |  null, fileName: string |  null};
 }
 
 const initialState: FilesState = {
@@ -35,13 +40,18 @@ const initialState: FilesState = {
   },
   starredFiles: [],
   deletedFiles: {},
-  loading: false,
+  loading: true,
   error: null,
   currentPage: 1,
   totalPages: 1,
   hasMore: true,
   downloadOpen: false,
-  fileMeta: null
+  fileMeta: null,
+  shareOpen: {isOpen: false, fileName: ""},
+  fileInfoOpen: {isOpen: false, file: null},
+  renameOpen: {isOpen: false, file: null},
+  previewOpen: {isOpen: false, file: null},
+  deleteOpen: {isOpen: false, fileId: "", fileName: ""}
 };
 
 // Mock API call
@@ -124,6 +134,21 @@ const filesSlice = createSlice({
     setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
       state.downloadOpen = action.payload
     },
+    setFilePreviewOpen: (state, action: PayloadAction<{isOpen: boolean, file: TFile |  null}>) => {
+      state.previewOpen = action.payload
+    },
+    setFileInfoOpen: (state, action: PayloadAction<{isOpen: boolean, file: TFile |  null}>) => {
+      state.fileInfoOpen = action.payload
+    },
+    setFileRenameOpen: (state, action: PayloadAction<{isOpen: boolean, file: TFile |  null}>) => {
+      state.renameOpen = action.payload
+    },
+    setFileShareOpen: (state, action: PayloadAction<{isOpen: boolean, fileName: string}>) => {
+      state.shareOpen = action.payload
+    },
+    setDeleteOpen: (state, action: PayloadAction<{isOpen: boolean, fileId: string | null, fileName: string | null}>) => {
+      state.deleteOpen = action.payload
+    },
     deleteFileRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     deleteFileSuccess: (state, action: PayloadAction<{ fileId: string }>) => {
       state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
@@ -156,6 +181,11 @@ export const {
   deleteFileSuccess,
   addFileToList,
   searchFilesRequest,
-  searchFilesSuccess
+  searchFilesSuccess,
+  setFilePreviewOpen,
+  setFileInfoOpen,
+  setFileRenameOpen,
+  setFileShareOpen,
+  setDeleteOpen
 } = filesSlice.actions;
 export default filesSlice.reducer;

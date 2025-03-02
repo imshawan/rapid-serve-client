@@ -37,7 +37,10 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     setPreviewDialog,
     setRenameDialog,
     setShareDialog,
+    renameFile,
     previewOpen,
+    setFileLoadingState,
+    fileLoading
   } = useFiles();
 
   const handleShare = (fileName: string) => {
@@ -57,12 +60,12 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
   }
 
   const handleDownload = (fileId: string) => {
-    setMetaLoading(fileId)
+    setFileLoadingState(fileId)
     loadFileMeta(fileId, () => {
       setDownloadOpen(true)
-      setMetaLoading("")
+      setFileLoadingState("")
     }, () => {
-      setMetaLoading("")
+      setFileLoadingState("")
     })
   }
 
@@ -86,16 +89,13 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
   }
 
   const confirmRename = (fileId: string, newName: string) => {
-    // renameFile(fileId, newName, () => {
-    //   toast({
-    //     title: "File renamed",
-    //     description: `File has been renamed to "${newName}".`
-    //   })
-    // })
-    toast({
-      title: "File renamed",
-      description: `File has been renamed to "${newName}".`
-    })
+    renameFile(fileId, newName, () => {
+      toast({
+        title: "File renamed",
+        description: `File has been renamed to "${newName}".`
+      })
+    },
+    () => { })
   }
 
   return (
@@ -111,7 +111,7 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
       >
         <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow group relative w-full mx-auto">
           {/* Overlay Loader */}
-          {file.isUploading && (
+          {(file.isUploading || fileLoading === file.fileId) && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 rounded-lg">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
             </div>

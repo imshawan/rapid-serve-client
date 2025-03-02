@@ -18,5 +18,9 @@ export const files = {
 
   deleteFilePermanently: async (fileId: string) => {
     return await http.delete<{ fileId: string, deleted: boolean, errors: boolean, total: number }>(parseRouteParams(endpoints.DELETE_FILE_PERMANENTLY, { fileId }))
-  }
+  },
+
+  updateFileName: async (fileId: string, fileName: string) => {
+    return await http.patch<{ fileId: string, fileName: string }>(parseRouteParams(endpoints.RENAME_FILE, { fileId }), { fileName })
+  },
 }

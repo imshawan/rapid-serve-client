@@ -24,8 +24,6 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator,
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { FileInfoModal } from "@/components/dashboard/file-info-dialog"
 import { RenameDialog } from "@/components/dashboard/rename-dialog"
-import { FilePreview } from "@/components/dashboard/file-preview"
-import { TFile } from "@/store/slices/files"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -37,20 +35,17 @@ export default function DashboardPage() {
     setRenameDialog,
     setShareDialog,
     renameOpen,
-    previewOpen,
     shareOpen,
     fileInfoOpen,
-    deleteOpen,
-    setDeleteDialog,
-    deleteFile,
-   } = useFiles()
+    renameFile,
+  } = useFiles()
   const { ref, inView } = useInView()
 
   const handleCreateFolder = () => {
     setCreateFolderOpen(true)
   }
 
-  const handleViewModeChange  = (mode: "grid" | "list") => {
+  const handleViewModeChange = (mode: "grid" | "list") => {
     setViewMode(mode)
     closeAllDialogs()
   }
@@ -88,16 +83,13 @@ export default function DashboardPage() {
   }
 
   const confirmRename = (fileId: string, newName: string) => {
-    // renameFile(fileId, newName, () => {
-    //   toast({
-    //     title: "File renamed",
-    //     description: `File has been renamed to "${newName}".`
-    //   })
-    // })
-    toast({
-      title: "File renamed",
-      description: `File has been renamed to "${newName}".`
-    })
+    renameFile(fileId, newName, () => {
+      toast({
+        title: "File renamed",
+        description: `File has been renamed to "${newName}".`
+      })
+    },
+    () => { })
   }
 
   useEffect(() => {
@@ -230,7 +222,7 @@ export default function DashboardPage() {
         onRename={confirmRename}
         existingNames={[]}
       />
-     
+
     </Fragment>
   )
 }

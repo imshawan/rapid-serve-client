@@ -12,6 +12,8 @@ import {
   setFileInfoOpen,
   TFile,
   setDeleteOpen,
+  fileRenameRequest,
+  setFileLoading,
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -53,6 +55,12 @@ export const useFiles = () => {
     }, [dispatch]),
     setDeleteDialog: useCallback((payload: { isOpen: boolean, fileId: string | null, fileName: string | null }) => {
       dispatch(setDeleteOpen(payload));
+    }, [dispatch]),
+    setFileLoadingState: useCallback((fileId: string) => {
+      dispatch(setFileLoading(fileId));
+    }, [dispatch]),
+    renameFile: useCallback((fileId: string, fileName: string, onSuccess: Function, onError: Function) => {
+      dispatch(fileRenameRequest({ fileId, fileName, onSuccess, onError }));
     }, [dispatch]),
 
     ...files

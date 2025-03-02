@@ -159,6 +159,26 @@ export default function createHttpHandler(baseURL: string = "") {
     },
 
     /**
+     * @function patch
+     * @description Makes a PATCH request with JSON or form data.
+     * @param {string} url - The endpoint URL.
+     * @param {any} data - The request payload.
+     * @param {Config} [config={}] - Optional request configuration.
+     * @param {boolean} [isFormData=false] - Indicates if the data is FormData.
+     * @returns {Promise<ApiResponse<T>>} - The JSON response.
+     */
+    async patch<T>(url: string, data: any, config: Config = {}, isFormData: boolean = false): Promise<ApiResponse<T>> {
+      const response = await fetch(baseURL + url, {
+        method: "PATCH",
+        ...config,
+        headers: getHeaders(config, isFormData),
+        body: isFormData ? data : JSON.stringify(data),
+      });
+
+      return await response.json();
+    },
+
+    /**
      * @function delete
      * @description Makes a DELETE request to the specified URL.
      * @param {string} url - The endpoint URL.

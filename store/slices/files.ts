@@ -16,6 +16,7 @@ interface FilesState {
   starredFiles: string[];
   deletedFiles: Record<string, { deletedAt: Date; }>;
   loading: boolean;
+  fileLoading: string;
   error: string | null;
   currentPage: number;
   totalPages: number;
@@ -41,6 +42,7 @@ const initialState: FilesState = {
   starredFiles: [],
   deletedFiles: {},
   loading: true,
+  fileLoading: "",
   error: null,
   currentPage: 1,
   totalPages: 1,
@@ -149,9 +151,19 @@ const filesSlice = createSlice({
     setDeleteOpen: (state, action: PayloadAction<{isOpen: boolean, fileId: string | null, fileName: string | null}>) => {
       state.deleteOpen = action.payload
     },
+    setFileLoading: (state, action: PayloadAction<string>) => {
+      state.fileLoading = action.payload
+    },
     deleteFileRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     deleteFileSuccess: (state, action: PayloadAction<{ fileId: string }>) => {
       state.files = state.files.filter(f => f.fileId !== action.payload.fileId)
+    },
+    fileRenameRequest: (state, action: PayloadAction<{ fileId: string, fileName: string, onSuccess: Function, onError: Function }>) => { },
+    fileRenameSuccess: (state, action: PayloadAction<{ fileId: string, fileName: string }>) => {
+      let fileIndex = state.files.findIndex(f => f.fileId === action.payload.fileId)
+      if (fileIndex !== -1) {
+        state.files[fileIndex].fileName = action.payload.fileName
+      }
     },
     addFileToList: (state, action: PayloadAction<File & { isUploading?: boolean }>) => {
       let fileIndex = state.files.findIndex(f => f.fileId === action.payload.fileId)
@@ -186,6 +198,9 @@ export const {
   setFileInfoOpen,
   setFileRenameOpen,
   setFileShareOpen,
-  setDeleteOpen
+  setFileLoading,
+  setDeleteOpen,
+  fileRenameRequest,
+  fileRenameSuccess
 } = filesSlice.actions;
 export default filesSlice.reducer;

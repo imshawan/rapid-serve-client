@@ -31,13 +31,8 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
   })
   const { toast } = useToast()
   const {
-    files,
-    loading,
-    hasMore,
-    currentPage,
     shareOpen,
     previewOpen,
-    loadFiles,
     loadFileMeta,
     setDownloadOpen,
     deleteFile,
@@ -46,6 +41,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     setPreviewDialog,
     setRenameDialog,
     setShareDialog,
+    fileLoading
   } = useFiles();
 
   const handleShare = (fileName: string) => {
@@ -125,7 +121,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
                 <Star className={`h-4 w-4 ${file.isStarred ? "fill-yellow-400 text-yellow-400" : "text-black-400"}`} />
               </button>
               <DropdownMenu>
-                {((metaLoading || deleting) === file.fileId) ? (
+                {((metaLoading || deleting || fileLoading) === file.fileId) ? (
                   <div className="animate-spin rounded-full ml-2 h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
                 ) : (
                   <DropdownMenuTrigger asChild>

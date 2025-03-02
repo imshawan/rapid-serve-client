@@ -40,6 +40,7 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
     setRenameDialog,
     setShareDialog,
     previewOpen,
+    renameFile,
   } = useFiles();
   const [page, setPage] = useState(1)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -103,16 +104,13 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
   }
 
   const confirmRename = (fileId: string, newName: string) => {
-    // renameFile(fileId, newName, () => {
-    //   toast({
-    //     title: "File renamed",
-    //     description: `File has been renamed to "${newName}".`
-    //   })
-    // })
-    toast({
-      title: "File renamed",
-      description: `File has been renamed to "${newName}".`
-    })
+    renameFile(fileId, newName, () => {
+      toast({
+        title: "File renamed",
+        description: `File has been renamed to "${newName}".`
+      })
+    },
+    () => { })
   }
 
   const handleSearchChange = _.debounce((e: React.ChangeEvent<HTMLInputElement>) => {

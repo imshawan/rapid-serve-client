@@ -1,6 +1,6 @@
 import { PayloadAction } from "@reduxjs/toolkit"
 import { takeLatest, put, call } from "redux-saga/effects"
-import { fetchFilesFailure, fetchFilesRequest, fetchFilesSuccess, fetchFileMeta, setFileMeta, deleteFileSuccess, deleteFileRequest, searchFilesSuccess, searchFilesRequest } from "../slices/files"
+import { fetchFilesFailure, fetchFilesRequest, fetchFilesSuccess, fetchFileMeta, setFileMeta, deleteFileSuccess, deleteFileRequest, searchFilesSuccess, searchFilesRequest, fileRenameRequest, fileRenameSuccess, setFileLoading } from "../slices/files"
 import { files,downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
 import { userUpdate } from "../slices/auth"
@@ -66,9 +66,30 @@ function* searchedFilesSaga(action: PayloadAction<{currentPage: number, limit: n
     }
 }
 
+function* updateFileNameSaga(action: PayloadAction<{fileId: string, fileName: string, onSuccess: Function, onError: Function}>): Generator<any, void, ApiResponse<any>> {
+    yield put(setFileLoading(action.payload.fileId))
+    try {
+        const response = yield call(files.updateFileName, action.payload.fileId, action.payload.fileName)
+        if (!response.success) {
+            throw new Error(response.error?.message)
+        }
+        yield put(fileRenameSuccess(response.data))
+        action.payload?.onSuccess()
+    } catch (error) {
+        toast({
+            title: "Error",
+            description: error instanceof Error ? error.message : "Failed to update file name",
+            variant: "destructive"
+        })
+    } finally {
+        yield put(setFileLoading(""))
+    }
+}
+
 export default function* watchFilesSaga() {
     yield takeLatest(fetchFilesRequest.type, fetchFilesSaga)
     yield takeLatest(fetchFileMeta.type, fetchFileMetaSaga)
     yield takeLatest(deleteFileRequest.type, deleteFileSaga)
     yield takeLatest(searchFilesRequest.type, searchedFilesSaga)
+    yield takeLatest(fileRenameRequest.type, updateFileNameSaga)
 }

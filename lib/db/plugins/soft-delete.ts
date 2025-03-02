@@ -19,24 +19,20 @@ export interface SoftDeleteFields {
 export interface SoftDeleteDocument extends Document, SoftDeleteFields {
   delete: () => Promise<void>;
   restore: () => Promise<void>;
-} 
+}
 
 export interface SoftDeleteModel<T extends Document> extends Model<T> {
   deleteManySoft: (filter: Record<string, any>) => Promise<void>;
   restoreMany: (filter: Record<string, any>) => Promise<void>;
 }
 
-export default function softDelete<T extends Document>(schema: Schema<T>, options: SoftDeleteOptions = {}): void {
-  if (Array.isArray(options) || typeof options !== 'object') {
-    options = {};
-  }
-
+export default function softDelete<T extends Document>(schema: Schema<T>): void {
   // Add soft delete fields
   schema.add({
     isDeleted: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
   } as any);
-  
+
   // Instance Methods
   schema.methods.delete = async function (): Promise<void> {
     this.isDeleted = true;
@@ -61,12 +57,10 @@ export default function softDelete<T extends Document>(schema: Schema<T>, option
   };
 
   // Middleware to exclude soft deleted documents
-  if (!options.includeDeleted) {
-    schema.pre(/^find/, function (this: any, next) {
-      if (!this.getQuery().includeDeleted) {
-        this.where({ isDeleted: false });
-      }
-      next();
-    });
-  }
+  schema.pre(/^find/, function (this: any, next) {
+    if (!this.get("includeDeleted")) {
+      this.where({ isDeleted: false });
+    }
+    next();
+  });
 }

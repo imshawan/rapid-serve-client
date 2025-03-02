@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -31,17 +31,17 @@ import { RotateCcw, MoreVertical, Trash2, Grid, List } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAppDispatch, useAppSelector } from "@/store"
 import { restoreFile, permanentlyDeleteFile } from "@/store/slices/files"
+import { useFiles } from "@/hooks/use-files"
+import FileIcon from "@/components/dashboard/file-icon"
+import { formatBytes } from "@/lib/utils/common"
 
 export default function TrashPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { toast } = useToast()
+  const { loadFilesInTrash, trash } = useFiles()
   const dispatch = useAppDispatch()
-  
-  const files = useAppSelector(state => 
-    state.files.files.filter(file => file.isDeleted)
-  )
 
   const handleRestore = (fileId: string) => {
     dispatch(restoreFile(fileId))
@@ -66,12 +66,16 @@ export default function TrashPage() {
     setIsDeleteDialogOpen(true)
   }
 
+  useEffect(() => {
+    loadFilesInTrash({ currentPage: 1, limit: 10 })
+  }, [])
+
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {files.map((file) => (
+      {trash.files.map((file) => (
         <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center space-y-2">
-            <div className="text-4xl">{file.type === 'folder' ? '📁' : '📄'}</div>
+            <FileIcon fileName={file.fileName} fileType={file.type} />
             <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
             <div className="text-xs text-muted-foreground">
               Deleted on {new Date(file.deletedAt!).toLocaleDateString()}
@@ -99,7 +103,7 @@ export default function TrashPage() {
 
   const ListView = () => (
     <div className="border rounded-lg">
-      <Table>
+      <Table className="">
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
@@ -110,15 +114,22 @@ export default function TrashPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {files.map((file) => (
+          {trash.files.map((file) => (
             <TableRow key={file.fileId}>
-              <TableCell className="font-medium">{file.fileName}</TableCell>
-              <TableCell>{new Date(file.deletedAt!).toLocaleDateString()}</TableCell>
-              <TableCell>
+              <TableCell className="p-2 px-4">
+                <div className="flex items-center gap-2">
+                  <FileIcon fileName={file.fileName} fileType={file.type} className="w-5 h-5" outerClassName="p-2" />
+                  <div className="w-4/5 truncate">
+                  <span className="font-medium truncate">{file.fileName}</span>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell className="p-2 px-4">{new Date(file.deletedAt!).toLocaleDateString()}</TableCell>
+              <TableCell className="p-2 px-4">
                 {new Date(new Date(file.deletedAt!).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </TableCell>
-              <TableCell>{file.fileSize}</TableCell>
-              <TableCell>
+              <TableCell className="p-2 px-4">{formatBytes(file.fileSize)}</TableCell>
+              <TableCell className="p-2 px-4">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -158,8 +169,8 @@ export default function TrashPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="text-destructive"
               onClick={() => setIsDeleteDialogOpen(true)}
             >

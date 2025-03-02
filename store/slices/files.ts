@@ -13,6 +13,12 @@ interface FilesState {
     totalPages: number;
     hasMore: boolean;
   };
+  trash: {
+    files: TFile[];
+    currentPage: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
   starredFiles: string[];
   deletedFiles: Record<string, { deletedAt: Date; }>;
   loading: boolean;
@@ -35,6 +41,12 @@ const initialState: FilesState = {
   searchedFiles: {
     files: [],
     search: "",
+    currentPage: 1,
+    totalPages: 1,
+    hasMore: false
+  },
+  trash: {
+    files: [],
     currentPage: 1,
     totalPages: 1,
     hasMore: false
@@ -129,6 +141,13 @@ const filesSlice = createSlice({
       state.searchedFiles.hasMore = action.payload.currentPage > (action.payload.end + 1);
       state.searchedFiles.currentPage = action.payload.currentPage;
     },
+    loadTrashRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => { },
+    loadTrashSuccess: (state, action: PayloadAction<Pagination>) => {
+      state.trash.files = action.payload.data;
+      state.trash.totalPages = action.payload.totalPages;
+      state.trash.hasMore = action.payload.currentPage > (action.payload.end + 1);
+      state.trash.currentPage = action.payload.currentPage;
+    },
     fetchFileMeta: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     setFileMeta: (state, action: PayloadAction<FileMetaResponse>) => {
       state.fileMeta = action.payload
@@ -201,6 +220,8 @@ export const {
   setFileLoading,
   setDeleteOpen,
   fileRenameRequest,
-  fileRenameSuccess
+  fileRenameSuccess,
+  loadTrashRequest,
+  loadTrashSuccess
 } = filesSlice.actions;
 export default filesSlice.reducer;

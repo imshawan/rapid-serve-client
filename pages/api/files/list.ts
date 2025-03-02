@@ -11,7 +11,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   await initializeDbConnection()
 
-  const { page = 1, limit = 10, fields = "", search= "" } = req.query,
+  const { page = 1, limit = 10, fields = "", search= "", type = "", loc = "" } = req.query,
     pageNumber = parseInt(page as string, 10),
     limitNumber = parseInt(limit as string, 10),
     fieldArray = (fields as string).split(",").filter(Boolean);
@@ -19,9 +19,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   const userId = String(req.user?.userId)
   const fieldSelection = (fieldArray.length ? fieldArray.join(" ") : "") + "-chunkHashes -storageNode"
   const query: any = { userId, status: "complete" }
+  const includeDeleted = loc === "trash"
 
   if (search) {
     query.fileName = { $regex: new RegExp(search as string, "i") } // Case-insensitive search
+  }
+  
+  if (loc === "trash") {
+    query.isDeleted = true
+  }
+
+  if (["file", "folder"].includes(String(type).toLowerCase())) {
+    query.type = String(type).toLowerCase()
   }
 
   const [files, total] = await Promise.all([
@@ -29,6 +38,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       .select(fieldSelection)
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber)
+      .set("includeDeleted", includeDeleted)
       .lean(),
     File.countDocuments()
   ])

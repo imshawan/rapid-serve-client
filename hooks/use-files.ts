@@ -14,6 +14,7 @@ import {
   setDeleteOpen,
   fileRenameRequest,
   setFileLoading,
+  loadTrashRequest
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -61,6 +62,9 @@ export const useFiles = () => {
     }, [dispatch]),
     renameFile: useCallback((fileId: string, fileName: string, onSuccess: Function, onError: Function) => {
       dispatch(fileRenameRequest({ fileId, fileName, onSuccess, onError }));
+    }, [dispatch]),
+    loadFilesInTrash: useCallback((payload: { currentPage: number, limit: number }) => {
+      dispatch(loadTrashRequest(payload));
     }, [dispatch]),
 
     ...files

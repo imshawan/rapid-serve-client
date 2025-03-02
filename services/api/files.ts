@@ -23,4 +23,12 @@ export const files = {
   updateFileName: async (fileId: string, fileName: string) => {
     return await http.patch<{ fileId: string, fileName: string }>(parseRouteParams(endpoints.RENAME_FILE, { fileId }), { fileName })
   },
+
+  fetchInTrash: async (page: number, limit: number = 20, search?: string) => {
+    let query: any = { limit: String(limit), page: String(page), loc: "trash" }
+    if (search) query['search'] = search;
+
+    let queryParams = new URLSearchParams(query).toString()
+    return await http.get(parseRouteParams(endpoints.LOAD_FILES, { queryParams }))
+  }
 }

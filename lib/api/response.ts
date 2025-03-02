@@ -163,7 +163,7 @@ export function formatApiResponse<T>(
  * @description facilitates pagination for a given array of items, allowing users to navigate through the data in smaller, manageable chunks. 
  * It takes an array of items, the number of items to display per page (limit), the current page number (page), and a base URL (baseUrl) as inputs.
  */
-export function paginate(items: Array<any>, total: number, limit: number, page: number, baseUrl: string = ''): IPagination {
+export function paginate(items: Array<any>, total: number, limit: number, page: number, baseUrl: string = ''): Pagination {
   if (!items) {
     items = [];
   }

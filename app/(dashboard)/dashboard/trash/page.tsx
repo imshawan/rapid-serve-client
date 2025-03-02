@@ -69,24 +69,24 @@ export default function TrashPage() {
   const GridView = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {files.map((file) => (
-        <Card key={file.id} className="p-4 hover:shadow-lg transition-shadow">
+        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center space-y-2">
             <div className="text-4xl">{file.type === 'folder' ? '📁' : '📄'}</div>
-            <div className="text-sm font-medium truncate w-full text-center">{file.name}</div>
+            <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
             <div className="text-xs text-muted-foreground">
               Deleted on {new Date(file.deletedAt!).toLocaleDateString()}
               <br />
               Expires on {new Date(new Date(file.deletedAt!).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
             </div>
             <div className="flex space-x-2">
-              <Button size="icon" variant="ghost" onClick={() => handleRestore(file.id)}>
+              <Button size="icon" variant="ghost" onClick={() => handleRestore(file.fileId)}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 className="text-destructive"
-                onClick={() => openDeleteDialog(file.id)}
+                onClick={() => openDeleteDialog(file.fileId)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -111,13 +111,13 @@ export default function TrashPage() {
         </TableHeader>
         <TableBody>
           {files.map((file) => (
-            <TableRow key={file.id}>
-              <TableCell className="font-medium">{file.name}</TableCell>
+            <TableRow key={file.fileId}>
+              <TableCell className="font-medium">{file.fileName}</TableCell>
               <TableCell>{new Date(file.deletedAt!).toLocaleDateString()}</TableCell>
               <TableCell>
                 {new Date(new Date(file.deletedAt!).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
               </TableCell>
-              <TableCell>{file.size}</TableCell>
+              <TableCell>{file.fileSize}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -126,13 +126,13 @@ export default function TrashPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleRestore(file.id)}>
+                    <DropdownMenuItem onClick={() => handleRestore(file.fileId)}>
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Restore
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive"
-                      onClick={() => openDeleteDialog(file.id)}
+                      onClick={() => openDeleteDialog(file.fileId)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete Permanently

@@ -93,7 +93,7 @@
     "@eslint/eslintrc": "^3",
     "@types/cookie": "^0.6.0",
     "@types/jsonwebtoken": "^9.0.8",
-    "@types/lodash": "^4.17.15",
+    "@types/lodash": "^4.17.16",
     "@types/multer": "^1.4.12",
     "@types/node": "^20",
     "@types/react": "^19",

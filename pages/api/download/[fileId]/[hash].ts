@@ -17,7 +17,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const userId = String(req.user?.userId)
 
     // Validate token
-    if (!validateUploadToken(token, fileId, hash)) {
+    if (!await validateUploadToken(token, fileId, hash)) {
       return formatApiResponse(
         res,
         new ApiError(ErrorCode.FORBIDDEN, "Invalid or expired token", HttpStatus.FORBIDDEN)

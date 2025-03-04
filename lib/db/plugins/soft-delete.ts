@@ -42,7 +42,7 @@ export interface SoftDeleteModel<T extends Document> extends Model<T> {
    * @param filter - Query conditions to identify documents for soft deletion.
    * @returns A promise that resolves when the operation is complete.
    */
-  softDeleteMany: (filter: Record<string, any>) => Promise<void>;
+  deleteManySoft: (filter: Record<string, any>) => Promise<void>;
 
   /**
    * Restores multiple soft-deleted documents that match the given filter.

@@ -17,6 +17,9 @@ import {
   loadTrashRequest,
   deleteFromTrashRequest,
   deleteFromTrash,
+  clearTrashSuccess,
+  clearTrashRequest,
+  setLoading,
 } from "../slices/files";
 import { files, downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
@@ -104,6 +107,7 @@ function* updateFileNameSaga(action: PayloadAction<{ fileId: string, fileName: s
 }
 
 function* loadFilesInTrashSaga(action: PayloadAction<{ currentPage: number, limit: number }>): Generator<any, void, ApiResponse<any>> {
+  yield put(setLoading(true))
   try {
     const response = yield call(files.fetchInTrash, action.payload.currentPage, action.payload.limit)
     if (!response.success) {
@@ -116,6 +120,8 @@ function* loadFilesInTrashSaga(action: PayloadAction<{ currentPage: number, limi
       description: error instanceof Error ? error.message : "Failed to load trash files",
       variant: "destructive"
     })
+  } finally {
+    yield put(setLoading(false))
   }
 }
 
@@ -141,6 +147,24 @@ function* restoreFileFromTrashSaga(action: PayloadAction<{ fileId: string, onSuc
   }
 }
 
+function* clearTrashSaga(action: PayloadAction<{ onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.clearAllInTrash)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(clearTrashSuccess())
+    action.payload.onSuccess()
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to clear trash",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
+}
+
 export default function* watchFilesSaga() {
   yield takeLatest(fetchFilesRequest.type, fetchFilesSaga)
   yield takeLatest(fetchFileMeta.type, fetchFileMetaSaga)
@@ -149,4 +173,5 @@ export default function* watchFilesSaga() {
   yield takeLatest(fileRenameRequest.type, updateFileNameSaga)
   yield takeLatest(loadTrashRequest.type, loadFilesInTrashSaga)
   yield takeLatest(deleteFromTrashRequest.type, restoreFileFromTrashSaga)
+  yield takeLatest(clearTrashRequest.type, clearTrashSaga)
 }

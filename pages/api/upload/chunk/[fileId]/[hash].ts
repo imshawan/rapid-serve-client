@@ -28,7 +28,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // Validate upload token
-    if (!validateUploadToken(token, fileId, hash)) {
+    if (!await validateUploadToken(token, fileId, hash)) {
       return formatApiResponse(
         res,
         new ApiError(ErrorCode.FORBIDDEN, "Invalid upload token", HttpStatus.FORBIDDEN)

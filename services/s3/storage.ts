@@ -1,8 +1,8 @@
-import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, HeadObjectCommand, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, DeleteObjectsCommand } from "@aws-sdk/client-s3"
 import crypto from "crypto"
 import { getAwsConnectionConfig, getS3BucketName } from "../../lib/config"
 import storageConfig from "@/config/storage-nodes.json"
-import { Token } from "@/lib/models/upload"
+import { File, Token } from "@/lib/models/upload"
 import { Readable } from "stream"
 
 const BUCKET_NAME = getS3BucketName()
@@ -296,6 +296,96 @@ export async function deleteChunkFromBucket(fileId: string, hash: string, nodeId
     throw new Error("Failed to delete chunk from storage node");
   }
 }
+
+/**
+ * Deletes multiple chunks for a file from an S3 storage node.
+ *
+ * @param fileId - The unique identifier of the file.
+ * @param hashes - An array of hashes representing the chunks.
+ * @param nodeId - The storage node ID.
+ * @throws Error if the storage node is not found or deletion fails.
+ */
+export async function deleteChunksFromBucket(fileId: string, hashes: string[], nodeId: string): Promise<void> {
+  const node = STORAGE_NODES.find(n => n.id === nodeId);
+  if (!node) {
+    throw new Error(`Storage node ${nodeId} not found`);
+  }
+
+  if (hashes.length === 0) {
+    console.log("No chunks to delete.");
+    return;
+  }
+
+  try {
+    const s3Client = getS3Client(node);
+
+    const deleteParams = {
+      Bucket: node.bucket,
+      Delete: {
+        Objects: hashes.map(hash => ({ Key: `${node.id}/${fileId}/${hash}` })),
+      },
+    };
+
+    await s3Client.send(new DeleteObjectsCommand(deleteParams));
+
+  } catch (error) {
+    console.error(`Error deleting chunks from S3 [Node: ${nodeId}, File: ${fileId}]`, error);
+    throw new Error("Failed to delete chunks from storage node");
+  }
+}
+
+/**
+ * Deletes multiple chunks from an S3 storage node for multiple files.
+ *
+ * @param files - An array of objects containing files.
+ * @param nodeId - The storage node ID.
+ * @throws Error if the storage node is not found or deletion fails.
+ */
+export async function deleteMultipleFilesFromBucket(files: File[]): Promise<void> {
+  const filesByNode: Record<string, { fileId: string; chunkHashes: string[] }[]> = {};
+
+  for (const file of files) {
+    let storageNode = String(file.storageNode)
+    if (!filesByNode[storageNode]) {
+      filesByNode[storageNode] = [];
+    }
+    filesByNode[storageNode].push({ fileId: file.fileId, chunkHashes: file.chunkHashes });
+  }
+
+  try {
+    for (const nodeId of Object.keys(filesByNode)) {
+      const node = STORAGE_NODES.find(n => n.id === nodeId);
+      if (!node) {
+        console.error(`Storage node ${nodeId} not found. Skipping.`);
+        continue; // Skip this node instead of throwing an error
+      }
+
+      const bucketName = node.bucket; // Get the bucket name from the node
+
+      // Collect all keys to delete for this node
+      const objectsToDelete = filesByNode[nodeId].flatMap(file =>
+        file.chunkHashes.map(hash => ({ Key: `${node.id}/${file.fileId}/${hash}` }))
+      );
+
+      if (objectsToDelete.length === 0) {
+        console.log(`No files to delete for storage node ${nodeId}.`);
+        continue;
+      }
+
+      const s3Client = getS3Client(node);
+      const deleteParams = {
+        Bucket: bucketName,
+        Delete: { Objects: objectsToDelete },
+      };
+
+      await s3Client.send(new DeleteObjectsCommand(deleteParams));
+    }
+  } catch (error) {
+    console.error("Error deleting files from S3:", error);
+    throw new Error("Failed to delete files from storage nodes");
+  }
+}
+
 
 /**
  * Retrieves the bucket name for a given storage node.

@@ -15,7 +15,9 @@ import {
   fileRenameRequest,
   setFileLoading,
   loadTrashRequest,
-  deleteFromTrashRequest
+  deleteFromTrashRequest,
+  clearTrashRequest,
+  setLoading
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -25,6 +27,9 @@ export const useFiles = () => {
   const files = useAppSelector((state: RootState) => state.files);
 
   return {
+    setLoading: useCallback((isLoading: boolean) => {
+      dispatch(setLoading(isLoading));
+    }, [dispatch]),
     loadFiles: useCallback((payload: { currentPage: number, limit: number }) => {
       dispatch(fetchFilesRequest(payload));
     }, [dispatch]),
@@ -69,6 +74,9 @@ export const useFiles = () => {
     }, [dispatch]),
     restoreFile: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
       dispatch(deleteFromTrashRequest({ fileId, onSuccess, onError }));
+    }, [dispatch]),
+    clearFilesInTrash: useCallback((onSuccess: Function, onError: Function) => {
+      dispatch(clearTrashRequest({onSuccess, onError}));
     }, [dispatch]),
 
     ...files

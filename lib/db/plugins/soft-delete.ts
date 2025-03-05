@@ -7,23 +7,66 @@
 
 import { Schema, Document, Model } from 'mongoose';
 
-interface SoftDeleteOptions {
-  includeDeleted?: boolean;
-}
-
 export interface SoftDeleteFields {
   isDeleted: boolean;
   deletedAt: Date | null;
 }
 
 export interface SoftDeleteDocument extends Document, SoftDeleteFields {
+  /**
+   * Soft deletes the current document.
+   * This typically sets a `deletedAt` timestamp or an `isDeleted` flag.
+   * @returns A promise that resolves when the document is soft deleted.
+   */
   delete: () => Promise<void>;
+
+  /**
+   * Restores a previously soft-deleted document.
+   * This typically removes the `deletedAt` timestamp or updates the `isDeleted` flag.
+   * @returns A promise that resolves when the document is restored.
+   */
   restore: () => Promise<void>;
 }
 
 export interface SoftDeleteModel<T extends Document> extends Model<T> {
+  /**
+   * Retrieves only the soft-deleted documents that match the given filter.
+   * @param filter - Query conditions to filter the soft-deleted documents.
+   * @returns A promise resolving to an array of soft-deleted documents.
+   */
+  findAllSoftDeleted: (filter: Record<string, any>) => Promise<T[]>;
+
+  /**
+   * Soft deletes multiple documents matching the given filter.
+   * This typically sets a `deletedAt` timestamp instead of removing the records permanently.
+   * @param filter - Query conditions to identify documents for soft deletion.
+   * @returns A promise that resolves when the operation is complete.
+   */
   deleteManySoft: (filter: Record<string, any>) => Promise<void>;
+
+  /**
+   * Restores multiple soft-deleted documents that match the given filter.
+   * Typically removes the `deletedAt` timestamp or updates the `isDeleted` flag.
+   * @param filter - Query conditions to identify documents for restoration.
+   * @returns A promise that resolves when the restoration is complete.
+   */
   restoreMany: (filter: Record<string, any>) => Promise<void>;
+
+  /**
+   * Permanently deletes a single document that matches the given filter.
+   * This action removes the document from the database entirely.
+   * @param filter - Query conditions to identify the document for hard deletion.
+   * @returns A promise that resolves when the document is deleted.
+   */
+  deleteHard: (filter: Record<string, any>) => Promise<void>;
+
+  /**
+   * Permanently deletes multiple documents that match the given filter.
+   * This action removes the documents from the database entirely.
+   * @param filter - Query conditions to identify documents for hard deletion.
+   * @returns A promise that resolves when the deletion is complete.
+   */
+  deleteManyHard: (filter: Record<string, any>) => Promise<void>;
 }
 
 export default function softDelete<T extends Document>(schema: Schema<T>): void {
@@ -46,6 +89,10 @@ export default function softDelete<T extends Document>(schema: Schema<T>): void 
     await this.save();
   };
 
+  schema.statics.findAllSoftDeleted = async function (filter: Record<string, any>): Promise<T[]> {
+    return this.find({ ...filter, isDeleted: true, deletedAt: { $ne: null } }).setOptions({ includeDeleted: true });
+  };
+
   // Static Methods (Soft Delete for Multiple Records)
   schema.statics.deleteManySoft = async function (filter: Record<string, any>): Promise<void> {
     await this.updateMany(filter, { $set: { isDeleted: true, deletedAt: new Date() } });
@@ -54,6 +101,14 @@ export default function softDelete<T extends Document>(schema: Schema<T>): void 
   // Static Methods (Restore Soft Deleted Records)
   schema.statics.restoreMany = async function (filter: Record<string, any>): Promise<void> {
     await this.updateMany(filter, { $set: { isDeleted: false, deletedAt: null } });
+  };
+
+  schema.statics.deleteHard = async function (filter: Record<string, any>): Promise<void> {
+    await this.deleteOne(filter);
+  };
+
+  schema.statics.deleteManyHard = async function (filter: Record<string, any>): Promise<void> {
+    await this.deleteMany(filter);
   };
 
   // Middleware to exclude soft deleted documents

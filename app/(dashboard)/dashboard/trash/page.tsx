@@ -34,6 +34,7 @@ import { permanentlyDeleteFile } from "@/store/slices/files"
 import { useFiles } from "@/hooks/use-files"
 import FileIcon from "@/components/dashboard/file-icon"
 import { formatBytes } from "@/lib/utils/common"
+import { TrashEmptyState } from "@/components/dashboard/trash-empty-state"
 
 export default function TrashPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
@@ -41,7 +42,7 @@ export default function TrashPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [processing, setProcessing] = useState("")
   const { toast } = useToast()
-  const { loadFilesInTrash, trash, restoreFile } = useFiles()
+  const { loadFilesInTrash, trash, restoreFile, clearFilesInTrash, loading } = useFiles()
   const dispatch = useAppDispatch()
 
   const handleRestore = (fileId: string) => {
@@ -62,7 +63,21 @@ export default function TrashPage() {
     toast({
       title: "File Deleted",
       description: "The file has been permanently deleted.",
-      variant: "destructive"
+      variant: "success"
+    })
+  }
+
+  const handleDeleteAllPermanent = () => {
+    setProcessing("all")
+    clearFilesInTrash(() => {
+      toast({
+        title: "Files Deleted",
+        description: "All files have been permanently deleted.",
+        variant: "success"
+      })
+      setProcessing("")
+    }, () => {
+      setProcessing("")
     })
   }
 
@@ -130,7 +145,7 @@ export default function TrashPage() {
                 <div className="flex items-center gap-2">
                   <FileIcon fileName={file.fileName} fileType={file.type} className="w-5 h-5" outerClassName="p-2" />
                   <div className="w-4/5 truncate">
-                  <span className="font-medium truncate">{file.fileName}</span>
+                    <span className="font-medium truncate">{file.fileName}</span>
                   </div>
                 </div>
               </TableCell>
@@ -185,6 +200,7 @@ export default function TrashPage() {
               variant="outline"
               className="text-destructive"
               onClick={() => setIsDeleteDialogOpen(true)}
+              disabled={processing === "all" || loading}
             >
               Empty Trash
             </Button>
@@ -207,7 +223,13 @@ export default function TrashPage() {
           </div>
         </div>
 
-        {viewMode === 'grid' ? <GridView /> : <ListView />}
+        {trash.files && trash.files.length > 0 ? (viewMode === 'grid' ? <GridView /> : <ListView />) : (
+          loading ? (
+            <div className="flex justify-center p-4 h-[calc(100vh-400px)] items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : <TrashEmptyState />
+        )}
       </div>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -226,7 +248,7 @@ export default function TrashPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => selectedFile ? handleDeletePermanently(selectedFile) : null}
+              onClick={() => selectedFile ? handleDeletePermanently(selectedFile) : handleDeleteAllPermanent()}
             >
               {selectedFile ? 'Delete' : 'Empty Trash'}
             </AlertDialogAction>

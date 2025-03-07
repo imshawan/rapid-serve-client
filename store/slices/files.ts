@@ -2,7 +2,7 @@ import _ from "lodash"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import type { File } from "@/lib/models/upload/file"
 import { SoftDeleteFields } from "@/lib/db/plugins/soft-delete"
-import { RecentFile } from "@/lib/models/upload"
+import { Recent } from "@/lib/models/recent"
 
 export type TFile = File & SoftDeleteFields & { isUploading?: boolean }
 
@@ -22,7 +22,7 @@ interface FilesState {
     hasMore: boolean
   },
   recents: {
-    files: RecentFile[]
+    files: Recent[]
     currentPage: number
     totalPages: number
     hasMore: boolean

@@ -1,5 +1,5 @@
 import { Types } from "mongoose"
-import { RecentFile } from "../models/upload/recent-file"
+import { Recent } from "../models/recent"
 import type { File } from "../models/upload"
 
 const RECENTS_TRESHOLD = 30
@@ -18,7 +18,7 @@ export const addFileToRecents = async (file: File, userId: string, ip?: string) 
     ipAddress: ip
   }
   try {
-    await RecentFile.findOneAndUpdate(
+    await Recent.findOneAndUpdate(
       { fileId, userId: new Types.ObjectId(userId) },
       {
         ...payload,
@@ -28,13 +28,13 @@ export const addFileToRecents = async (file: File, userId: string, ip?: string) 
     )
 
     // Keep only the latest threshold records
-    const totalFiles = await RecentFile.countDocuments({ userId: new Types.ObjectId(userId) })
+    const totalFiles = await Recent.countDocuments({ userId: new Types.ObjectId(userId) })
     if (totalFiles > RECENTS_TRESHOLD) {
-      const oldestFile = await RecentFile.find({ userId: new Types.ObjectId(userId) })
+      const oldestFile = await Recent.find({ userId: new Types.ObjectId(userId) })
         .sort({ lastAccessed: 1 })
         .limit(1)
       if (oldestFile.length) {
-        await RecentFile.deleteOne({ _id: new Types.ObjectId(String(oldestFile[0]._id)) })
+        await Recent.deleteOne({ _id: new Types.ObjectId(String(oldestFile[0]._id)) })
       }
     }
   } catch (error) {

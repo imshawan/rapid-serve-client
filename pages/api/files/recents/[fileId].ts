@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { Types } from "mongoose"
 import _ from "lodash"
 import { initializeDbConnection } from "@/lib/db"
-import { RecentFile } from "@/lib/models/upload"
+import { Recent } from "@/lib/models/recent"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus, paginate } from "@/lib/api/response"
 
@@ -26,7 +26,7 @@ async function remove(req: NextApiRequest, res: NextApiResponse) {
   const fileId = req.query.fileId as string
   const userId = new Types.ObjectId(req.user?.userId)
 
-  const file = await RecentFile.findOneAndDelete({ fileId, userId })
+  const file = await Recent.findOneAndDelete({ fileId, userId })
 
   if (!file) {
     return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND));

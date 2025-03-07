@@ -1,6 +1,6 @@
 import mongoose, { InferSchemaType } from "mongoose"
 
-const recentFileSchema = new mongoose.Schema({
+const recentSchema = new mongoose.Schema({
   fileId: {
     type: String,
     ref: "File",
@@ -51,7 +51,7 @@ const recentFileSchema = new mongoose.Schema({
 })
 
 // Index for faster retrieval
-recentFileSchema.index({ lastAccessed: -1 })
+recentSchema.index({ lastAccessed: -1 })
 
-export const RecentFile = mongoose.models.RecentFile || mongoose.model("RecentFile", recentFileSchema)
-export type RecentFile = InferSchemaType<typeof recentFileSchema>
+export const Recent = mongoose.models.Recent || mongoose.model("Recent", recentSchema)
+export type Recent = InferSchemaType<typeof recentSchema>

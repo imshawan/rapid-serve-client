@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { Types } from "mongoose"
 import _ from "lodash"
 import { initializeDbConnection } from "@/lib/db"
-import { RecentFile } from "@/lib/models/upload"
+import { Recent } from "@/lib/models/recent"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus, paginate } from "@/lib/api/response"
 
@@ -37,12 +37,12 @@ async function get(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const [files, total] = await Promise.all([
-    RecentFile.find(query)
+    Recent.find(query)
       .select(fieldSelection)
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber)
       .lean(),
-    RecentFile.countDocuments()
+    Recent.countDocuments()
   ])
 
   return formatApiResponse(res, paginate(files, total, limitNumber, pageNumber, String(req.url)))

@@ -20,6 +20,10 @@ import {
   clearTrashSuccess,
   clearTrashRequest,
   setLoading,
+  loadRecentFilesSuccess,
+  loadRecentFilesRequest,
+  deleteFromRecents,
+  deleteFromRecentsRequest,
 } from "../slices/files";
 import { files, downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
@@ -165,6 +169,44 @@ function* clearTrashSaga(action: PayloadAction<{ onSuccess: Function, onError: F
   }
 }
 
+function* fetchRecentFilesSaga(action: PayloadAction<{ currentPage: number, limit: number }>): Generator<any, void, ApiResponse<any>> {
+  yield put(setLoading(true))
+  try {
+    const response = yield call(files.fetchInRecents, action.payload.currentPage, action.payload.limit)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(loadRecentFilesSuccess(response.data))
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to load recent files",
+      variant: "destructive"
+    })
+  } finally {
+    yield put(setLoading(false))
+  }
+}
+
+function* deleteFromRecentsSaga(action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.removeRecentFile, action.payload.fileId)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(deleteFromRecents({fileId: action.payload.fileId}))
+    action.payload.onSuccess()
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to delete file from recents",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
+
+}
+
 export default function* watchFilesSaga() {
   yield takeLatest(fetchFilesRequest.type, fetchFilesSaga)
   yield takeLatest(fetchFileMeta.type, fetchFileMetaSaga)
@@ -174,4 +216,6 @@ export default function* watchFilesSaga() {
   yield takeLatest(loadTrashRequest.type, loadFilesInTrashSaga)
   yield takeLatest(deleteFromTrashRequest.type, restoreFileFromTrashSaga)
   yield takeLatest(clearTrashRequest.type, clearTrashSaga)
+  yield takeLatest(loadRecentFilesRequest.type, fetchRecentFilesSaga)
+  yield takeLatest(deleteFromRecentsRequest.type, deleteFromRecentsSaga)
 }

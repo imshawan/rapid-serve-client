@@ -1,47 +1,48 @@
 import { NextApiRequest, NextApiResponse } from "next"
+import { Types } from "mongoose"
 import _ from "lodash"
 import { initializeDbConnection } from "@/lib/db"
-import { File } from "@/lib/models/upload"
+import { RecentFile } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus, paginate } from "@/lib/api/response"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return formatApiResponse(res, new ApiError(ErrorCode.METHOD_NOT_ALLOWED, "Method Not Allowed", HttpStatus.METHOD_NOT_ALLOWED))
+  try {
+    await initializeDbConnection(); // Ensure DB connection exists
+  } catch (error) {
+    return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error connecting to the database", HttpStatus.INTERNAL_SERVER_ERROR), String(req.url));
   }
 
-  await initializeDbConnection()
+  switch (req.method) {
+    case "GET":
+      return await get(req, res);
 
-  const { page = 1, limit = 10, fields = "", search= "", type = "", loc = "" } = req.query,
+    default:
+      return formatApiResponse(res, new ApiError(ErrorCode.METHOD_NOT_ALLOWED, "Method Not Allowed", HttpStatus.METHOD_NOT_ALLOWED), String(req.url));
+  }
+}
+
+async function get(req: NextApiRequest, res: NextApiResponse) {
+  const { page = 1, limit = 10, fields = "", search = "" } = req.query,
     pageNumber = parseInt(page as string, 10),
     limitNumber = parseInt(limit as string, 10),
     fieldArray = (fields as string).split(",").filter(Boolean);
 
-  const userId = String(req.user?.userId)
+  const userId = new Types.ObjectId(req.user?.userId)
   const fieldSelection = (fieldArray.length ? fieldArray.join(" ") : "") + "-chunkHashes -storageNode"
-  const query: any = { userId, status: "complete" }
-  const includeDeleted = loc === "trash"
+  const query: any = { userId }
 
   if (search) {
     query.fileName = { $regex: new RegExp(_.escapeRegExp(String(search)), "i") } // Case-insensitive search
   }
-  
-  if (loc === "trash") {
-    query.isDeleted = true
-  }
-
-  if (["file", "folder"].includes(String(type).toLowerCase())) {
-    query.type = String(type).toLowerCase()
-  }
 
   const [files, total] = await Promise.all([
-    File.find(query)
+    RecentFile.find(query)
       .select(fieldSelection)
       .skip((pageNumber - 1) * limitNumber)
       .limit(limitNumber)
-      .set("includeDeleted", includeDeleted)
       .lean(),
-    File.countDocuments()
+    RecentFile.countDocuments()
   ])
 
   return formatApiResponse(res, paginate(files, total, limitNumber, pageNumber, String(req.url)))

@@ -20,6 +20,7 @@ declare global {
     role: string;
   }
 
+  type ViewMode = "grid" | "list";
 
   interface ApiResponse<T = any> {
     success: boolean

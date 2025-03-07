@@ -3,8 +3,10 @@ import mongoose, { InferSchemaType, Document } from 'mongoose'
 
 const fileSchema = new mongoose.Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: "User",
+    index: true
   },
   fileId: {
     type: String,
@@ -42,6 +44,31 @@ const fileSchema = new mongoose.Schema({
   parentId: {
     type: String,
     default: null,
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
+  },
+  isShared: {
+    type: Boolean,
+    default: false,
+  },
+  downloads: {
+    type: Number,
+    default: 0,
+  },
+  lastDownloaded: {
+    type: Date,
+  },
+  accessedFrom: {
+    type: String,
+  },
+  lastAccessed: {
+    type: Date,
+  },
+  accessCount: {
+    type: Number,
+    default: 0,
   }
 }, {
   timestamps: true,

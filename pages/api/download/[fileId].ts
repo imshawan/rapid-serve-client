@@ -4,6 +4,8 @@ import { Chunk, File } from '@/lib/models/upload'
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { generateToken } from "@/services/s3/storage"
+import { addFileToRecents } from "@/lib/user/recents"
+import { getIpAddress } from "@/lib/utils/network"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -40,10 +42,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       }))
     )
 
+    if (file.status === "complete")  {
+      await addFileToRecents(file, userId, getIpAddress(req))
+    }
+
     return formatApiResponse(res, { success: true, chunks: chunkTokens, file, mimeType })
   } catch (error: any) {
-    console.error("Error in chunk upload:", error)
-    return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error in chunk upload", HttpStatus.INTERNAL_SERVER_ERROR))
+    console.error("Error in chunk download:", error)
+    return formatApiResponse(res, new ApiError(ErrorCode.INTERNAL_ERROR, "Error in chunk download", HttpStatus.INTERNAL_SERVER_ERROR))
   }
 }
 

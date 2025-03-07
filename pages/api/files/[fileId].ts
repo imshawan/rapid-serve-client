@@ -6,6 +6,7 @@ import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { decrementStorageUsageCount } from "@/lib/user"
 import { Document } from "mongoose"
+import { Recent } from "@/lib/models/recent"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await initializeDbConnection(); // Ensure DB connection exists
@@ -60,7 +61,8 @@ async function deleteFile(req: NextApiRequest, res: NextApiResponse) {
         hash: { $in: file.chunkHashes },
         userId
       }),
-      decrementStorageUsageCount(userId, file.fileSize)
+      decrementStorageUsageCount(userId, file.fileSize),
+      Recent.deleteManySoft({ fileId }),
     ])
 
     return formatApiResponse(res, { fileId, used: updated?.storageUsed || 0 }, "File deleted successfully", HttpStatus.OK)

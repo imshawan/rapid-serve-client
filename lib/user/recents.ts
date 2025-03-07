@@ -34,7 +34,7 @@ export const addFileToRecents = async (file: File, userId: string, ip?: string) 
         .sort({ lastAccessed: 1 })
         .limit(1)
       if (oldestFile.length) {
-        await Recent.deleteOne({ _id: new Types.ObjectId(String(oldestFile[0]._id)) })
+        await Recent.deleteHard({ _id: new Types.ObjectId(String(oldestFile[0]._id)) })
       }
     }
   } catch (error) {

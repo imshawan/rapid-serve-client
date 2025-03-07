@@ -1,4 +1,5 @@
-import mongoose, { InferSchemaType } from "mongoose"
+import mongoose, { InferSchemaType, Document } from "mongoose"
+import softDelete, { SoftDeleteModel } from "../db/plugins/soft-delete"
 
 const recentSchema = new mongoose.Schema({
   fileId: {
@@ -53,5 +54,7 @@ const recentSchema = new mongoose.Schema({
 // Index for faster retrieval
 recentSchema.index({ lastAccessed: -1 })
 
-export const Recent = mongoose.models.Recent || mongoose.model("Recent", recentSchema)
+recentSchema.plugin(softDelete)
+
+export const Recent = (mongoose.models.Recent as SoftDeleteModel<Recent & Document>) || mongoose.model<Recent, SoftDeleteModel<Recent & Document>>("Recent", recentSchema)
 export type Recent = InferSchemaType<typeof recentSchema>

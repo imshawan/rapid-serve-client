@@ -1,10 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import { Types } from "mongoose"
+import { Types, Document } from "mongoose"
 import _ from "lodash"
 import { initializeDbConnection } from "@/lib/db"
-import { Recent } from "@/lib/models/recent"
+import { Recent as Recents } from "@/lib/models/recent"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus, paginate } from "@/lib/api/response"
+import type { Recent } from "@/lib/models/recent"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
@@ -26,11 +27,13 @@ async function remove(req: NextApiRequest, res: NextApiResponse) {
   const fileId = req.query.fileId as string
   const userId = new Types.ObjectId(req.user?.userId)
 
-  const file = await Recent.findOneAndDelete({ fileId, userId })
+  const file = await Recents.findOne({ fileId, userId }) as Recent & Document
 
   if (!file) {
-    return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND));
+    return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "No such file", HttpStatus.NOT_FOUND));
   }
+
+  await Recents.deleteHard({ _id: new Types.ObjectId(String(file._id)) })
 
   return formatApiResponse(res, { message: "File removed from recents" });
 }

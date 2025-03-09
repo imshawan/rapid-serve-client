@@ -6,6 +6,7 @@ import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/re
 import { generateToken } from "@/services/s3/storage"
 import { addFileToRecents } from "@/lib/user/recents"
 import { getIpAddress } from "@/lib/utils/network"
+import { Shared } from "@/lib/models/shared"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -19,14 +20,19 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const userId = String(req.user?.userId)
 
     // Get file record
-    const file = await File.findOne({ fileId, userId }) as File
+    const [file, sharedWithMe] = await Promise.all([
+      File.findOne({ fileId }),
+      Shared.findOne({ fileId, "sharedWith.userId": userId   })
+    ])
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
+    if (String(file.userId) !== userId && !sharedWithMe) {
+      return formatApiResponse(res, new ApiError(ErrorCode.FORBIDDEN, "You are not authorized to download this file", HttpStatus.FORBIDDEN))
+    }
 
     const existingChunksMimetype = await Chunk.find({
-      hash: { $in: file.chunkHashes },
-      userId
+      hash: { $in: file?.chunkHashes },
     }).select("mimeType")
 
     let mimeType = "application/octet-stream"

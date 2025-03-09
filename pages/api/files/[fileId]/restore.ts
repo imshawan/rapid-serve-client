@@ -6,6 +6,7 @@ import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { incrementStorageUsageCount } from "@/lib/user"
 import { Recent } from "@/lib/models/recent"
+import { Shared } from "@/lib/models/shared"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 
@@ -28,7 +29,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       file.restore(),
       Chunk.restoreMany({ hash: { $in: file.chunkHashes }, userId }),
       incrementStorageUsageCount(userId, file.fileSize),
-      Recent.restoreMany({ fileId })
+      Recent.restoreMany({ fileId }),
+      Shared.restoreMany({ fileId })
     ])
 
     return formatApiResponse(res, { fileId, used: updated?.storageUsed || 0 }, "File restored successfully", HttpStatus.OK)

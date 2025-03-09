@@ -205,6 +205,7 @@ export default function DashboardPage() {
         isOpen={shareOpen.isOpen}
         onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
         fileName={shareOpen.fileName}
+        fileId={shareOpen.fileId}
       />
 
       {/* File Info Modal */}

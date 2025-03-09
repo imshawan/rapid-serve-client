@@ -19,4 +19,7 @@ export const endpoints = {
   DELETE_ALL_FILES_PERMANENTLY: "/api/files/trash/clear",
   RESTORE_FILE: "/api/files/{{fileId}}/restore",
   DELETE_RECENT_FILE: "/api/files/recents/{{fileId}}",
+  SHARE_FILE: "/api/files/share",
+  LOAD_SHARED_FILE: "/api/files/shared/{{fileId}}",
+  LOAD_SHARED_FILES: "/api/files/shared/list?{{queryParams}}",
 }

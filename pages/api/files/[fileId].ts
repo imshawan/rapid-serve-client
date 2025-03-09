@@ -7,6 +7,7 @@ import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/re
 import { decrementStorageUsageCount } from "@/lib/user"
 import { Document } from "mongoose"
 import { Recent } from "@/lib/models/recent"
+import { Shared } from "@/lib/models/shared"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await initializeDbConnection(); // Ensure DB connection exists
@@ -35,7 +36,11 @@ async function updateName(req: NextApiRequest, res: NextApiResponse) {
     }
 
     file.fileName = fileName
-    await file.save()
+    await Promise.all([
+      file.save(),
+      Recent.updateMany({ fileId }, { fileName }),
+      Shared.updateMany({ fileId }, { fileName })
+    ])
 
     return formatApiResponse(res, { fileId, fileName }, "File name updated successfully", HttpStatus.OK)
 
@@ -63,6 +68,7 @@ async function deleteFile(req: NextApiRequest, res: NextApiResponse) {
       }),
       decrementStorageUsageCount(userId, file.fileSize),
       Recent.deleteManySoft({ fileId }),
+      Shared.deleteManySoft({ fileId })
     ])
 
     return formatApiResponse(res, { fileId, used: updated?.storageUsed || 0 }, "File deleted successfully", HttpStatus.OK)

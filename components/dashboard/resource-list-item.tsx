@@ -160,6 +160,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
         isOpen={shareOpen.isOpen}
         onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
         fileName={shareOpen.fileName}
+        fileId={shareOpen.fileId}
       />
 
       {/* File Preview */}

@@ -4,6 +4,7 @@ import filesReducer from "./slices/files"
 import authReducer from "./slices/auth"
 import appReducer from "./slices/app"
 import userReducer from "./slices/user"
+import sharedFilesReducer from "./slices/shared"
 import { useDispatch, useSelector } from "react-redux"
 import type { TypedUseSelectorHook } from "react-redux"
 import rootSaga from "./sagas/root"
@@ -16,6 +17,7 @@ export const store = configureStore({
     files: filesReducer,
     auth: authReducer,
     user: userReducer,
+    shared: sharedFilesReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

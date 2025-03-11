@@ -5,6 +5,7 @@ import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { getChunkStreamFromBucket, validateUploadToken } from "@/services/s3/storage"
 import { Shared } from "@/lib/models/shared"
+import { Types } from "mongoose"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -15,7 +16,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     await initializeDbConnection()
 
     const { fileId, hash, token } = req.query as { [key: string]: string }
-    const userId = String(req.user?.userId)
+    const userId = new Types.ObjectId(req.user?.userId)
 
     // Validate token
     if (!await validateUploadToken(token, fileId, hash)) {
@@ -33,7 +34,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
-    if (String(file.userId) !== userId && !sharedWithMe) {
+    if (String(file.userId) !== String(userId) && !sharedWithMe) {
       return formatApiResponse(res, new ApiError(ErrorCode.FORBIDDEN, "You are not authorized to download this file", HttpStatus.FORBIDDEN))
     }
 

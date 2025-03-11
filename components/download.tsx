@@ -102,31 +102,54 @@ export function Download() {
       }, 1000);
 
       // Download and verify chunks
-      await Promise.all(chunks.map(async ({ hash, token }, index) => {
-        const response = await downloader.getChunk({ params: { token, fileId: fileData.file.fileId, hash } })
+      for (let index = 0; index < chunks.length; index++) {
+        const { hash, token, size: chunkSize } = chunks[index]
+      
+        const response = await downloader.getChunk({
+          params: { token, fileId: fileData.file.fileId, hash }
+        })
+      
         if (response && !(response instanceof Response) && response.error) {
-          throw new Error(response.error.message);
+          throw new Error(response.error.message)
         }
-
-        if (response instanceof Response) {
-          const buffer = await response.arrayBuffer();
-          totalBytesDownloaded += buffer.byteLength;
-          const calculatedHash = await calculateSHA256(new Blob([buffer]));
-
-          if (calculatedHash !== hash) {
-            throw new Error(`Hash mismatch for chunk: ${hash}`);
+      
+        if (response instanceof Response && response.body) {
+          const reader = response.body.getReader()
+          if (!reader) throw new Error("Failed to read response body")
+      
+          let receivedLength = 0
+          const chunkParts: Uint8Array[] = []
+      
+          while (receivedLength <= chunkSize) {
+            const { done, value, } = await reader.read()
+            if (done) break
+      
+            receivedLength += value.byteLength
+            totalBytesDownloaded += value.byteLength
+            chunkParts.push(value)
+      
+            // Progress Update Based on Actual Downloaded Size
+            setProgress((totalBytesDownloaded / fileData.file.fileSize) * 100)
           }
-
-          chunkBuffers[index] = buffer;
-          completedChunks++;
-          setProgress((completedChunks / chunks.length) * 100);
+      
+          // Merge streamed parts correctly
+          const buffer = new Uint8Array(receivedLength)
+          let position = 0
+          for (const part of chunkParts) {
+            buffer.set(part, position)
+            position += part.byteLength
+          }
+      
+          // Store chunk in correct order using `index`
+          chunkBuffers[index] = buffer.buffer // Store as ArrayBuffer
+          completedChunks++
         }
-      }));
+      }
 
-      clearInterval(progressInterval);
+      clearInterval(progressInterval)
 
       // Combine chunks and trigger download
-      const blob = new Blob(chunkBuffers, { type: mimeType || "application/octet-stream" });
+      const blob = new Blob(chunkBuffers, { type: mimeType || "application/octet-stream" })
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
@@ -135,7 +158,7 @@ export function Download() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(url);``
 
       // setStatus("success")
       reset()

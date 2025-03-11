@@ -7,6 +7,7 @@ import { calculateSHA256 } from '@/lib/utils/chunk';
 import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
 import multer from "multer";
+import { Types } from "mongoose";
 
 // Configure Multer (store file in memory)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -19,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await initializeDbConnection();
 
-    const userId = String(req.user?.userId)
+    const userId = new Types.ObjectId(req.user?.userId)
     const { fileId, hash, token } = req.query as { [key: string]: string };
 
     const existingFile = await withCache(fileId, async () => await FileModel.findOne({fileId, userId})) as FileModelType

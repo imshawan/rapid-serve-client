@@ -31,20 +31,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return formatApiResponse(res, new ApiError(ErrorCode.FORBIDDEN, "You are not authorized to download this file", HttpStatus.FORBIDDEN))
     }
 
-    const existingChunksMimetype = await Chunk.find({
+    const existingChunks = await Chunk.find({
       hash: { $in: file?.chunkHashes },
-    }).select("mimeType")
+    }).select("mimeType size hash")
 
     let mimeType = "application/octet-stream"
-    if (existingChunksMimetype.length) {
-      mimeType = [...new Set(existingChunksMimetype.map(chunk => chunk.mimeType))][0]
+    let existingChunksSizeMap = new Map<string, number>()
+    if (existingChunks.length) {
+      mimeType = [...new Set(existingChunks.map(chunk => chunk.mimeType))][0]
+      existingChunksSizeMap = existingChunks.reduce((acc, chunk) => {
+        acc.set(chunk.hash, chunk.size)
+        return acc
+      }, new Map<string, number>())
     }
 
     // Generate download tokens for each chunk
     const chunkTokens = await Promise.all(
       file.chunkHashes.map(async (hash) => ({
         hash,
-        token: await generateToken(fileId, hash, userId)
+        token: await generateToken(fileId, hash, userId),
+        size: existingChunksSizeMap.get(hash) || 0
       }))
     )
 

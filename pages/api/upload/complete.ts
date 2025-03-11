@@ -4,7 +4,7 @@ import { Chunk, File } from '@/lib/models/upload';
 import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
 import { getStorageNodeById, verifyChunkUpload } from "@/services/s3/storage";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { incrementStorageUsageCount } from "@/lib/user";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,7 +15,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await initializeDbConnection();
 
-    const userId = String(req.user?.userId)
+    const userId = new Types.ObjectId(req.user?.userId)
     const { fileId } = await req.body;
 
     // Get file record
@@ -49,7 +49,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     
     const [_, updatedUser] = await Promise.all([
       file.save(),
-      incrementStorageUsageCount(userId, file.fileSize)
+      incrementStorageUsageCount(String(userId), file.fileSize)
     ])
 
     return formatApiResponse(res, { success: true, file, used: updatedUser?.storageUsed || 0 })

@@ -8,6 +8,7 @@ import { generateToken, selectStorageNode } from "@/services/s3/storage"
 import { User } from "@/lib/models/user"
 import { parseSizeToBytes } from "@/lib/utils/common"
 import app from "@/config/app.json"
+import { Types } from "mongoose"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -17,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     await initializeDbConnection()
     const { fileName, fileSize, chunkHashes, parentId } = req.body
-    const userId = String(req.user?.userId)
+    const userId = new Types.ObjectId(req.user?.userId)
 
     // Check for existing chunks
     const [existingChunks, user] = await Promise.all([
@@ -25,7 +26,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         hash: { $in: chunkHashes },
         userId
       }).select("hash storageNode fileId"),
-      withCache<IUser | null>(userId, async () => await User.findById(userId))
+      withCache<IUser | null>("user:" + String(userId), async () => await User.findById(userId))
     ])
 
     if (user) {
@@ -88,7 +89,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Generate pre-signed chunks with token for missing chunks
     const uploadChunks = await Promise.all(missingChunks.map(async (hash: string) => {
-      const token = await generateToken(fileId, hash, userId)
+      const token = await generateToken(fileId, hash, String(userId))
       return { hash, token }
     }))
 

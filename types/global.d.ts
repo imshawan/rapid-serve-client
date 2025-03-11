@@ -121,6 +121,7 @@ declare global {
   interface UploadChunk {
     hash: string;
     token: string;
+    size: number;
   }
 
   interface FileMetaResponse {

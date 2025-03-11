@@ -4,6 +4,7 @@ import { initializeDbConnection } from "@/lib/db"
 import { File } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus, paginate } from "@/lib/api/response"
+import { Types } from "mongoose"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -19,7 +20,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const userId = String(req.user?.userId)
   const fieldSelection = (fieldArray.length ? fieldArray.join(" ") : "") + "-chunkHashes -storageNode"
-  const query: any = { userId, status: "complete" }
+  const query: any = { userId: new Types.ObjectId(userId), status: "complete" }
   const includeDeleted = loc === "trash"
 
   if (search) {

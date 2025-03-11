@@ -167,7 +167,6 @@ export function Download() {
       toast({
         title: "Download complete",
         description: `${file.fileName} has been downloaded successfully.`,
-        variant: "success"
       })
     } catch (error: any) {
       console.error("Download error:", error);

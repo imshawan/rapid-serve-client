@@ -51,7 +51,6 @@ export default function TrashPage() {
       toast({
         title: "File Restored",
         description: "The file has been restored.",
-        variant: "success"
       })
       setProcessing("")
     }, () => setProcessing(""))
@@ -63,7 +62,6 @@ export default function TrashPage() {
     toast({
       title: "File Deleted",
       description: "The file has been permanently deleted.",
-      variant: "success"
     })
   }
 
@@ -73,7 +71,6 @@ export default function TrashPage() {
       toast({
         title: "Files Deleted",
         description: "All files have been permanently deleted.",
-        variant: "success"
       })
       setProcessing("")
     }, () => {

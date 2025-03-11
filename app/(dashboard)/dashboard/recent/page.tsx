@@ -58,7 +58,6 @@ export default function RecentPage() {
       toast({
         title: "File removed",
         description: "The file has been removed from recents.",
-        variant: "success"
       })
       setRemoving("")
     }, () => {

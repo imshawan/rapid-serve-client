@@ -4,6 +4,8 @@ import { File, Chunk } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { deleteChunksFromBucket } from "@/services/s3/storage"
+import { Recent } from "@/lib/models/recent"
+import { Shared } from "@/lib/models/shared"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "DELETE") {
@@ -23,11 +25,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     await Promise.all([
-      File.deleteOne({ fileId, userId }),
-      Chunk.deleteMany({
+      File.deleteHard({ fileId, userId }),
+      Chunk.deleteManyHard({
         hash: { $in: file.chunkHashes },
         userId
-      })
+      }),
+      Recent.deleteManyHard({ fileId }),
+      Shared.deleteManyHard({ fileId })
     ])
 
     // Remove the file chunks from S3

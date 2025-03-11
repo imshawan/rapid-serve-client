@@ -4,6 +4,7 @@ import { getAwsConnectionConfig, getS3BucketName } from "../../lib/config"
 import storageConfig from "@/config/storage-nodes.json"
 import { File, Token } from "@/lib/models/upload"
 import { Readable } from "stream"
+import { Types } from "mongoose"
 
 const BUCKET_NAME = getS3BucketName()
 const TOKEN_EXPIRY = 3600; // 1 hour in seconds
@@ -150,7 +151,7 @@ export async function validateUploadToken(
 export async function generateToken(fileId: string, hash: string, userId: string, actionType: "upload" | "download" = "upload", contentType?: string): Promise<string> {
   try {
     // Check if chunk already exists (query the database instead of S3)
-    const existingChunk = await Token.findOne({ fileId, hash, action: actionType, userId })
+    const existingChunk = await Token.findOne({ fileId, hash, action: actionType, userId: new Types.ObjectId(userId) })
 
     if (existingChunk) {
       existingChunk.expiresAt = getTokenExpirationDuration()
@@ -165,7 +166,7 @@ export async function generateToken(fileId: string, hash: string, userId: string
     // Generate a secure token
     const token = crypto.randomBytes(32).toString("hex")
     const tokenData = {
-      userId,
+      userId: new Types.ObjectId(userId),
       fileId,
       token,
       hash,

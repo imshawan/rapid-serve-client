@@ -43,8 +43,8 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     fileLoading
   } = useFiles();
 
-  const handleShare = (fileName: string) => {
-    setShareDialog({ isOpen: true, fileName })
+  const handleShare = (fileName: string, fileId: string) => {
+    setShareDialog({ isOpen: true, fileName, fileId })
   }
 
   const handleFileInfo = (file: TFile) => {
@@ -152,7 +152,7 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
                   <Download className="h-4 w-4" />
                 )}
               </Button>
-              <Button size="icon" variant="ghost" onClick={() => handleShare(file.fileName)}>
+              <Button size="icon" variant="ghost" onClick={() => handleShare(file.fileName, file.fileId)}>
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button

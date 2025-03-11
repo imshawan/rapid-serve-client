@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { lruCache, redis } from '../db';
 import app from "@/config/app.json"
 import { parseSizeToBytes } from '../utils/common';
+import filterSensitiveData from '../db/plugins/filter-sensitive-data';
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -166,33 +167,6 @@ userSchema.pre('save', async function (next) {
   }
 });
 
-// Remove sensitive fields after update operations and invalidate the cache
-["updateOne", "findOneAndUpdate"].forEach((hook: any) => {
-  userSchema.post(hook, async function (doc) {
-    if (doc) {
-      Object.keys(sensitiveFields).forEach((field) => {
-        if (field.includes(".")) {
-          // Handle nested fields (e.g., "security.twoFactorSecret")
-          const [parent, child] = field.split(".");
-          if (doc[parent as keyof IUser]) {
-            doc[parent as keyof IUser][child] = undefined;
-          }
-        } else {
-          doc.set(field, undefined);
-        }
-      });
-
-      let key = String(doc._id)
-
-      // Delete from LRU Cache
-      lruCache.delete(key)
-
-      // Delete from Redis
-      await redis?.del(key)
-    }
-  })
-});
-
 // Invalidate the cache after delete operations
 ["findOneAndDelete", "deleteOne"].forEach((hook: any) => {
   userSchema.post(hook, async function (doc) {
@@ -206,23 +180,14 @@ userSchema.pre('save', async function (next) {
   })
 });
 
-// Method to retrieve sensitive data only in specific cases, else the fields are not captured
-["find", "findOne"].forEach((hook: any) => {
-  userSchema.pre(hook, function (next) {
-    const query: any = this;
-    if (!query.options["includeAll"]) {
-      query.select(sensitiveFields);
-    }
-    next();
-  });
-});
-
 // Compare password method
 userSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+userSchema.plugin((schema) => filterSensitiveData(sensitiveFields, schema))
 
 export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 

@@ -84,21 +84,22 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
  * - Uses shortened units (e.g., "2 hrs ago", "5 days ago").
  * - If the date exceeds 11 months, returns a formatted date like "12 March, 2023".
  *
- * @param {Date} date - The date to compare with the current time.
+ * @param {Date | string} date - The date to compare with the current time.
  * @returns {string} - A formatted string representing the time difference.
  */
-export function timeAgo(date: Date): string {
+export function timeAgo(date: Date | string): string {
   const now = new Date()
+  const dateObj = typeof date === "string" ? new Date(date) : date
 
-  const diffInMonths = (now.getFullYear() - date.getFullYear()) * 12 + now.getMonth() - date.getMonth()
+  const diffInMonths = (now.getFullYear() - dateObj.getFullYear()) * 12 + now.getMonth() - dateObj.getMonth()
 
   // If the difference is more than 11 months, return a formatted date
   if (diffInMonths > 11) {
-    return format(date, "d MMMM, yyyy") // Example: "12 March, 2023"
+    return format(dateObj, "d MMMM, yyyy") // Example: "12 March, 2023"
   }
 
   // Get a strict time difference like "2 hours", "5 days", etc.
-  const distance = formatDistanceToNowStrict(date, { roundingMethod: "round", addSuffix: false })
+  const distance = formatDistanceToNowStrict(dateObj, { roundingMethod: "round", addSuffix: false })
 
   // Extract numeric value and unit using standard regex capturing groups
   const match = distance.match(/(\d+)\s(\w+)/)

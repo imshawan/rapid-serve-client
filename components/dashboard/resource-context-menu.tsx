@@ -24,7 +24,7 @@ interface FileContextMenuProps {
   children: React.ReactNode
   onPreview: (file: TFile) => void
   onToggleStar: (fileId: string) => void
-  onShare: (fileName: string) => void
+  onShare: (fileName: string, fileId: string) => void
   onRename: (file: TFile) => void
   onDelete: (fileId: string, fileName: string) => void
   onDownload: (fileId: string) => void
@@ -115,7 +115,7 @@ export function ResourceContextMenu({
               <p className="text-xs text-muted-foreground">Choose how you want to share this file</p>
             </div>
             <ContextMenuSeparator />
-            <ContextMenuItem onClick={() => onShare(file.fileName)} className="cursor-pointer">
+            <ContextMenuItem onClick={() => onShare(file.fileName, file.fileId)} className="cursor-pointer">
               <Users className="mr-2 h-4 w-4" />
               Share with people
             </ContextMenuItem>

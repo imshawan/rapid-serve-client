@@ -1,4 +1,4 @@
-import { Document } from "mongoose"
+import { Document, Types } from "mongoose"
 import { NextApiRequest } from "next"
 import { createClient, RedisClientType } from 'redis';
 import type { File } from "@/lib/models/upload";
@@ -20,6 +20,7 @@ declare global {
     role: string;
   }
 
+  type ViewMode = "grid" | "list";
 
   interface ApiResponse<T = any> {
     success: boolean
@@ -120,10 +121,11 @@ declare global {
   interface UploadChunk {
     hash: string;
     token: string;
+    size: number;
   }
 
   interface FileMetaResponse {
-    success: boolean; 
+    success: boolean;
     chunks: UploadChunk[];
     file: File;
     mimeType: string;
@@ -145,7 +147,7 @@ declare global {
     size: number;
     buffer: Buffer;
   }
-  
+
   interface Pagination {
     data: any[];
     currentPage: number;
@@ -153,13 +155,39 @@ declare global {
     totalPages: number;
     totalItems: number;
     navigation: {
-        current: string;
-        next: string | null;
-        previous: string | null;
+      current: string;
+      next: string | null;
+      previous: string | null;
     };
     start: number;
     end: number;
-}
+  }
+
+  interface SharedWithUser {
+    userId: Types.ObjectId | Partial<User>;
+    name: string
+    email: string
+    profilePicture: string
+    accessLevel: "viewer" | "editor" | "full";
+    sharedAt: Date;
+  };
+
+  type SharedFilePopulated = Omit<Shared, "sharedWith"> & {
+    fileSize: number;
+    fileType: string;
+    fileId: string;
+
+    /**
+     * `sharedWith` is an array of populated users which will contain when I see shared files by me
+     */
+    sharedWith: SharedWithUser[];
+
+    /**
+     * `sharedBy` is an array of populated users which I will see when the file has been shared by someone else
+     */
+    sharedBy?: SharedWithUser[]
+  };
+
 
 }
 

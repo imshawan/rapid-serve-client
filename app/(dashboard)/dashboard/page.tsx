@@ -53,7 +53,7 @@ export default function DashboardPage() {
   const closeAllDialogs = () => {
     setPreviewDialog({ isOpen: false, file: null })
     setRenameDialog({ isOpen: false, file: null })
-    setShareDialog({ isOpen: false, fileName: "" })
+    setShareDialog({ isOpen: false, fileName: "", fileId: "" })
     setFileInfoDialog({ isOpen: false, file: null })
   }
 
@@ -203,8 +203,9 @@ export default function DashboardPage() {
 
       <ShareDialog
         isOpen={shareOpen.isOpen}
-        onClose={() => setShareDialog({ isOpen: false, fileName: "" })}
+        onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
         fileName={shareOpen.fileName}
+        fileId={shareOpen.fileId}
       />
 
       {/* File Info Modal */}

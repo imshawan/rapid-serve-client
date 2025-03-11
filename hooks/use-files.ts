@@ -17,7 +17,9 @@ import {
   loadTrashRequest,
   deleteFromTrashRequest,
   clearTrashRequest,
-  setLoading
+  setLoading,
+  loadRecentFilesRequest,
+  deleteFromRecentsRequest
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -54,7 +56,7 @@ export const useFiles = () => {
     setRenameDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
       dispatch(setFileRenameOpen(payload));
     }, [dispatch]),
-    setShareDialog: useCallback((payload: { isOpen: boolean, fileName: string }) => {
+    setShareDialog: useCallback((payload: { isOpen: boolean, fileName: string, fileId: string }) => {
       dispatch(setFileShareOpen(payload));
     }, [dispatch]),
     setFileInfoDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
@@ -77,6 +79,12 @@ export const useFiles = () => {
     }, [dispatch]),
     clearFilesInTrash: useCallback((onSuccess: Function, onError: Function) => {
       dispatch(clearTrashRequest({onSuccess, onError}));
+    }, [dispatch]),
+    loadRecentFiles: useCallback((payload: { currentPage: number, limit: number }) => {
+      dispatch(loadRecentFilesRequest(payload));
+    }, [dispatch]),
+    deleteFileFromRecents: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
+      dispatch(deleteFromRecentsRequest({ fileId, onSuccess, onError }));
     }, [dispatch]),
 
     ...files

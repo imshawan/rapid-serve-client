@@ -38,5 +38,16 @@ export const files = {
 
   clearAllInTrash: async () => {
     return await http.delete(endpoints.DELETE_ALL_FILES_PERMANENTLY)
+  },
+
+  fetchInRecents: async (page: number, limit: number = 20, search?: string) => {
+    let query: any = { limit: String(limit), page: String(page) }
+    if (search) query['search'] = search;
+
+    let queryParams = new URLSearchParams(query).toString()
+    return await http.get(parseRouteParams(endpoints.LOAD_RECENT_FILES, { queryParams }))
+  },
+  removeRecentFile: async (fileId: string) => {
+    return await http.delete(parseRouteParams(endpoints.DELETE_RECENT_FILE, { fileId }))
   }
 }

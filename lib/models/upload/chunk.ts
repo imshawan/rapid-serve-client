@@ -3,8 +3,10 @@ import mongoose, { InferSchemaType, Document } from 'mongoose';
 
 const chunkSchema = new mongoose.Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
+    ref: "User",
+    index: true
   },
   fileId: {
     type: String,

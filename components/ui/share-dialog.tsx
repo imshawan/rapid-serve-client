@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -28,27 +28,29 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Link2, Mail, Lock, Copy, Check } from "lucide-react"
+import { share } from "@/services/api"
 
 interface ShareDialogProps {
   isOpen: boolean
   onClose: () => void
   fileName: string
+  fileId: string
 }
 
-export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
+export function ShareDialog({ isOpen, onClose, fileName, fileId }: ShareDialogProps) {
   const [shareType, setShareType] = useState<"link" | "email">("link")
   const [isPasswordProtected, setIsPasswordProtected] = useState(false)
   const [password, setPassword] = useState("")
   const [email, setEmail] = useState("")
-  const [permission, setPermission] = useState("view")
+  const [permission, setPermission] = useState("viewer")
   const [isCopied, setIsCopied] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [sharableLink, setSharableLink] = useState("")
   const { toast } = useToast()
 
-  const shareLink = "https://rapidserve.com/share/abc123"
-
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareLink)
+    navigator.clipboard.writeText(sharableLink)
     setIsCopied(true)
     setTimeout(() => setIsCopied(false), 2000)
     toast({
@@ -57,33 +59,118 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
     })
   }
 
+  const handleSwitchChange = (checked: boolean) => {
+    if (permission && (permission === "full" || permission === "editor")) {
+      return toast({
+        description: "You can't remove password protection when permission is " + permission,
+      })
+    }
+    setIsPasswordProtected(checked)
+  }
+
+  const handlePermissonChange = (value: string) => {
+    if (["editor", "full"].includes(String(value)) && !isPasswordProtected) {
+      setIsPasswordProtected(true)
+    }
+    setPermission(value)
+  }
+
   const handleShare = async () => {
+    if (shareType === "email" && !email) {
+      return toast({
+        title: "Error",
+        description: "Please enter an email address",
+        variant: "destructive"
+      })
+    }
+    if (!permission) {
+      return toast({
+        title: "Error",
+        description: "Please select a permission",
+        variant: "destructive"
+      })
+    }
     setIsLoading(true)
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      const payload: any = {
+        fileId,
+        accessLevel: permission,
+      }
+      if (!email) {
+        payload.password = isPasswordProtected ? password : undefined
+      } else {
+        payload.email = email
+      }
+
+      const response = await share.new(payload)
+      if (!response.success) {
+        if (response.error?.details?.length) {
+          let messages: string[] = []
+          response.error?.details.forEach((error: any) => {
+            messages.push(error.message)
+          })
+          toast({
+            title: response.error.code || "Error",
+            description: messages.join(", "),
+            variant: "destructive"
+          })
+          return
+        } else {
+          throw new Error(response.error?.message)
+        }
+      }
+
+      if (!(response.data instanceof Error)) {
+        setSharableLink(location.origin + String(response?.data?.shareableLink))
+      }
+
       if (shareType === "email") {
         toast({
           title: "Shared successfully",
-          description: `${fileName} has been shared with ${email}`
+          description: `${fileName} has been shared with ${email}`,
+          variant: "success",
+          duration: 5000
         })
       } else {
         handleCopyLink()
       }
-      
+
       onClose()
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to share file. Please try again.",
+        description: error.message || "Failed to share file. Please try again.",
         variant: "destructive"
       })
     } finally {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (permission && (permission === "full" || permission === "edit")) {
+      setIsPasswordProtected(true)
+    }
+  }, [permission])
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setSharableLink("")
+    setPermission("")
+    async function loadSharedDetails() {
+      let response = await share.fetchFile(fileId)
+      if (response.success && !(response.data instanceof Error)) {
+        setSharableLink(location.origin + String(response?.data?.sharableLink))
+        setPermission(String(response.data?.linkAccessLevel))
+      }
+    }
+
+    setBusy(true)
+    loadSharedDetails().finally(() => {
+      setBusy(false)
+    })
+  }, [isOpen])
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -94,7 +181,7 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
             Choose how you want to share this file
           </DialogDescription>
         </DialogHeader>
-        
+
         <Tabs defaultValue="link" className="w-full" onValueChange={(v) => setShareType(v as "link" | "email")}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="link">
@@ -106,7 +193,7 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
               Email
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="link" className="space-y-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -118,10 +205,10 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
                 </div>
                 <Switch
                   checked={isPasswordProtected}
-                  onCheckedChange={setIsPasswordProtected}
+                  onCheckedChange={handleSwitchChange}
                 />
               </div>
-              
+
               {isPasswordProtected && (
                 <div className="space-y-2">
                   <Label>Password</Label>
@@ -138,25 +225,25 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
                   </div>
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label>Permission</Label>
-                <Select value={permission} onValueChange={setPermission}>
+                <Select value={permission} onValueChange={handlePermissonChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select permission" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="view">View only</SelectItem>
-                    <SelectItem value="edit">Can edit</SelectItem>
+                    <SelectItem value="viewer">View only</SelectItem>
+                    <SelectItem value="editor">Can edit</SelectItem>
                     <SelectItem value="full">Full access</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Share Link</Label>
                 <div className="flex space-x-2">
-                  <Input value={shareLink} readOnly />
+                  <Input value={sharableLink} readOnly />
                   <Button variant="outline" size="icon" onClick={handleCopyLink}>
                     {isCopied ? (
                       <Check className="h-4 w-4" />
@@ -168,7 +255,7 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="email" className="space-y-4">
             <div className="space-y-4">
               <div className="space-y-2">
@@ -180,7 +267,7 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label>Permission</Label>
                 <Select value={permission} onValueChange={setPermission}>
@@ -188,8 +275,8 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
                     <SelectValue placeholder="Select permission" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="view">View only</SelectItem>
-                    <SelectItem value="edit">Can edit</SelectItem>
+                    <SelectItem value="viewer">View only</SelectItem>
+                    <SelectItem value="editor">Can edit</SelectItem>
                     <SelectItem value="full">Full access</SelectItem>
                   </SelectContent>
                 </Select>
@@ -202,7 +289,7 @@ export function ShareDialog({ isOpen, onClose, fileName }: ShareDialogProps) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleShare} disabled={isLoading}>
+          <Button onClick={handleShare} disabled={isLoading || busy}>
             {isLoading ? "Sharing..." : "Share"}
           </Button>
         </DialogFooter>

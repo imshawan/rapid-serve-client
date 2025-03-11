@@ -44,8 +44,8 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     fileLoading
   } = useFiles();
 
-  const handleShare = (fileName: string) => {
-    setShareDialog({ isOpen: true, fileName })
+  const handleShare = (fileName: string, fileId: string) => {
+    setShareDialog({ isOpen: true, fileName, fileId })
   }
 
   const handleDownload = (fileId: string) => {
@@ -135,7 +135,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare(file.fileName)}>
+                  <DropdownMenuItem onClick={() => handleShare(file.fileName, file.fileId)}>
                     <Share2 className="h-4 w-4 mr-2" />
                     Share
                   </DropdownMenuItem>
@@ -158,8 +158,9 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
 
       <ShareDialog
         isOpen={shareOpen.isOpen}
-        onClose={() => setShareDialog({ isOpen: false, fileName: "" })}
+        onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
         fileName={shareOpen.fileName}
+        fileId={shareOpen.fileId}
       />
 
       {/* File Preview */}

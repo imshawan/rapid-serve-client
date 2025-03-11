@@ -58,8 +58,8 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
   })
   const { toast } = useToast()
 
-  const handleShare = (fileName: string) => {
-    setShareDialog({ isOpen: true, fileName })
+  const handleShare = (fileName: string, fileId: string) => {
+    setShareDialog({ isOpen: true, fileName, fileId })
   }
 
   const handleFileInfo = (file: TFile) => {

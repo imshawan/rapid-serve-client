@@ -2,6 +2,7 @@ import _ from "lodash"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import type { File } from "@/lib/models/upload/file"
 import { SoftDeleteFields } from "@/lib/db/plugins/soft-delete"
+import { Recent } from "@/lib/models/recent"
 
 export type TFile = File & SoftDeleteFields & { isUploading?: boolean }
 
@@ -19,6 +20,12 @@ interface FilesState {
     currentPage: number
     totalPages: number
     hasMore: boolean
+  },
+  recents: {
+    files: Recent[]
+    currentPage: number
+    totalPages: number
+    hasMore: boolean
   }
   starredFiles: string[]
   deletedFiles: Record<string, { deletedAt: Date }>
@@ -30,7 +37,7 @@ interface FilesState {
   hasMore: boolean
   downloadOpen: boolean
   fileMeta: FileMetaResponse | null
-  shareOpen: { isOpen: boolean, fileName: string }
+  shareOpen: { isOpen: boolean, fileName: string, fileId: string }
   fileInfoOpen: { isOpen: boolean, file: TFile | null }
   renameOpen: { isOpen: boolean, file: TFile | null }
   previewOpen: { isOpen: boolean, file: TFile | null }
@@ -52,6 +59,12 @@ const initialState: FilesState = {
     totalPages: 1,
     hasMore: false
   },
+  recents: {
+    files: [],
+    currentPage: 1,
+    totalPages: 1,
+    hasMore: false
+  },
   starredFiles: [],
   deletedFiles: {},
   loading: true,
@@ -62,7 +75,7 @@ const initialState: FilesState = {
   hasMore: true,
   downloadOpen: false,
   fileMeta: null,
-  shareOpen: { isOpen: false, fileName: "" },
+  shareOpen: { isOpen: false, fileName: "", fileId: "" },
   fileInfoOpen: { isOpen: false, file: null },
   renameOpen: { isOpen: false, file: null },
   previewOpen: { isOpen: false, file: null },
@@ -125,7 +138,7 @@ const filesSlice = createSlice({
     },
     loadTrashRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => { },
     loadTrashSuccess: (state, action: PayloadAction<Pagination>) => {
-      state.trash.files = action.payload.data
+      state.trash.files = _.uniqBy([...state.recents.files, ...action.payload.data], "fileId")
       state.trash.totalPages = action.payload.totalPages
       state.trash.hasMore = action.payload.currentPage > (action.payload.end + 1)
       state.trash.currentPage = action.payload.currentPage
@@ -146,7 +159,7 @@ const filesSlice = createSlice({
     setFileRenameOpen: (state, action: PayloadAction<{ isOpen: boolean, file: TFile | null }>) => {
       state.renameOpen = action.payload
     },
-    setFileShareOpen: (state, action: PayloadAction<{ isOpen: boolean, fileName: string }>) => {
+    setFileShareOpen: (state, action: PayloadAction<{ isOpen: boolean, fileName: string, fileId: string }>) => {
       state.shareOpen = action.payload
     },
     setDeleteOpen: (state, action: PayloadAction<{ isOpen: boolean, fileId: string | null, fileName: string | null }>) => {
@@ -181,6 +194,17 @@ const filesSlice = createSlice({
     clearTrashRequest: (state, action: PayloadAction<{ onSuccess: Function, onError: Function }>) => { },
     clearTrashSuccess: (state) => {
       state.trash.files = []
+    },
+    loadRecentFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => { },
+    loadRecentFilesSuccess: (state, action: PayloadAction<Pagination>) => {
+      state.recents.files = _.uniqBy([...state.recents.files, ...action.payload.data], "fileId")
+      state.recents.totalPages = action.payload.totalPages
+      state.recents.hasMore = action.payload.currentPage > (action.payload.end + 1)
+      state.recents.currentPage = action.payload.currentPage
+    },
+    deleteFromRecentsRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
+    deleteFromRecents: (state, action: PayloadAction<{ fileId: string }>) => {
+      state.recents.files = state.recents.files.filter(f => f.fileId !== action.payload.fileId)
     }
   },
 })
@@ -201,6 +225,8 @@ export const {
   deleteFileSuccess,
   deleteFromTrashRequest,
   deleteFromTrash,
+  deleteFromRecentsRequest,
+  deleteFromRecents,
   addFileToList,
   searchFilesRequest,
   searchFilesSuccess,
@@ -215,6 +241,8 @@ export const {
   loadTrashRequest,
   loadTrashSuccess,
   clearTrashRequest,
-  clearTrashSuccess
+  clearTrashSuccess,
+  loadRecentFilesRequest,
+  loadRecentFilesSuccess
 } = filesSlice.actions
 export default filesSlice.reducer

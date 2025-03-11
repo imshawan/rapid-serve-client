@@ -5,6 +5,9 @@ import { File, Chunk } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
 import { incrementStorageUsageCount } from "@/lib/user"
+import { Recent } from "@/lib/models/recent"
+import { Shared } from "@/lib/models/shared"
+import { Types } from "mongoose"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 
@@ -13,7 +16,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const { fileId } = req.query as { [key: string]: string }
-  const userId = String(req.user?.userId)
+  const userId = new Types.ObjectId(req.user?.userId)
 
   try {
     await initializeDbConnection()
@@ -26,7 +29,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const [, , updated] = await Promise.all([
       file.restore(),
       Chunk.restoreMany({ hash: { $in: file.chunkHashes }, userId }),
-      incrementStorageUsageCount(userId, file.fileSize)
+      incrementStorageUsageCount(String(userId), file.fileSize),
+      Recent.restoreMany({ fileId }),
+      Shared.restoreMany({ fileId })
     ])
 
     return formatApiResponse(res, { fileId, used: updated?.storageUsed || 0 }, "File restored successfully", HttpStatus.OK)

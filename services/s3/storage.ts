@@ -268,7 +268,7 @@ export async function getChunkStreamFromBucket(fileId: string, hash: string, nod
     // Return the S3 response body as a readable stream
     return response.Body as Readable;
   } catch (error) {
-    console.error(`Error streaming from S3 [Node: ${nodeId}, Key: ${fileId}/${hash}]`, error);
+    console.error("Error streaming from S3", error);
     throw new Error("Failed to stream chunk from storage node");
   }
 }

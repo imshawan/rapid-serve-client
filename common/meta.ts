@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Share2,
 } from "lucide-react";
-"w-6 h-6 text-blue-600"
+
 export const stats = [
   { value: "99.99%", label: "Uptime Guarantee" },
   { value: "50ms", label: "Global Latency" },

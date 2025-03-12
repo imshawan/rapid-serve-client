@@ -129,7 +129,6 @@ export function ShareDialog({ isOpen, onClose, fileName, fileId }: ShareDialogPr
         toast({
           title: "Shared successfully",
           description: `${fileName} has been shared with ${email}`,
-          variant: "success",
           duration: 5000
         })
       } else {

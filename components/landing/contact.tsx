@@ -28,7 +28,6 @@ export function Contact() {
       toast({
         title: "Form submitted successfully!",
         description: "We've received your message. Give us some moment, we'll respond back showtly.",
-        variant: "success"
       })
     }
   };

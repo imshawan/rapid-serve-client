@@ -43,7 +43,6 @@ function* registerSaga(action: PayloadAction<{ name: string; email: string; pass
     toast({
       title: "Success",
       description: "Account created successfully!",
-      variant: "success",
     })
 
     yield put(registerSuccess({ user: response.data.user, token: response.data.token }))
@@ -86,7 +85,6 @@ function* updateProfileSaga(action: PayloadAction<{ user: Partial<IUser>; onSucc
     toast({
       title: "Success",
       description: response.data.message,
-      variant: "success",
     })
   } catch (error: any) {
     yield put(requestFailure(error.response?.data?.message || "Profile update failed"))

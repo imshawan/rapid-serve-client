@@ -138,7 +138,6 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
       toast({
         title: "Upload successful",
         description: `${file.name} has been uploaded successfully`,
-        variant: "success",
       })
     } catch (error: any) {
       console.error('Upload failed:', error)

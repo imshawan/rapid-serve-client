@@ -145,3 +145,35 @@ export function parseSizeToBytes(sizeStr: string): number {
 
   return value * units[unit]; // Convert to bytes
 }
+
+
+/**
+ * Convert an object URL to a Blob.
+ * 
+ * This function fetches the content of an object URL and returns it as a Blob.
+ * 
+ * @param objectUrl - The object URL pointing to a file or resource.
+ * @returns A Promise resolving to a Blob containing the file data.
+ * @throws Error if the fetch operation fails.
+ */
+export async function objectUrlToBlob(objectUrl: string): Promise<Blob> {
+  const response = await fetch(objectUrl);
+  if (!response.ok) throw new Error("Failed to fetch the object URL");
+  return await response.blob();
+}
+
+/**
+ * Convert an object URL to a text string.
+ * 
+ * This function fetches the content of an object URL and returns it as a text string.
+ * Useful for reading text-based files such as .txt, .csv, .json, or .md.
+ * 
+ * @param objectUrl - The object URL pointing to a text-based file.
+ * @returns A Promise resolving to a string containing the text content.
+ * @throws Error if the fetch operation fails.
+ */
+export async function objectUrlToText(objectUrl: string): Promise<string> {
+  const response = await fetch(objectUrl);
+  if (!response.ok) throw new Error("Failed to fetch the object URL");
+  return await response.text();
+}

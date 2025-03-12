@@ -239,10 +239,11 @@ export async function getChunkFromBucket(fileId: string, hash: string, nodeId: s
  * @param fileId - The unique identifier of the file.
  * @param hash - The hash representing the chunk.
  * @param nodeId - The storage node ID.
+ * @param range - Optional byte range to fetch a specific part of the chunk.
  * @returns A readable stream containing the chunk data.
  * @throws Error if the storage node is not found or if fetching fails.
  */
-export async function getChunkStreamFromBucket(fileId: string, hash: string, nodeId: string): Promise<Readable> {
+export async function getChunkStreamFromBucket(fileId: string, hash: string, nodeId: string, range?: String): Promise<Readable> {
   const node = STORAGE_NODES.find(n => n.id === nodeId);
   if (!node) {
     throw new Error(`Storage node ${nodeId} not found`);
@@ -250,12 +251,15 @@ export async function getChunkStreamFromBucket(fileId: string, hash: string, nod
 
   try {
     const s3Client = getS3Client(node);
-    const response = await s3Client.send(
-      new GetObjectCommand({
-        Bucket: node.bucket,
-        Key: `${node.id}/${fileId}/${hash}`,
-      })
-    );
+    const params: any = {
+      Bucket: node.bucket,
+      Key: `${node.id}/${fileId}/${hash}`,
+    }
+    if (range) {
+      params.Range = range; // Fetch only the requested byte range
+    }
+    
+    const response = await s3Client.send(new GetObjectCommand(params))
 
     if (!response.Body) {
       throw new Error("No data received from S3");

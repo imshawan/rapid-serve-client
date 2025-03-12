@@ -292,7 +292,7 @@ export default function Audio({ file, data }: AudioProps) {
                       className={cn(
                         "block w-full px-4 py-2 text-left rounded-md text-sm",
                         speed === option
-                          ? "bg-blue-500 text-white"
+                          ? "bg-black/80 text-white dark:bg-gray-700"
                           : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                       )}
                       onClick={() => changeSpeed(option)}

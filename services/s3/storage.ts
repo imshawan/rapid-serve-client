@@ -268,7 +268,7 @@ export async function getChunkStreamFromBucket(fileId: string, hash: string, nod
     // Return the S3 response body as a readable stream
     return response.Body as Readable;
   } catch (error) {
-    console.error(`Error streaming from S3 [Node: ${nodeId}, Key: ${fileId}/${hash}]`, error);
+    console.error("Error streaming from S3", error);
     throw new Error("Failed to stream chunk from storage node");
   }
 }
@@ -350,7 +350,7 @@ export async function deleteMultipleFilesFromBucket(files: File[]): Promise<void
   const filesByNode: Record<string, { fileId: string; chunkHashes: string[] }[]> = {};
 
   for (const file of files) {
-    let storageNode = String(file.storageNode)
+    let storageNode = String(file.storageNode);
     if (!filesByNode[storageNode]) {
       filesByNode[storageNode] = [];
     }

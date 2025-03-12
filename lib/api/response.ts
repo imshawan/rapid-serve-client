@@ -193,10 +193,10 @@ export function paginate(items: Array<any>, total: number, limit: number, page: 
   page = Number(page);
 
   const startIndex = (page - 1) * limit;
-  const endIndex = Math.min(startIndex + limit, items.length);
+  const endIndex = Math.min(startIndex + limit, total);
 
   // Calculate the total number of pages
-  const totalPages = Math.ceil(items.length / limit);
+  const totalPages = Math.ceil(total / limit);
 
   // Generate URLs for the current, next, and previous pages
   const currentPageUrl = urlQueryBuilder(baseUrl, { page });
@@ -210,7 +210,7 @@ export function paginate(items: Array<any>, total: number, limit: number, page: 
     currentPage: page,
     limit: limit,
     totalPages: totalPages,
-    totalItems: items.length,
+    totalItems: total,
     navigation,
     start: startIndex,
     end: endIndex

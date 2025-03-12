@@ -4,7 +4,7 @@ import type { File } from "../models/upload"
 
 const RECENTS_TRESHOLD = 30
 
-export const addFileToRecents = async (file: File, userId: string, ip?: string) => {
+export const addFileToRecents = async (file: File, userId: Types.ObjectId, ip?: string) => {
   const { fileId } = file
   const payload = {
     fileId,
@@ -19,7 +19,7 @@ export const addFileToRecents = async (file: File, userId: string, ip?: string) 
   }
   try {
     await Recent.findOneAndUpdate(
-      { fileId, userId: new Types.ObjectId(userId) },
+      { fileId, userId },
       {
         ...payload,
         $inc: { accessCount: 1 },
@@ -28,9 +28,9 @@ export const addFileToRecents = async (file: File, userId: string, ip?: string) 
     )
 
     // Keep only the latest threshold records
-    const totalFiles = await Recent.countDocuments({ userId: new Types.ObjectId(userId) })
+    const totalFiles = await Recent.countDocuments({ userId })
     if (totalFiles > RECENTS_TRESHOLD) {
-      const oldestFile = await Recent.find({ userId: new Types.ObjectId(userId) })
+      const oldestFile = await Recent.find({ userId })
         .sort({ lastAccessed: 1 })
         .limit(1)
       if (oldestFile.length) {

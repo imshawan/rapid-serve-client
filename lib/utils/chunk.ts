@@ -1,4 +1,4 @@
-export const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB
+import { MAX_CHUNK_SIZE } from "@/common/constants"
 
 export async function calculateSHA256(chunk: Blob | Buffer): Promise<string> {
   let arrayBuffer: ArrayBuffer;
@@ -26,7 +26,7 @@ export function splitFileIntoChunks(file: File): Blob[] {
   let start = 0, fileSize = Number(file.size);
 
   while (start < fileSize) {
-    const end = Math.min(start + CHUNK_SIZE, fileSize);
+    const end = Math.min(start + MAX_CHUNK_SIZE, fileSize);
     chunks.push(file.slice(start, end));
     start = end;
   }

@@ -9,6 +9,9 @@ export const downloader = {
     },
     getChunk: async (payload: { params: { token: string, fileId: string, hash: string }}) => {
         return await http.getFile(parseRouteParams(endpoints.DOWNLOAD_CHUNK, payload.params))
-    }
+    },
+    getPreview: async (fileId: string) => {
+        return await http.getFile(parseRouteParams(endpoints.LOAD_PREVIEW, {fileId}))
+    },
 
 }

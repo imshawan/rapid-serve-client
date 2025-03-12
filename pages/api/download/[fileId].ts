@@ -7,6 +7,7 @@ import { generateToken } from "@/services/s3/storage"
 import { addFileToRecents } from "@/lib/user/recents"
 import { getIpAddress } from "@/lib/utils/network"
 import { Shared } from "@/lib/models/shared"
+import { Types } from "mongoose"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -17,7 +18,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     await initializeDbConnection()
 
     const { fileId } = req.query as { [key: string]: string }
-    const userId = String(req.user?.userId)
+    const userId = new Types.ObjectId(req.user?.userId)
 
     // Get file record
     const [file, sharedWithMe] = await Promise.all([
@@ -27,7 +28,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
-    if (String(file.userId) !== userId && !sharedWithMe) {
+    if (String(file.userId) !== String(userId) && !sharedWithMe) {
       return formatApiResponse(res, new ApiError(ErrorCode.FORBIDDEN, "You are not authorized to download this file", HttpStatus.FORBIDDEN))
     }
 
@@ -49,7 +50,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const chunkTokens = await Promise.all(
       file.chunkHashes.map(async (hash) => ({
         hash,
-        token: await generateToken(fileId, hash, userId),
+        token: await generateToken(fileId, hash, String(userId)),
         size: existingChunksSizeMap.get(hash) || 0
       }))
     )

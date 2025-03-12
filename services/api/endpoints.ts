@@ -22,4 +22,6 @@ export const endpoints = {
   SHARE_FILE: "/api/files/share",
   LOAD_SHARED_FILE: "/api/files/shared/{{fileId}}",
   LOAD_SHARED_FILES: "/api/files/shared/list?{{queryParams}}",
+
+  LOAD_PREVIEW: "/api/files/preview/{{fileId}}",
 }

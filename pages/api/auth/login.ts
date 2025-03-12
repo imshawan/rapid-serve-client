@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await initializeDbConnection();
 
         // Find user with all the fields including password
-        const user = await User.findOne({ email }).setOptions({ includeAll: true }) as IUser
+        const user = await User.findOne({ email }).setOptions({ includeAll: true }) as IUser;
         if (!user) {
             throw new ApiError(
                 ErrorCode.UNAUTHORIZED,

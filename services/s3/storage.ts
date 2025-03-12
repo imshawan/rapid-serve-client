@@ -350,7 +350,7 @@ export async function deleteMultipleFilesFromBucket(files: File[]): Promise<void
   const filesByNode: Record<string, { fileId: string; chunkHashes: string[] }[]> = {};
 
   for (const file of files) {
-    let storageNode = String(file.storageNode)
+    let storageNode = String(file.storageNode);
     if (!filesByNode[storageNode]) {
       filesByNode[storageNode] = [];
     }

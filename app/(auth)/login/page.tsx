@@ -17,8 +17,6 @@ import {
 import Link from 'next/link'
 import { LogIn, Loader2, Github, Mail, EyeOff, Eye } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
-import { useToast } from '@/hooks/use-toast'
-import { ApiFailureError } from '@/lib/api/response'
 import {
   Form,
   FormField,
@@ -42,7 +40,6 @@ export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
   const { loadUserProfile } = useUser()
-  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
 
   const form = useForm<LoginFormData>({

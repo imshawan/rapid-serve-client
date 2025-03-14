@@ -29,6 +29,10 @@ async function updateName(req: NextApiRequest, res: NextApiResponse) {
   const userId = String(req.user?.userId)
   const { fileName } = req.body as { fileName: string }
 
+  if (!fileName) {
+    return formatApiResponse(res, new ApiError(ErrorCode.NO_CONTENT, "Nothing to update", HttpStatus.NO_CONTENT))
+  }
+
   try {
     const file = await File.findOne({ fileId, userId }) as File & Document
     if (!file) {

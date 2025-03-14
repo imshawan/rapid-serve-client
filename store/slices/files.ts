@@ -40,7 +40,6 @@ interface FilesState {
   shareOpen: { isOpen: boolean, fileName: string, fileId: string }
   fileInfoOpen: { isOpen: boolean, file: TFile | null }
   renameOpen: { isOpen: boolean, file: TFile | null }
-  previewOpen: { isOpen: boolean, file: TFile | null }
   deleteOpen: { isOpen: boolean, fileId: string | null, fileName: string | null }
 }
 
@@ -78,7 +77,6 @@ const initialState: FilesState = {
   shareOpen: { isOpen: false, fileName: "", fileId: "" },
   fileInfoOpen: { isOpen: false, file: null },
   renameOpen: { isOpen: false, file: null },
-  previewOpen: { isOpen: false, file: null },
   deleteOpen: { isOpen: false, fileId: "", fileName: "" }
 }
 
@@ -149,9 +147,6 @@ const filesSlice = createSlice({
     },
     setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
       state.downloadOpen = action.payload
-    },
-    setFilePreviewOpen: (state, action: PayloadAction<{ isOpen: boolean, file: TFile | null }>) => {
-      state.previewOpen = action.payload
     },
     setFileInfoOpen: (state, action: PayloadAction<{ isOpen: boolean, file: TFile | null }>) => {
       state.fileInfoOpen = action.payload
@@ -230,7 +225,6 @@ export const {
   addFileToList,
   searchFilesRequest,
   searchFilesSuccess,
-  setFilePreviewOpen,
   setFileInfoOpen,
   setFileRenameOpen,
   setFileShareOpen,

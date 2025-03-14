@@ -26,7 +26,7 @@ export function FilePreview({ file, isOpen, onClose, onDownload }: FilePreviewPr
         </DialogHeader>
 
         <div className="flex-1 min-h-[400px] overflow-auto border rounded-md mt-2 bg-muted/20">
-          <Preview file={file} onDownload={onDownload} />
+          {/* <Preview file={file} onDownload={onDownload} /> */}
         </div>
       </DialogContent>
     </Dialog>

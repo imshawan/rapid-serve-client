@@ -6,7 +6,6 @@ import {
   deleteFileRequest,
   addFileToList,
   searchFilesRequest,
-  setFilePreviewOpen,
   setFileRenameOpen,
   setFileShareOpen,
   setFileInfoOpen,
@@ -49,9 +48,6 @@ export const useFiles = () => {
     }, [dispatch]),
     searchFiles: useCallback((search: string, currentPage: number, limit: number) => {
       dispatch(searchFilesRequest({ currentPage, limit, search }));
-    }, [dispatch]),
-    setPreviewDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
-      dispatch(setFilePreviewOpen(payload));
     }, [dispatch]),
     setRenameDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
       dispatch(setFileRenameOpen(payload));

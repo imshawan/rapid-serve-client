@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 interface UnknownProps {
   file: File
   onDownload: (fileId: string) => void
+  outerClassname?: string
+  className?: string
 }
 
 export default function Unknown({ file, onDownload }: UnknownProps) {

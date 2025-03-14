@@ -25,6 +25,10 @@ const fileSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  thumbnail: {
+    type: String,
+    default: ""
+  },
   type: {
     type: String,
     enum: ["file", "folder"],

@@ -3,7 +3,6 @@ import { useCallback } from "react"
 import type { Shared } from "@/lib/models/shared"
 import {
   searchFilesRequest,
-  setFilePreviewOpen,
   setFileRenameOpen,
   setFileShareOpen,
   setFileInfoOpen,
@@ -27,9 +26,6 @@ export const useShared = () => {
     }, [dispatch]),
     searchFiles: useCallback((search: string, currentPage: number, limit: number) => {
       dispatch(searchFilesRequest({ currentPage, limit, search }));
-    }, [dispatch]),
-    setPreviewDialog: useCallback((payload: { isOpen: boolean, file: Shared | null }) => {
-      dispatch(setFilePreviewOpen(payload));
     }, [dispatch]),
     setRenameDialog: useCallback((payload: { isOpen: boolean, file: Shared | null }) => {
       dispatch(setFileRenameOpen(payload));

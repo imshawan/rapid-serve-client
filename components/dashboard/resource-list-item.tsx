@@ -12,6 +12,7 @@ import { ShareDialog } from "../ui/share-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ResourceContextMenu } from "./resource-context-menu";
 import { FilePreview } from "./file-preview";
+import { useRouter } from "next/navigation"
 
 
 interface ResourceGridItemProps {
@@ -30,15 +31,14 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     fileName: null
   })
   const { toast } = useToast()
+  const router = useRouter()
   const {
     shareOpen,
-    previewOpen,
     loadFileMeta,
     setDownloadOpen,
     deleteFile,
     appendUpdatedFile,
     setFileInfoDialog,
-    setPreviewDialog,
     setRenameDialog,
     setShareDialog,
     fileLoading
@@ -71,7 +71,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
   }
 
   const handlePreview = (file: TFile) => {
-    setPreviewDialog({ isOpen: true, file })
+    router.push(["/", file.type, "/", file.fileId].join(""))
   }
 
   const confirmDelete = () => {
@@ -161,14 +161,6 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
         onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
         fileName={shareOpen.fileName}
         fileId={shareOpen.fileId}
-      />
-
-      {/* File Preview */}
-      <FilePreview
-        file={previewOpen.file}
-        isOpen={previewOpen.isOpen}
-        onClose={() => setPreviewDialog({ isOpen: false, file: null })}
-        onDownload={handleDownload}
       />
     </Fragment>
   )

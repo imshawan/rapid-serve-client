@@ -5,6 +5,8 @@ import { useEffect, useState } from "react"
 interface TextProps {
   file: File
   data: string
+  outerClassname?: string
+  className?: string
 }
 
 export default function Text({ file, data }: TextProps) {

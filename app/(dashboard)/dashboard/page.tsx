@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Upload, Grid, List, FileText, FolderPlus, RefreshCw } from "lucide-react"
+import { Upload, Grid, List, FolderPlus, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useInView } from "react-intersection-observer"
 import { UploadDialog } from "@/components/upload-dialog"
@@ -20,7 +20,6 @@ import { CreateFolderDialog } from "@/components/create-folder-dialog"
 import { File } from "@/lib/models/upload"
 import { ResourceGridItem } from "@/components/dashboard/resource-grid-item"
 import { ResourceListItem } from "@/components/dashboard/resource-list-item"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu"
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { FileInfoModal } from "@/components/dashboard/file-info-dialog"
 import { RenameDialog } from "@/components/dashboard/rename-dialog"
@@ -31,7 +30,6 @@ export default function DashboardPage() {
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const { toast } = useToast()
   const { files, loading, hasMore, currentPage, loadFiles, appendUpdatedFile, setFileInfoDialog,
-    setPreviewDialog,
     setRenameDialog,
     setShareDialog,
     renameOpen,
@@ -45,13 +43,12 @@ export default function DashboardPage() {
     setCreateFolderOpen(true)
   }
 
-  const handleViewModeChange = (mode: "grid" | "list") => {
+  const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode)
     closeAllDialogs()
   }
 
   const closeAllDialogs = () => {
-    setPreviewDialog({ isOpen: false, file: null })
     setRenameDialog({ isOpen: false, file: null })
     setShareDialog({ isOpen: false, fileName: "", fileId: "" })
     setFileInfoDialog({ isOpen: false, file: null })
@@ -89,7 +86,7 @@ export default function DashboardPage() {
         description: `File has been renamed to "${newName}".`
       })
     },
-    () => { })
+      () => { })
   }
 
   useEffect(() => {
@@ -129,66 +126,55 @@ export default function DashboardPage() {
 
   return (
     <Fragment>
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <div className="space-y-6 h-full">
-            <div className="flex justify-between items-center">
-              <div className="">
-                <h1 className="text-3xl font-bold">Your Files</h1>
-                <p className="text-muted-foreground">Manage and organize your workspace</p>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border rounded-lg p-1">
-                  <Button
-                    variant={viewMode === "grid" ? "secondary" : "ghost"}
-                    size="icon"
-                    onClick={() => handleViewModeChange("grid")}
-                  >
-                    <Grid className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "secondary" : "ghost"}
-                    size="icon"
-                    onClick={() => handleViewModeChange("list")}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button onClick={() => setUploadModal(true)}>
-                  <Upload className="h-4 w-4" />
-                  <span className="hidden sm:block ml-2">Upload File</span>
-                </Button>
-              </div>
-            </div>
-
-            {files.length > 0 ? (viewMode === "grid" ? <GridView /> : <ListView />) : (
-              loading ? (
-                <div className="flex justify-center p-4 h-[calc(100vh-400px)] items-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : <NoFilesState onUpload={() => setUploadModal(true)} onCreateFolder={handleCreateFolder} />
-            )}
-
-            {/* Intersection Observer target */}
-            <div ref={ref} className="h-10" />
+      <div className="space-y-6 h-full">
+        <div className="flex justify-between items-center">
+          <div className="">
+            <h1 className="text-3xl font-bold">Your Files</h1>
+            <p className="text-muted-foreground">Manage and organize your workspace</p>
           </div>
-        </ContextMenuTrigger>
-        <ContextMenuContent className="w-64">
-          <ContextMenuItem onClick={handleCreateFolder} className="cursor-pointer">
-            <FolderPlus className="mr-2 h-4 w-4" />
-            New Folder
-          </ContextMenuItem>
-          <ContextMenuItem onClick={() => setUploadModal(true)} className="cursor-pointer">
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Files
-          </ContextMenuItem>
-          <ContextMenuSeparator />
-          <ContextMenuItem onClick={handleRefresh} className="cursor-pointer">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </ContextMenuItem>
-        </ContextMenuContent>
-      </ContextMenu>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center border rounded-lg p-1 hidden sm:block">
+              <Button
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => handleViewModeChange("grid")}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                size="icon"
+                onClick={() => handleViewModeChange("list")}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button variant="outline" size="icon" className="hidden sm:flex" onClick={handleRefresh}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={handleCreateFolder} variant="outline" className="">
+              <FolderPlus className="h-4 w-4" />
+              <span className="hidden sm:block ml-2">New Folder</span>
+            </Button>
+            <Button onClick={() => setUploadModal(true)}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:block ml-2">Upload File</span>
+            </Button>
+          </div>
+        </div>
+
+        {files.length > 0 ? (viewMode === "grid" ? <GridView /> : <ListView />) : (
+          loading ? (
+            <div className="flex justify-center p-4 h-[calc(100vh-400px)] items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : <NoFilesState onUpload={() => setUploadModal(true)} onCreateFolder={handleCreateFolder} />
+        )}
+
+        {/* Intersection Observer target */}
+        <div ref={ref} className="h-10" />
+      </div>
+
       {/* Upload Dialog */}
       <UploadDialog open={uploadModal} setOpen={setUploadModal} />
 

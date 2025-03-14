@@ -21,7 +21,6 @@ interface SharedFilesState {
   shareOpen: { isOpen: boolean, fileName: string, fileId: string }
   fileInfoOpen: { isOpen: boolean, file: SharedFilePopulated | null }
   renameOpen: { isOpen: boolean, file: SharedFilePopulated | null }
-  previewOpen: { isOpen: boolean, file: SharedFilePopulated | null }
   deleteOpen: { isOpen: boolean, fileId: string | null, fileName: string | null }
 }
 
@@ -43,7 +42,6 @@ const initialState: SharedFilesState = {
   shareOpen: { isOpen: false, fileName: "", fileId: "" },
   fileInfoOpen: { isOpen: false, file: null },
   renameOpen: { isOpen: false, file: null },
-  previewOpen: { isOpen: false, file: null },
   deleteOpen: { isOpen: false, fileId: "", fileName: "" }
 }
 
@@ -72,9 +70,6 @@ const sharedFilesSlice = createSlice({
     fetchFilesFailure: (state, action: PayloadAction<string>) => {
       state.loading = false
       state.error = action.payload
-    },
-    setFilePreviewOpen: (state, action: PayloadAction<{ isOpen: boolean, file: any }>) => {
-      state.previewOpen = action.payload
     },
     setFileInfoOpen: (state, action: PayloadAction<{ isOpen: boolean, file: any }>) => {
       state.fileInfoOpen = action.payload
@@ -127,7 +122,6 @@ export const {
   loadFilesSuccess,
   searchFilesRequest,
   searchFilesSuccess,
-  setFilePreviewOpen,
   setFileInfoOpen,
   setFileRenameOpen,
   setFileShareOpen,

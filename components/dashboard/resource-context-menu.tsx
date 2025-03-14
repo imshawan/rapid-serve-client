@@ -76,8 +76,8 @@ export function ResourceContextMenu({
       <ContextMenuContent className="w-64">
         {/* Primary Actions */}
         <ContextMenuItem
-          className="cursor-pointer flex items-center"
-          onClick={() => file.type === "folder" ? null : onPreview(file)}
+          className="cursor-pointer flex items-center capitalize"
+          onClick={() => onPreview(file)}
         >
           {file.type === "folder" ? (
             <Fragment>
@@ -93,7 +93,7 @@ export function ResourceContextMenu({
         </ContextMenuItem>
 
         <ContextMenuItem
-          className="cursor-pointer flex items-center"
+          className="cursor-pointer flex items-center capitalize"
           onClick={() => onToggleStar(file.fileId)}
         >
           <Star className={`mr-2 h-4 w-4 ${file.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`} />
@@ -115,11 +115,11 @@ export function ResourceContextMenu({
               <p className="text-xs text-muted-foreground">Choose how you want to share this file</p>
             </div>
             <ContextMenuSeparator />
-            <ContextMenuItem onClick={() => onShare(file.fileName, file.fileId)} className="cursor-pointer">
+            <ContextMenuItem onClick={() => onShare(file.fileName, file.fileId)} className="cursor-pointer capitalize">
               <Users className="mr-2 h-4 w-4" />
               Share with people
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleCopyLink} className="cursor-pointer">
+            <ContextMenuItem onClick={handleCopyLink} className="cursor-pointer capitalize">
               <Clipboard className="mr-2 h-4 w-4" />
               Copy link
             </ContextMenuItem>
@@ -144,17 +144,17 @@ export function ResourceContextMenu({
         </ContextMenuSub>
 
         {/* File Operations */}
-        <ContextMenuItem onClick={() => onRename(file)} className="cursor-pointer">
+        <ContextMenuItem onClick={() => onRename(file)} className="cursor-pointer capitalize">
           <Edit className="mr-2 h-4 w-4" />
           Rename
         </ContextMenuItem>
-        <ContextMenuItem onClick={handleMakeCopy} className="cursor-pointer flex items-center">
+        <ContextMenuItem onClick={handleMakeCopy} className="cursor-pointer flex items-center capitalize">
           <Copy className="mr-2 h-4 w-4" />
           Make a Copy
         </ContextMenuItem>
 
         {file.type !== "folder" && (
-          <ContextMenuItem onClick={() => onDownload(file.fileId)} className="cursor-pointer flex items-center">
+          <ContextMenuItem onClick={() => onDownload(file.fileId)} className="cursor-pointer flex items-center capitalize">
             <Download className="mr-2 h-4 w-4" />
             Download
           </ContextMenuItem>
@@ -168,18 +168,18 @@ export function ResourceContextMenu({
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-56">
 
-            <ContextMenuItem onClick={() => onFileInfo(file)} className="cursor-pointer">
+            <ContextMenuItem onClick={() => onFileInfo(file)} className="cursor-pointer capitalize">
               <Info className="mr-2 h-4 w-4" />
-              File details
+              {file.type} information
             </ContextMenuItem>
 
             <ContextMenuSeparator />
 
-            <ContextMenuItem onClick={handleViewHistory} className="cursor-pointer">
+            <ContextMenuItem onClick={handleViewHistory} className="cursor-pointer capitalize">
               <Activity className="mr-2 h-4 w-4" />
               Activities
             </ContextMenuItem>
-            <ContextMenuItem className="cursor-pointer" onClick={() => console.log("Preview Clicked")}>
+            <ContextMenuItem className="cursor-pointer capitalize" onClick={() => console.log("Preview Clicked")}>
               <Share2 className="mr-2 h-4 w-4" />
               Shared Info
             </ContextMenuItem>
@@ -188,7 +188,7 @@ export function ResourceContextMenu({
 
             <ContextMenuItem
               onClick={() => onDelete(file.fileId, file.fileName)}
-              className="cursor-pointer text-destructive focus:text-destructive"
+              className="cursor-pointer text-destructive focus:text-destructive capitalize"
             >
               <Trash className="mr-2 h-4 w-4" />
               Move to Trash

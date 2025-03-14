@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -33,11 +33,11 @@ import { useAppDispatch, useAppSelector } from "@/store"
 import { permanentlyDeleteFile } from "@/store/slices/files"
 import { useFiles } from "@/hooks/use-files"
 import FileIcon from "@/components/dashboard/file-icon"
-import { formatBytes } from "@/lib/utils/common"
+import { cn, formatBytes, timeAgo } from "@/lib/utils/common"
 import { TrashEmptyState } from "@/components/dashboard/trash-empty-state"
 
 export default function TrashPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selectedFile, setSelectedFile] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [processing, setProcessing] = useState("")
@@ -88,36 +88,78 @@ export default function TrashPage() {
   }, [])
 
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
       {trash.files.map((file) => (
-        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
+        <Card key={file.fileId} className={
+          cn("p-4 hover:shadow-lg transition-shadow group relative w-full mx-auto cursor-pointer",
+            file.type === 'folder'
+              ? "bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 cursor-pointer border border-blue-200 dark:border-blue-800"
+              : "bg-card hover:bg-muted/30 border",
+          )
+        }>
           {(processing === "all" || processing === file.fileId) && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-black/50 rounded-lg">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
             </div>
           )}
-          <div className="flex flex-col items-center space-y-2">
-            <FileIcon fileName={file.fileName} fileType={file.type} />
-            <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
-            <div className="text-xs text-muted-foreground">
-              Deleted on {new Date(file.deletedAt!).toLocaleDateString()}
-              <br />
-              Expires on {new Date(new Date(file.deletedAt!).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}
-            </div>
-            <div className="flex space-x-2">
-              <Button size="icon" variant="ghost" onClick={() => handleRestore(file.fileId)}>
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => openDeleteDialog(file.fileId)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+
+          <div className="absolute top-2 right-2 flex space-x-1">
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" disabled={(processing === "all" || processing === file.fileId)} className={cn(
+                  "h-8 w-8 rounded-full opacity-0 hover:opacity-100",
+                  "group-hover:opacity-100 transition-opacity"
+                )}>
+                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className=""
+                  onClick={() => handleRestore(file.fileId)}
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Restore
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => openDeleteDialog(file.fileId)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+          <div className={cn(
+            "mb-4 flex items-center justify-center h-32 w-full rounded-lg",
+            file.type === 'folder' ? "bg-blue-100/50 dark:bg-blue-900/20" : "bg-secondary"
+          )}>
+            {file.thumbnail ? (
+              <div className="relative w-full h-full rounded-md overflow-hidden">
+                <img
+                  src={file.thumbnail}
+                  alt={file.fileName}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center w-full h-full">
+                <FileIcon fileName={file.fileName} fileType={file.type} />
+              </div>
+            )}
+          </div>
+
+          <div className="w-full">
+            <h3 className="font-medium text-sm truncate max-w-full" title={file.fileName}>
+              {file.fileName}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              {file.type !== 'folder' ? formatBytes(file.fileSize) : `0 items`} {file.deletedAt && " • Expires in " + timeAgo(new Date(new Date(String(file.deletedAt)).getTime() + 30 * 24 * 60 * 60 * 1000), true)}
+            </p>
+          </div>
+
         </Card>
       ))}
     </div>

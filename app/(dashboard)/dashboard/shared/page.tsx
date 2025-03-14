@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
@@ -24,7 +24,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { Download, MoreVertical, Users, Link as LinkIcon, Grid, List, Filter, Search, Share2, FolderPlus } from "lucide-react"
+import { Download, MoreVertical, Users, Link as LinkIcon, Grid, List, Filter, Search, Share2, FolderPlus, Eye } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { useShared } from "@/hooks/use-shared"
@@ -35,53 +35,15 @@ import { Shared } from "@/lib/models/shared"
 import { formatBytes, timeAgo } from "@/lib/utils/common"
 import { EmptySharedState } from "@/components/dashboard/empty-shared-state"
 import { UserList } from "@/components/dashboard/user-list"
+import { FilePreview } from "@/components/dashboard/file-preview"
+import { TFile } from "@/store/slices/files"
 
 export default function SharedPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
-  const { setShareDialog, shareOpen, setFileLoadingState, files, loadFiles, loading } = useShared()
-  const { downloadOpen, setDownloadOpen, loadFileMeta } = useFiles()
+  const { setShareDialog, shareOpen, setFileLoadingState, fileLoading, files, loadFiles, loading } = useShared()
+  const { setDownloadOpen, loadFileMeta } = useFiles()
   const [activeTab, setActiveTab] = useState<any>("shared-with-me")
-  const [filess] = useState([
-    {
-      fileId: "1",
-      name: "Project Proposal.pdf",
-      type: "PDF",
-      size: "2.4 MB",
-      sharedBy: {
-        name: "Alice Johnson",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-      },
-      sharedWith: [
-        {
-          name: "Bob Smith",
-          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-        },
-        {
-          name: "Carol White",
-          avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-        }
-      ],
-      modified: "2024-03-20",
-      preview: "https://images.unsplash.com/photo-1586772002130-b0f3daa6288b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
-    },
-    {
-      fileId: "2",
-      name: "Marketing Strategy.docx",
-      type: "Word",
-      size: "1.8 MB",
-      sharedBy: {
-        name: "Bob Smith",
-        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-      },
-      sharedWith: [
-        {
-          name: "Alice Johnson",
-          avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-        }
-      ],
-      modified: "2024-03-19"
-    }
-  ])
+  const router = useRouter()
 
   const handleDownload = (fileId: string) => {
     setFileLoadingState(fileId)
@@ -97,6 +59,10 @@ export default function SharedPage() {
     setShareDialog({ isOpen: true, fileName, fileId })
   }
 
+  const handlePreview = (file: SharedFilePopulated) => {
+    router.push(["/", file.type, "/", file.fileId].join(""))
+  }
+
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     loadFiles({ currentPage: 1, limit: 10, filter: value, clearOld: true })
@@ -107,7 +73,7 @@ export default function SharedPage() {
   }, [])
 
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
       {files.map((file) => (
         <Card key={file.fileId} className="overflow-hidden hover:shadow-lg transition-shadow">
           <CardContent className="p-0">
@@ -119,27 +85,31 @@ export default function SharedPage() {
                   <FileIcon fileName={file.fileName} fileType={file.type} outerClassName="h-full w-full rounded-sm flex" className="h-full w-full sm:h-[80%] m-auto" />
                 </div>
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button size="icon" variant="secondary" onClick={() => handleDownload(file.fileId)}>
-                    <Download className="h-4 w-4" />
+                  <Button size="icon" variant="secondary" disabled={fileLoading === file.fileId} onClick={() => handleDownload(file.fileId)}>
+                    {
+                      fileLoading === file.fileId ?
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                        : <Download className="h-4 w-4" />
+                    }
                   </Button>
-                  <Button size="icon" variant="secondary">
-                    <LinkIcon className="h-4 w-4" />
+                  <Button size="icon" variant="secondary" onClick={() => handlePreview(file)}>
+                    <Eye className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             )}
             <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <h3 className="font-medium">{file.fileName}</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="space-y-1 max-w-[82%]">
+                  <h3 className="font-medium text-sm truncate max-w-full">{file.fileName}</h3>
+                  <p className="text-xs text-muted-foreground">
                     {formatBytes(file.fileSize)} • {timeAgo(new Date(file.updatedAt))}
                   </p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" disabled={fileLoading === file.fileId}>
+                      {fileLoading === file.fileId ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div> : <MoreVertical className="h-4 w-4" />}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -165,7 +135,7 @@ export default function SharedPage() {
                             <AvatarImage src={item.profilePicture} />
                             <AvatarFallback>{item.name[0]}</AvatarFallback>
                           </Avatar>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-xs text-muted-foreground">
                             Shared by {item.name}
                           </span>
                         </div>
@@ -227,11 +197,18 @@ export default function SharedPage() {
         <TableBody>
           {files.map((file) => (
             <TableRow key={file.fileId}>
-              <TableCell className="font-medium">{file.fileName}</TableCell>
+              <TableCell className="font-medium">
+              <div className="flex items-center gap-2">
+                  <FileIcon fileName={file.fileName} fileType={file.type} className="w-5 h-5" outerClassName="p-2" />
+                  <div className="w-4/5 truncate">
+                    <span className="font-medium truncate">{file.fileName}</span>
+                  </div>
+                </div>
+              </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <HoverCard>
-                    <HoverCardTrigger>
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <div className="flex items-center gap-2">
                       {file.sharedBy && file.sharedBy.length > 0 && (
                         file.sharedBy.map(user => (
                           <>
@@ -243,12 +220,12 @@ export default function SharedPage() {
                           </>
                         ))
                       )}
-                    </HoverCardTrigger>
-                    <HoverCardContent>
-                      <UserList users={file.sharedBy} title="Shared by" />
-                    </HoverCardContent>
-                  </HoverCard>
-                </div>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent>
+                    <UserList users={file.sharedBy} title="Shared by" />
+                  </HoverCardContent>
+                </HoverCard>
               </TableCell>
               <TableCell>
                 <HoverCard>

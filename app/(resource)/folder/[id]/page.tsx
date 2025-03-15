@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Fragment } from "react"
+import { useState, useEffect, Fragment, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/table"
 import { Upload, Grid, List, FolderPlus, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useInView } from "react-intersection-observer"
 import { UploadDialog } from "@/components/upload-dialog"
 import { Download as DownloadDialog } from "@/components/download"
 import { useFiles } from "@/hooks/use-files"
@@ -36,6 +35,9 @@ export default function FolderContentsPage() {
   const [pagination, setPagination] = useState<Partial<Pagination> | null>(null)
   const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[] | []>([])
   const [loading, setLoading] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
+  const observerRef = useRef(null)
+
   const { toast } = useToast()
   const params = useParams()
   const {
@@ -50,7 +52,6 @@ export default function FolderContentsPage() {
     currentProcessingFile,
     setCurrentProcessingFile
   } = useFiles()
-  const { ref, inView } = useInView()
 
   const handleCreateFolder = () => {
     setCreateFolderOpen(true)
@@ -97,7 +98,7 @@ export default function FolderContentsPage() {
       () => { })
   }
 
-  const loadFolderContents = async (page: number = 1, limit: number = 10, search?: string) => {
+  const loadFolderContents = async (page: number = 1, limit: number = 10, search?: string, action: "append" | "overwrite" = "overwrite") => {
     if (!params || !params.id) return;
     try {
       setLoading(true)
@@ -106,9 +107,13 @@ export default function FolderContentsPage() {
         throw new Error(response.error?.message)
       }
       if (response.data && !(response.data instanceof Error)) {
-        let { data, ...pagination } = response.data.paginated
-        setFiles(data)
-        setPagination(pagination)
+        let { data, ...paginationResp } = response.data.paginated
+        if (action === "append") {
+          setFiles(prev => [...prev, ...data])
+        } else {
+          setFiles(data)
+        }
+        setPagination(paginationResp)
         setBreadcrumbs(response.data.breadcrumbs)
         setFolder(response.data.folder)
       }
@@ -124,7 +129,24 @@ export default function FolderContentsPage() {
   }
 
   useEffect(() => {
+    let currentPage = (pagination?.currentPage || 1)
+    if (isFetching && currentPage < (pagination?.totalPages || 1)) {
+      loadFolderContents(currentPage + 1, 10, undefined, "append").then(() => setIsFetching(false))
+    } else {
+      setIsFetching(false)
+    }
+  }, [isFetching])
+
+  useEffect(() => {
     loadFolderContents()
+
+    const io = new IntersectionObserver(([{ isIntersecting, target }]) => {
+      isIntersecting && (setIsFetching(true))
+    }, { threshold: 1 })
+
+    if (observerRef.current) {
+      io.observe(observerRef.current)
+    }
   }, [])
 
   useEffect(() => {
@@ -147,14 +169,6 @@ export default function FolderContentsPage() {
     }
   }, [currentProcessingFile])
 
-
-  // useEffect(() => {
-  //   if (inView && hasMore && !loading) {
-  //     // dispatch(fetchFiles(currentPage))
-  //     loadFiles({currentPage, limit: 10})
-  //   }
-  // }, [inView, hasMore, loading, dispatch])
-
   const GridView = () => (
     <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
       {files.map((file) => <ResourceGridItem key={file.fileId} file={file} onToggleStar={() => { }} onOpenMenu={() => { }} />)}
@@ -167,6 +181,7 @@ export default function FolderContentsPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            <TableHead>Items</TableHead>
             <TableHead>Size</TableHead>
             <TableHead>Modified</TableHead>
             <TableHead className="text-center">Actions</TableHead>
@@ -230,8 +245,12 @@ export default function FolderContentsPage() {
             onCreateFolder={handleCreateFolder} />
         )}
 
+        {isFetching && (<div className="flex justify-center p-4 items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>)}
+
         {/* Intersection Observer target */}
-        <div ref={ref} className="h-10" />
+        <div ref={observerRef} className="" />
       </div>
 
       {/* Upload Dialog */}

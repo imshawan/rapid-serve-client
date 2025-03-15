@@ -125,8 +125,8 @@ const filesSlice = createSlice({
       state.currentPage = 1
       state.hasMore = true
     },
-    fetchFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => {
-      state.loading = true
+    fetchFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number, onSuccess?: Function }>) => {
+      // state.loading = true
       state.error = null
     },
     fetchFilesSuccess: (state, action: PayloadAction<Pagination>) => {

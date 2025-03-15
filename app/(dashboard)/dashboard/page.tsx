@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, Fragment } from "react"
+import { useState, useEffect, Fragment, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -11,13 +11,11 @@ import {
 } from "@/components/ui/table"
 import { Upload, Grid, List, FolderPlus, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useInView } from "react-intersection-observer"
 import { UploadDialog } from "@/components/upload-dialog"
 import { Download as DownloadDialog } from "@/components/download"
 import { useFiles } from "@/hooks/use-files"
 import { NoFilesState } from "@/components/dashboard/no-files"
 import { CreateFolderDialog } from "@/components/create-folder-dialog"
-import { File } from "@/lib/models/upload"
 import { ResourceGridItem } from "@/components/dashboard/resource-grid-item"
 import { ResourceListItem } from "@/components/dashboard/resource-list-item"
 import { ShareDialog } from "@/components/ui/share-dialog"
@@ -28,6 +26,9 @@ export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
+  const observerRef = useRef(null)
+
   const { toast } = useToast()
   const { files, loading, hasMore, currentPage, loadFiles, setFileInfoDialog,
     setRenameDialog,
@@ -38,7 +39,6 @@ export default function DashboardPage() {
     renameFile,
     createFolder: createFolderRequest
   } = useFiles()
-  const { ref, inView } = useInView()
 
   const handleCreateFolder = () => {
     setCreateFolderOpen(true)
@@ -79,15 +79,24 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    loadFiles({ currentPage, limit: 10 })
-  }, [])
+    if (isFetching && hasMore) {
+      loadFiles({currentPage: currentPage + 1, limit: 10, onSuccess: () => setIsFetching(false)})
+    } else {
+      setIsFetching(false)
+    }
+  }, [isFetching])
 
-  // useEffect(() => {
-  //   if (inView && hasMore && !loading) {
-  //     // dispatch(fetchFiles(currentPage))
-  //     loadFiles({currentPage, limit: 10})
-  //   }
-  // }, [inView, hasMore, loading, dispatch])
+  useEffect(() => {
+    loadFiles({ currentPage, limit: 10 })
+
+    const io = new IntersectionObserver(([{ isIntersecting, target }]) => {
+      isIntersecting && (setIsFetching(true))
+    }, { threshold: 1 })
+
+    if (observerRef.current) {
+      io.observe(observerRef.current)
+    }
+  }, [])
 
   const GridView = () => (
     <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
@@ -100,9 +109,10 @@ export default function DashboardPage() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Modified</TableHead>
+            <TableHead className="px-2">Name</TableHead>
+            <TableHead className="px-2">Items</TableHead>
+            <TableHead className="px-2">Size</TableHead>
+            <TableHead className="px-2">Modified</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -143,11 +153,11 @@ export default function DashboardPage() {
             </Button>
             <Button onClick={handleCreateFolder} variant="outline" className="">
               <FolderPlus className="h-4 w-4" />
-              <span className="hidden sm:block ml-2">New Folder</span>
+              <span className="hidden md:block ml-2">New Folder</span>
             </Button>
             <Button onClick={() => setUploadModal(true)}>
               <Upload className="h-4 w-4" />
-              <span className="hidden sm:block ml-2">Upload File</span>
+              <span className="hidden md:block ml-2">Upload File</span>
             </Button>
           </div>
         </div>
@@ -161,7 +171,7 @@ export default function DashboardPage() {
         )}
 
         {/* Intersection Observer target */}
-        <div ref={ref} className="h-10" />
+        <div ref={observerRef} className="" />
       </div>
 
       {/* Upload Dialog */}

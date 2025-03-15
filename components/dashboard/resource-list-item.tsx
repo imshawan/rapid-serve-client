@@ -107,7 +107,8 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
               <span className="font-medium truncate">{file.fileName}</span>
             </div>
           </TableCell>
-          <TableCell className="p-2">{formatBytes(file.fileSize)}</TableCell>
+          <TableCell className="p-2">{file.items || "-"}</TableCell>
+          <TableCell className="p-2">{file.fileSize ? formatBytes(file.fileSize) : "-"}</TableCell>
           <TableCell className="p-2">{new Date(file.updatedAt).toLocaleDateString()}</TableCell>
           <TableCell className="col-span-1 p-2">
             <div className=" flex items-center justify-center gap-1">

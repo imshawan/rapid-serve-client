@@ -233,7 +233,7 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
               {file.fileName}
             </h3>
             <p className="text-xs text-muted-foreground mt-1">
-              {file.type !== 'folder' ? formatBytes(file.fileSize) : `0 items`} • {timeAgo(file.updatedAt)}
+              {file.type !== 'folder' ? formatBytes(file.fileSize) : `${file.items} items`} • {timeAgo(file.updatedAt)}
             </p>
           </div>
         </Card>

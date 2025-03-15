@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { initializeDbConnection } from '@/lib/db';
+import { initializeDbConnection, withCache } from '@/lib/db';
 import { Chunk, File } from '@/lib/models/upload';
 import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
 import { getStorageNodeById, verifyChunkUpload } from "@/services/s3/storage";
 import { Document, Types } from "mongoose";
-import { incrementStorageUsageCount } from "@/lib/user";
+import { incrementFileCountByFolders, incrementStorageUsageCount } from "@/lib/user";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -46,11 +46,33 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Mark file as complete
     file.status = 'complete'
-    
-    const [_, updatedUser] = await Promise.all([
+
+    const parentFolderIds: string[] = []
+    const getParentFolderIdsRecursive = async (parentId: string | null) => {
+      if (!parentId) return;
+
+      const parentFolder = await withCache(`file:${parentId}`, async () => await File.findOne({ fileId: parentId, type: "folder" }))
+      if (parentFolder) {
+        parentFolderIds.push(parentFolder.fileId);
+
+        if (parentFolder.parentId) {
+          await getParentFolderIdsRecursive(parentFolder.parentId);
+        }
+      }
+    }
+
+    const promises: Promise<any>[] = [
       file.save(),
       incrementStorageUsageCount(String(userId), file.fileSize)
-    ])
+    ]
+
+    if (file.parentId) {
+      await getParentFolderIdsRecursive(file.parentId)
+      promises.push(incrementFileCountByFolders(parentFolderIds, 1))
+    }
+
+    const results = await Promise.all(promises)
+    const updatedUser = results[1] as Document & { storageUsed: number }
 
     return formatApiResponse(res, { success: true, file, used: updatedUser?.storageUsed || 0 })
   } catch (error: any) {

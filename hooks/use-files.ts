@@ -35,7 +35,7 @@ export const useFiles = () => {
     setLoading: useCallback((isLoading: boolean) => {
       dispatch(setLoading(isLoading));
     }, [dispatch]),
-    loadFiles: useCallback((payload: { currentPage: number, limit: number }) => {
+    loadFiles: useCallback((payload: { currentPage: number, limit: number, onSuccess?: Function }) => {
       dispatch(fetchFilesRequest(payload));
     }, [dispatch]),
     loadFileMeta: useCallback((fileId: string, onSuccess: Function, onError: Function) => {

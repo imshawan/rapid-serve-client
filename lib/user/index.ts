@@ -33,33 +33,33 @@ export async function decrementStorageUsageCount(userId: string, amount: number)
 }
 
 /**
- * Increments the file count for a specified folder by a given amount.
+ * Increments the file count for a specified folder or folders by a given amount.
  *
- * @param folderId - The ID of the folder whose file count is to be incremented.
+ * @param folderId - The ID of the folders whose file count is to be incremented.
  * @param amount - The amount by which to increment the file count. Must be a positive number.
  * @returns A promise that resolves when the file count has been successfully incremented.
  * @throws Will throw an error if the amount is not a positive number.
  */
-export async function incrementFileCountByFolder(folderId: string, amount: number) {
+export async function incrementFileCountByFolders(folderIds: string[] | string, amount: number) {
   if (amount <= 0) {
     throw new Error("Amount must be a positive number")
   }
-  return await manageFileCountByFolder(folderId, amount)
+  return await manageFileCountByFolders(folderIds, amount)
 }
 
 /**
- * Decrements the file count of a specified folder by a given amount.
+ * Decrements the file count of a specified folder or folders by a given amount.
  *
- * @param folderId - The ID of the folder whose file count is to be decremented.
+ * @param folderId - The ID of the folders whose file count is to be decremented.
  * @param amount - The number by which to decrement the file count. Must be a positive number.
  * @returns A promise that resolves when the file count has been decremented.
  * @throws An error if the amount is not a positive number.
  */
-export async function decrementFileCountByFolder(folderId: string, amount: number) {
+export async function decrementFileCountByFolders(folderIds: string[] | string, amount: number) {
   if (amount <= 0) {
     throw new Error("Amount must be a positive number")
   }
-  return await manageFileCountByFolder(folderId, -amount)
+  return await manageFileCountByFolders(folderIds, -amount)
 }
 
 /**
@@ -96,17 +96,19 @@ async function manageStorageCount(userId: string, amount: number): Promise<User 
 }
 
 /**
- * Updates the file count for a specific folder by a given amount.
+ * Updates the file count for multiple folders by a given amount.
  *
- * @param folderId - The ID of the folder (file.fileId) to update.
+ * @param folderIds - An array of folder IDs (file.fileId) to update.
  * @param amount - The amount to adjust the file count by. This can be a positive or negative number.
- * @returns A promise that resolves to the updated file document.
  * @throws Will throw an error if the update operation fails.
  */
-async function manageFileCountByFolder(folderId: string, amount: number) {
+async function manageFileCountByFolders(folderIds: string[] | string, amount: number) {
+  if (typeof folderIds === "string") {
+    folderIds = [folderIds]
+  }
   try {
-    return await File.findByIdAndUpdate(
-      { _id: folderId },
+    await File.updateMany(
+      { fileId: { $in: folderIds } },
       [
         {
           $set: {

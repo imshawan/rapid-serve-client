@@ -101,6 +101,7 @@ async function get(req: NextApiRequest, res: NextApiResponse) {
     const [files, total] = await Promise.all([
       File.find(query)
         .select(fieldSelection)
+        .sort(sortOptions)
         .skip((pageNumber - 1) * limitNumber)
         .limit(limitNumber)
         .lean(),

@@ -7,41 +7,52 @@ import { Recent } from "@/lib/models/recent"
 export type TFile = File & SoftDeleteFields & { isUploading?: boolean }
 
 interface FilesState {
-  files: TFile[]
+  files: TFile[];
   searchedFiles: {
-    files: TFile[]
-    search: string
-    currentPage: number
-    totalPages: number
-    hasMore: boolean
-  }
+    files: TFile[];
+    search: string;
+    currentPage: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
   trash: {
-    files: TFile[]
-    currentPage: number
-    totalPages: number
-    hasMore: boolean
-  },
+    files: TFile[];
+    currentPage: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
   recents: {
-    files: Recent[]
-    currentPage: number
-    totalPages: number
-    hasMore: boolean
-  }
-  starredFiles: string[]
-  deletedFiles: Record<string, { deletedAt: Date }>
-  loading: boolean
-  fileLoading: string
-  error: string | null
-  currentPage: number
-  totalPages: number
-  hasMore: boolean
-  downloadOpen: boolean
-  fileMeta: FileMetaResponse | null
-  shareOpen: { isOpen: boolean, fileName: string, fileId: string }
-  fileInfoOpen: { isOpen: boolean, file: TFile | null }
-  renameOpen: { isOpen: boolean, file: TFile | null }
-  previewOpen: { isOpen: boolean, file: TFile | null }
-  deleteOpen: { isOpen: boolean, fileId: string | null, fileName: string | null }
+    files: Recent[];
+    currentPage: number;
+    totalPages: number;
+    hasMore: boolean;
+  };
+  currentProcessingFile:
+    | (TFile & {
+        isUploading?: boolean;
+        isUploaded?: boolean;
+        isDeleting?: boolean;
+        isDeleted?: boolean;
+      })
+    | null;
+  starredFiles: string[];
+  deletedFiles: Record<string, { deletedAt: Date }>;
+  loading: boolean;
+  fileLoading: string;
+  error: string | null;
+  currentPage: number;
+  totalPages: number;
+  hasMore: boolean;
+  downloadOpen: boolean;
+  fileMeta: FileMetaResponse | null;
+  shareOpen: { isOpen: boolean; fileName: string; fileId: string };
+  fileInfoOpen: { isOpen: boolean; file: TFile | null };
+  renameOpen: { isOpen: boolean; file: TFile | null };
+  deleteOpen: {
+    isOpen: boolean;
+    fileId: string | null;
+    fileName: string | null;
+  };
 }
 
 const initialState: FilesState = {
@@ -65,6 +76,7 @@ const initialState: FilesState = {
     totalPages: 1,
     hasMore: false
   },
+  currentProcessingFile: null,
   starredFiles: [],
   deletedFiles: {},
   loading: true,
@@ -78,7 +90,6 @@ const initialState: FilesState = {
   shareOpen: { isOpen: false, fileName: "", fileId: "" },
   fileInfoOpen: { isOpen: false, file: null },
   renameOpen: { isOpen: false, file: null },
-  previewOpen: { isOpen: false, file: null },
   deleteOpen: { isOpen: false, fileId: "", fileName: "" }
 }
 
@@ -150,9 +161,6 @@ const filesSlice = createSlice({
     setDownloaderOpen: (state, action: PayloadAction<boolean>) => {
       state.downloadOpen = action.payload
     },
-    setFilePreviewOpen: (state, action: PayloadAction<{ isOpen: boolean, file: TFile | null }>) => {
-      state.previewOpen = action.payload
-    },
     setFileInfoOpen: (state, action: PayloadAction<{ isOpen: boolean, file: TFile | null }>) => {
       state.fileInfoOpen = action.payload
     },
@@ -187,14 +195,16 @@ const filesSlice = createSlice({
         state.files = [(action.payload as TFile), ...state.files]
       }
     },
+    deleteFilePermanentFromTrashRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     deleteFromTrashRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
-    deleteFromTrash: (state, action: PayloadAction<{ fileId: string, used: number }>) => {
+    deleteFromTrash: (state, action: PayloadAction<{ fileId: string, used?: number }>) => {
       state.trash.files = state.trash.files.filter(f => f.fileId !== action.payload.fileId)
     },
     clearTrashRequest: (state, action: PayloadAction<{ onSuccess: Function, onError: Function }>) => { },
     clearTrashSuccess: (state) => {
       state.trash.files = []
     },
+    restoreAllFromTrashRequest: (state, action: PayloadAction<{ onSuccess: Function, onError: Function }>) => { },
     loadRecentFilesRequest: (state, action: PayloadAction<{ currentPage: number, limit: number }>) => { },
     loadRecentFilesSuccess: (state, action: PayloadAction<Pagination>) => {
       state.recents.files = _.uniqBy([...state.recents.files, ...action.payload.data], "fileId")
@@ -205,8 +215,12 @@ const filesSlice = createSlice({
     deleteFromRecentsRequest: (state, action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>) => { },
     deleteFromRecents: (state, action: PayloadAction<{ fileId: string }>) => {
       state.recents.files = state.recents.files.filter(f => f.fileId !== action.payload.fileId)
-    }
-  },
+    },
+    createFolderRequest: (state, action: PayloadAction<{ fileName: string, parentId?: string, onSuccess: Function, onError: Function }>) => { },
+    setCurrentProcessingFile: (state, action: PayloadAction<File & { isUploading?: boolean, isUploaded?: boolean, isDeleting?: boolean, isDeleted?: boolean } | null>) => {
+      state.currentProcessingFile = action.payload as TFile
+    },
+  }
 })
 
 export const {
@@ -223,6 +237,7 @@ export const {
   setDownloaderOpen,
   deleteFileRequest,
   deleteFileSuccess,
+  deleteFilePermanentFromTrashRequest,
   deleteFromTrashRequest,
   deleteFromTrash,
   deleteFromRecentsRequest,
@@ -230,11 +245,11 @@ export const {
   addFileToList,
   searchFilesRequest,
   searchFilesSuccess,
-  setFilePreviewOpen,
   setFileInfoOpen,
   setFileRenameOpen,
   setFileShareOpen,
   setFileLoading,
+  setCurrentProcessingFile,
   setDeleteOpen,
   fileRenameRequest,
   fileRenameSuccess,
@@ -242,7 +257,9 @@ export const {
   loadTrashSuccess,
   clearTrashRequest,
   clearTrashSuccess,
+  createFolderRequest,
   loadRecentFilesRequest,
-  loadRecentFilesSuccess
+  loadRecentFilesSuccess,
+  restoreAllFromTrashRequest
 } = filesSlice.actions
 export default filesSlice.reducer

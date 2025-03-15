@@ -29,6 +29,14 @@ export interface SoftDeleteDocument extends Document, SoftDeleteFields {
 }
 
 export interface SoftDeleteModel<T extends Document> extends Model<T> {
+
+  /**
+   * Retrieves a single soft-deleted document that matches the given filter.
+   * @param filter Query conditions to filter the soft-deleted document
+   * @returns A promise resolving to the soft-deleted document or null if not found
+   */
+  findOneSoftDeleted: (filter: Record<string, any>) => Promise<T | null>;
+
   /**
    * Retrieves only the soft-deleted documents that match the given filter.
    * @param filter - Query conditions to filter the soft-deleted documents.
@@ -87,6 +95,10 @@ export default function softDelete<T extends Document>(schema: Schema<T>): void 
     this.isDeleted = false;
     this.deletedAt = null;
     await this.save();
+  };
+
+  schema.statics.findOneSoftDeleted = async function(filter: Record<string, any>): Promise<T | null> {
+    return this.findOne({ ...filter, isDeleted: true, deletedAt: { $ne: null } }).setOptions({ includeDeleted: true });
   };
 
   schema.statics.findAllSoftDeleted = async function (filter: Record<string, any>): Promise<T[]> {

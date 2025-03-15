@@ -20,6 +20,7 @@ import { FilePreview } from "../dashboard/file-preview"
 import { DeleteConfirmationDialog } from "./delete-confirmation"
 import { TFile } from "@/store/slices/files"
 import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
 interface SearchDialogProps {
   isOpen: boolean
@@ -36,10 +37,8 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
     deleteFile,
     appendUpdatedFile,
     setFileInfoDialog,
-    setPreviewDialog,
     setRenameDialog,
     setShareDialog,
-    previewOpen,
     renameFile,
   } = useFiles();
   const [page, setPage] = useState(1)
@@ -57,6 +56,7 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
     fileName: null
   })
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleShare = (fileName: string, fileId: string) => {
     setShareDialog({ isOpen: true, fileName, fileId })
@@ -71,7 +71,7 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
   }
 
   const handlePreview = (file: TFile) => {
-    setPreviewDialog({ isOpen: true, file })
+    router.push(["/", file.type, "/", file.fileId].join(""))
   }
 
   const handleDownload = (fileId: string) => {
@@ -204,14 +204,6 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog confirmation={deleteConfirmation} setConfirmation={setDeleteConfirmation} onDeleteConfirm={confirmDelete} />
-
-      {/* File Preview */}
-      <FilePreview
-        file={previewOpen.file}
-        isOpen={previewOpen.isOpen}
-        onClose={() => setPreviewDialog({ isOpen: false, file: null })}
-        onDownload={handleDownload}
-      />
     </Fragment>
   )
 }

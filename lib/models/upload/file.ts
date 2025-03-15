@@ -25,6 +25,10 @@ const fileSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  thumbnail: {
+    type: String,
+    default: ""
+  },
   type: {
     type: String,
     enum: ["file", "folder"],
@@ -69,7 +73,11 @@ const fileSchema = new mongoose.Schema({
   accessCount: {
     type: Number,
     default: 0,
-  }
+  },
+  items: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 })

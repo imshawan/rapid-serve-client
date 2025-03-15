@@ -17,6 +17,7 @@ import { splitFileIntoChunks, calculateSHA256 } from "@/lib/utils/chunk"
 import { uploader } from "@/services/api/chunk-upload"
 import { useFiles } from "@/hooks/use-files"
 import { useAuth } from "@/hooks/use-auth"
+import { useParams } from "next/navigation"
 
 interface UploadDialogProps {
   open: boolean
@@ -32,8 +33,9 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [isMinimized, setIsMinimized] = useState<boolean>(false)
   const [restoredBreakpoint, setRestoredBreakpoint] = useState(0)
-  const { appendUpdatedFile } = useFiles()
+  const { appendUpdatedFile, setCurrentProcessingFile } = useFiles()
   const { updateAuthUser } = useAuth()
+  const params = useParams()
 
   const reset = () => {
     setFile(null)
@@ -64,12 +66,14 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
 
       const chunks = splitFileIntoChunks(file)
       const chunkHashes = await Promise.all(chunks.map(calculateSHA256))
+      const parentId = String(params?.id) || undefined
 
       // Step 1: Register upload and get pre-signed URLs
       const registerResponse = await uploader.register({
         fileName: file.name,
         fileSize: file.size,
         chunkHashes,
+        parentId
       })
 
       if (!registerResponse.success) {
@@ -92,10 +96,13 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         return
       }
 
-      // Add the file to store
-      appendUpdatedFile({ ...registeredFile, isUploading: true })
+      // Add the file to store only if it is in the root
+      if (!parentId) {
+        appendUpdatedFile({ ...registeredFile, isUploading: true })
+      }
+      setCurrentProcessingFile({ ...registeredFile, isUploading: true })
 
-      // Step 3: Upload missing chunks
+      // Step 2: Upload missing chunks
       const totalChunks = (missingChunks.length + existingChunks.length)
       let completedChunks = existingChunks.length
       let percent = ((completedChunks / totalChunks) * 100)
@@ -132,7 +139,10 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
         updateAuthUser({ storageUsed: resp.data.used })
       }
 
-      appendUpdatedFile(registeredFile)
+      if (!parentId) {
+        appendUpdatedFile(registeredFile)
+      }
+      setCurrentProcessingFile({...registeredFile, isUploaded: true})
 
       // setStatus('success')
       toast({

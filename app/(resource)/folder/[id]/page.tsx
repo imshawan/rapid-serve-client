@@ -17,26 +17,38 @@ import { Download as DownloadDialog } from "@/components/download"
 import { useFiles } from "@/hooks/use-files"
 import { NoFilesState } from "@/components/dashboard/no-files"
 import { CreateFolderDialog } from "@/components/create-folder-dialog"
-import { File } from "@/lib/models/upload"
 import { ResourceGridItem } from "@/components/dashboard/resource-grid-item"
 import { ResourceListItem } from "@/components/dashboard/resource-list-item"
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { FileInfoModal } from "@/components/dashboard/file-info-dialog"
 import { RenameDialog } from "@/components/dashboard/rename-dialog"
+import { TFile } from "@/store/slices/files"
+import { files as filesApi } from "@/services/api"
+import { useParams } from "next/navigation"
+import { Breadcrumbs } from "@/components/folders/breadcrumbs"
 
-export default function DashboardPage() {
+export default function FolderContentsPage() {
   const [uploadModal, setUploadModal] = useState(false)
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
+  const [files, setFiles] = useState<TFile[] | []>([])
+  const [folder, setFolder] = useState<TFile | null>(null)
+  const [pagination, setPagination] = useState<Partial<Pagination> | null>(null)
+  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[] | []>([])
+  const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-  const { files, loading, hasMore, currentPage, loadFiles, setFileInfoDialog,
+  const params = useParams()
+  const {
+    setFileInfoDialog,
     setRenameDialog,
     setShareDialog,
     renameOpen,
     shareOpen,
     fileInfoOpen,
     renameFile,
-    createFolder: createFolderRequest
+    createFolder: createFolderRequest,
+    currentProcessingFile,
+    setCurrentProcessingFile
   } = useFiles()
   const { ref, inView } = useInView()
 
@@ -56,16 +68,18 @@ export default function DashboardPage() {
   }
 
   const handleRefresh = () => {
-    loadFiles({ currentPage, limit: 10 })
+    loadFolderContents()
   }
 
   const createFolder = (name: string) => {
-    createFolderRequest(name, undefined, () => {
+    if (!params || !params.id) return;
+    createFolderRequest(name, String(params.id), (folder: TFile) => {
       toast({
         title: "Folder created",
         description: `"${name}" has been created successfully.`,
       })
-    }, () => {})
+      setFiles(files => [folder, ...files])
+    }, () => { })
   }
 
   const confirmRename = (fileId: string, newName: string) => {
@@ -74,13 +88,65 @@ export default function DashboardPage() {
         title: "File renamed",
         description: `File has been renamed to "${newName}".`
       })
+      setFiles(files => files.map(file =>
+        file.fileId === fileId
+          ? { ...file, fileName: newName }
+          : file
+      ))
     },
       () => { })
   }
 
+  const loadFolderContents = async (page: number = 1, limit: number = 10, search?: string) => {
+    if (!params || !params.id) return;
+    try {
+      setLoading(true)
+      const response = await filesApi.fetchFolderContents(String(params.id), page, limit, search)
+      if (!response.success) {
+        throw new Error(response.error?.message)
+      }
+      if (response.data && !(response.data instanceof Error)) {
+        let { data, ...pagination } = response.data.paginated
+        setFiles(data)
+        setPagination(pagination)
+        setBreadcrumbs(response.data.breadcrumbs)
+        setFolder(response.data.folder)
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to load folder contents",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    loadFiles({ currentPage, limit: 10 })
+    loadFolderContents()
   }, [])
+
+  useEffect(() => {
+    if (currentProcessingFile) {
+      setFiles(files => {
+        const fileIndex = files.findIndex(f => f.fileId === currentProcessingFile.fileId)
+        if (fileIndex !== -1) {
+          if (currentProcessingFile.isDeleted) {
+            return files.filter(f => f.fileId !== currentProcessingFile.fileId)
+          }
+          files[fileIndex] = currentProcessingFile
+          return [...files]
+        }
+        return [currentProcessingFile, ...files]
+      })
+
+      if (currentProcessingFile.isUploaded || currentProcessingFile.isDeleted) {
+        setCurrentProcessingFile(null)
+      }
+    }
+  }, [currentProcessingFile])
+
 
   // useEffect(() => {
   //   if (inView && hasMore && !loading) {
@@ -117,10 +183,7 @@ export default function DashboardPage() {
     <Fragment>
       <div className="space-y-6 h-full">
         <div className="flex justify-between items-center">
-          <div className="">
-            <h1 className="text-3xl font-bold">Your Files</h1>
-            <p className="text-muted-foreground">Manage and organize your workspace</p>
-          </div>
+          <h1 className="text-3xl font-bold">Your Files</h1>
           <div className="flex items-center gap-4">
             <div className="flex items-center border rounded-lg p-1 hidden sm:block">
               <Button
@@ -151,13 +214,20 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
+        <div className="">
+          <Breadcrumbs breadcrumbs={breadcrumbs} />
+        </div>
 
         {files.length > 0 ? (viewMode === "grid" ? <GridView /> : <ListView />) : (
           loading ? (
             <div className="flex justify-center p-4 h-[calc(100vh-400px)] items-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-          ) : <NoFilesState onUpload={() => setUploadModal(true)} onCreateFolder={handleCreateFolder} />
+          ) : <NoFilesState
+            title="Folder looks empty"
+            description={folder?.fileName && ("Nothing inside " + folder?.fileName + ". Start uploading files or create a new folder to get started with")}
+            onUpload={() => setUploadModal(true)}
+            onCreateFolder={handleCreateFolder} />
         )}
 
         {/* Intersection Observer target */}

@@ -5,11 +5,13 @@ interface PreviewLoadingProps {
   file: File
   progress?: number
   message?: string
+  outerClassname?: string
+  className?: string
 }
 
 export function FilePreviewLoading({ file, progress, message }: PreviewLoadingProps) {
   return (
-    <div className="flex flex-col justify-center h-full p-6 items-center text-center">
+    <div className="flex flex-col justify-center h-full p-6 pt-0 items-center text-center">
       <div className="relative flex items-center justify-center">
         <FileIcon fileName={file.fileName} fileType={file.type} className="w-16 h-16" />
       </div>

@@ -9,6 +9,15 @@ import { User } from "@/lib/models/user"
 import { parseSizeToBytes } from "@/lib/utils/common"
 import app from "@/config/app.json"
 import { Types } from "mongoose"
+import { z } from 'zod'
+import { validateRequest } from "@/lib/api/validator"
+
+const chunkRegisterSchema = z.object({
+  fileName: z.string().min(1, "File name is required"),
+  fileSize: z.number().min(1, "File size must be greater than 0"),
+  chunkHashes: z.array(z.string().min(1, "Chunk hash must be a non-empty string")).min(1, "At least one chunk hash is required"),
+  parentId: z.string().optional(),
+})
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -17,7 +26,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
   try {
     await initializeDbConnection()
-    const { fileName, fileSize, chunkHashes, parentId } = req.body
+    const data = await validateRequest(chunkRegisterSchema, req.body)
+    const { fileName, fileSize, chunkHashes, parentId } = data
     const userId = new Types.ObjectId(req.user?.userId)
 
     // Check for existing chunks
@@ -78,7 +88,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const file = !invalidChunkGrouping ? existingFile : await File.create({
       userId,
       fileId,
-      parentId,
+      parentId: parentId || null,
       fileName,
       fileSize,
       chunkHashes,

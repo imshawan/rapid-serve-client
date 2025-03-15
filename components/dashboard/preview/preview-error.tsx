@@ -8,6 +8,8 @@ interface ErrorProps {
   onDownload: (fileId: string) => void;
   onRetry?: () => void;
   errorMessage?: string;
+  outerClassname?: string
+  className?: string
 }
 
 export function PreviewError({ file, onDownload, onRetry, errorMessage }: ErrorProps) {

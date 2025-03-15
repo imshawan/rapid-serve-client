@@ -68,7 +68,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     updateData.shareId = uuidv4()
     updateData.linkShared = true
     updateData.fileName = file.fileName
-    console.log("updated", updateData)
 
     const sharedFile = await Shared.findOneAndUpdate(
       { fileId, ownerId: userId },

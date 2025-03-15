@@ -42,6 +42,7 @@ export const ErrorCode = {
   PAYMENT_REQUIRED: "Payment Required",
   FORBIDDEN: "Forbidden",
   NOT_FOUND: "Not Found",
+  NO_CONTENT: "No Content",
   METHOD_NOT_ALLOWED: "Method Not Allowed",
   NOT_ACCEPTABLE: "Not Acceptable",
   PROXY_AUTH_REQUIRED: "Proxy Authentication Required",

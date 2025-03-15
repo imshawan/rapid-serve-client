@@ -6,7 +6,6 @@ import {
   deleteFileRequest,
   addFileToList,
   searchFilesRequest,
-  setFilePreviewOpen,
   setFileRenameOpen,
   setFileShareOpen,
   setFileInfoOpen,
@@ -19,7 +18,11 @@ import {
   clearTrashRequest,
   setLoading,
   loadRecentFilesRequest,
-  deleteFromRecentsRequest
+  deleteFromRecentsRequest,
+  createFolderRequest,
+  setCurrentProcessingFile,
+  restoreAllFromTrashRequest,
+  deleteFilePermanentFromTrashRequest
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -50,9 +53,6 @@ export const useFiles = () => {
     searchFiles: useCallback((search: string, currentPage: number, limit: number) => {
       dispatch(searchFilesRequest({ currentPage, limit, search }));
     }, [dispatch]),
-    setPreviewDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
-      dispatch(setFilePreviewOpen(payload));
-    }, [dispatch]),
     setRenameDialog: useCallback((payload: { isOpen: boolean, file: TFile | null }) => {
       dispatch(setFileRenameOpen(payload));
     }, [dispatch]),
@@ -77,14 +77,29 @@ export const useFiles = () => {
     restoreFile: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
       dispatch(deleteFromTrashRequest({ fileId, onSuccess, onError }));
     }, [dispatch]),
+    restoreAllFromTrash: useCallback((onSuccess: Function, onError: Function) => {
+      dispatch(restoreAllFromTrashRequest({ onSuccess, onError }));
+    }, [dispatch]),
+    deleteFileFromTrash: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
+      dispatch(deleteFromTrashRequest({ fileId, onSuccess, onError }));
+    }, [dispatch]),
+    deleteFileFromTrashPermanent: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
+      dispatch(deleteFilePermanentFromTrashRequest({ fileId, onSuccess, onError }));
+    }, [dispatch]),
     clearFilesInTrash: useCallback((onSuccess: Function, onError: Function) => {
-      dispatch(clearTrashRequest({onSuccess, onError}));
+      dispatch(clearTrashRequest({ onSuccess, onError }));
     }, [dispatch]),
     loadRecentFiles: useCallback((payload: { currentPage: number, limit: number }) => {
       dispatch(loadRecentFilesRequest(payload));
     }, [dispatch]),
     deleteFileFromRecents: useCallback((fileId: string, onSuccess: Function, onError: Function) => {
       dispatch(deleteFromRecentsRequest({ fileId, onSuccess, onError }));
+    }, [dispatch]),
+    createFolder: useCallback((fileName: string, parentId: string | undefined, onSuccess: Function, onError: Function) => {
+      dispatch(createFolderRequest({ fileName, parentId, onSuccess, onError }));
+    }, [dispatch]),
+    setCurrentProcessingFile: useCallback((file: File & { isUploading?: boolean, isUploaded?: boolean, isDeleting?: boolean, isDeleted?: boolean } | null) => {
+      dispatch(setCurrentProcessingFile(file));
     }, [dispatch]),
 
     ...files

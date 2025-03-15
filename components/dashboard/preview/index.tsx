@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+"use client"
+
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { File } from "@/lib/models/upload"
 import { renderers } from "./renderers"
 import { getMimeType } from "@/lib/utils/mimetype";
@@ -6,18 +8,24 @@ import { MAX_PREVIEW_FILE_SIZE } from "@/common/constants";
 import { toast } from "@/hooks/use-toast";
 import { downloader } from "@/services/api/chunk-download";
 import { FilePreviewLoading } from "./preview-loading";
-import {PreviewError} from "./preview-error";
+import { PreviewError } from "./preview-error";
+import { Download as DownloadDialog } from "@/components/download"
+import { ShareDialog } from "@/components/ui/share-dialog";
+import { useFiles } from "@/hooks/use-files";
 
 interface PreviewProps {
   file: File;
-  onDownload: (fileId: string) => void
+  outerClassname?: string
+  className?: string
 }
 
-export function Preview({ file, onDownload }: PreviewProps) {
+export function Preview({ file, className, outerClassname }: PreviewProps) {
   const [loading, setLoading] = useState(false)
   const [previewData, setPreviewData] = useState<string>("")
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState("")
+
+  const { setShareDialog, shareOpen, setFileLoadingState, loadFileMeta, setDownloadOpen } = useFiles()
 
   const mimeType = useMemo(() => getMimeType(file?.fileName || ""), [file?.fileName])
   const fileType = useMemo(() => {
@@ -29,6 +37,20 @@ export function Preview({ file, onDownload }: PreviewProps) {
   }, [mimeType])
 
   const currentFile = useRef("")
+
+  const onDownload = (fileId: string) => {
+    setFileLoadingState(fileId)
+    loadFileMeta(fileId, () => {
+      setDownloadOpen(true)
+      setFileLoadingState("")
+    }, () => {
+      setFileLoadingState("")
+    })
+  }
+
+  const onShare = (fileName: string, fileId: string) => {
+    setShareDialog({ isOpen: true, fileName, fileId })
+  }
 
   useEffect(() => {
     if (!file || file.fileSize > MAX_PREVIEW_FILE_SIZE || file.fileId === currentFile.current) return;
@@ -117,5 +139,17 @@ export function Preview({ file, onDownload }: PreviewProps) {
   }
 
   const Renderer = renderers[fileType as keyof typeof renderers] || renderers.unknown
-  return <Renderer file={file} data={previewData} onDownload={onDownload} mimeType={mimeType} />
+  const props = { className, outerClassname, onDownload, onShare, mimeType }
+  return (
+    <Fragment>
+      <Renderer file={file} data={previewData} {...props} />
+      <DownloadDialog />
+      <ShareDialog
+        isOpen={shareOpen.isOpen}
+        onClose={() => setShareDialog({ isOpen: false, fileName: "", fileId: "" })}
+        fileName={shareOpen.fileName}
+        fileId={shareOpen.fileId}
+      />
+    </Fragment>
+  )
 }

@@ -82,12 +82,14 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 /**
  * Returns a human-readable time difference between a given date and now.
  * - Uses shortened units (e.g., "2 hrs ago", "5 days ago").
+ * - If shortened=false (default), adds "ago" (e.g., "2 days ago").
  * - If the date exceeds 11 months, returns a formatted date like "12 March, 2023".
  *
  * @param {Date | string} date - The date to compare with the current time.
+ * @param {boolean} [shortened=false] - Whether to return a shortened version (without "ago").
  * @returns {string} - A formatted string representing the time difference.
  */
-export function timeAgo(date: Date | string): string {
+export function timeAgo(date: Date | string, shortened: boolean = false): string {
   const now = new Date()
   const dateObj = typeof date === "string" ? new Date(date) : date
 
@@ -108,14 +110,24 @@ export function timeAgo(date: Date | string): string {
   const value = match[1]
   const unit = match[2]
 
-  const shortUnit =
-    unit.startsWith("hour") ? "hr" :
-      unit.startsWith("minute") ? "min" :
-        unit.startsWith("second") ? "sec" :
-          unit.startsWith("day") ? "day" :
-            unit.startsWith("month") ? "mo" : unit
+  const shortUnit: Record<string, string> = {
+    second: "sec",
+    seconds: "secs",
+    minute: "min",
+    minutes: "mins",
+    hour: "hr",
+    hours: "hrs",
+    day: "day",
+    days: "days",
+    month: "mo",
+    months: "mo",
+    year: "yr",
+    years: "yr"
+  }
 
-  return `${value} ${shortUnit} ago` // Example: "2 hrs ago"
+  const formattedUnit = shortUnit[unit] || unit
+
+  return shortened ? `${value} ${formattedUnit}` : `${value} ${formattedUnit} ago` // Example: "2 hrs ago"
 }
 
 /**

@@ -25,9 +25,11 @@ import { ShareDialog } from "@/components/ui/share-dialog"
 import { Download as DownloadDialog } from "@/components/download"
 import { toast } from "@/hooks/use-toast"
 import { RecentEmptyState } from "@/components/dashboard/recent-empty-state"
+import { ResourceGridItem } from "@/components/dashboard/resource-grid-item"
+import { TFile } from "@/store/slices/files"
 
 export default function RecentPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [removing, setRemoving] = useState("")
   const { loadRecentFiles, recents, setShareDialog, shareOpen, fileLoading, setFileLoadingState, loadFileMeta, setDownloadOpen, loading, deleteFileFromRecents } = useFiles()
 
@@ -70,34 +72,9 @@ export default function RecentPage() {
   }, [])
 
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
       {recents.files.map((file) => (
-        <Card key={file.fileId} className="p-4 hover:shadow-lg transition-shadow relative">
-          <div className="flex flex-col items-center space-y-2">
-            <FileIcon fileName={file.fileName} fileType={file.type} />
-            <div className="text-sm font-medium truncate w-full text-center">{file.fileName}</div>
-            <div className="text-xs text-muted-foreground">Accessed {timeAgo(new Date(file.lastAccessed))}</div>
-            <div className="flex space-x-2">
-              <Button size="icon" variant="ghost" onClick={() => handleDownload(file.fileId)}>
-                {(fileLoading === file.fileId) ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
-                ) : (
-                  <Download className="h-4 w-4" />
-                )}
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => handleShare(file.fileName, file.fileId)}>
-                <Share2 className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" className="text-destructive" disabled={removing === file.fileId} onClick={() => handleRemove(file.fileId)}>
-                {removing === file.fileId ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 dark:border-gray-100"></div>
-                ) : (
-                  <X className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <ResourceGridItem key={file.fileId} file={file as TFile} onToggleStar={() => { }} onOpenMenu={() => { }} />
       ))}
     </div>
   )

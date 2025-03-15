@@ -7,6 +7,8 @@ import { validateRequest } from '@/lib/api/validator';
 import { z } from 'zod';
 import { serialize } from "cookie";
 import { isProduction } from "@/lib/config";
+import { parseSizeToBytes } from "@/lib/utils/common";
+import app from "@/config/app.json"
 
 const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -60,6 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 email: user.email,
                 name: user.name,
                 role: user.role,
+                storageLimit: parseSizeToBytes(app.maxStoragePerUser)
             },
         }, String(req.url), startTime, HttpStatus.CREATED);
     } catch (error) {

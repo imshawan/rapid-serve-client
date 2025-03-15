@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { File } from "../models/upload";
 import { User as UserModel } from "../models/user";
 import type { User } from "../models/user";
 
@@ -32,6 +33,36 @@ export async function decrementStorageUsageCount(userId: string, amount: number)
 }
 
 /**
+ * Increments the file count for a specified folder by a given amount.
+ *
+ * @param folderId - The ID of the folder whose file count is to be incremented.
+ * @param amount - The amount by which to increment the file count. Must be a positive number.
+ * @returns A promise that resolves when the file count has been successfully incremented.
+ * @throws Will throw an error if the amount is not a positive number.
+ */
+export async function incrementFileCountByFolder(folderId: string, amount: number) {
+  if (amount <= 0) {
+    throw new Error("Amount must be a positive number")
+  }
+  return await manageFileCountByFolder(folderId, amount)
+}
+
+/**
+ * Decrements the file count of a specified folder by a given amount.
+ *
+ * @param folderId - The ID of the folder whose file count is to be decremented.
+ * @param amount - The number by which to decrement the file count. Must be a positive number.
+ * @returns A promise that resolves when the file count has been decremented.
+ * @throws An error if the amount is not a positive number.
+ */
+export async function decrementFileCountByFolder(folderId: string, amount: number) {
+  if (amount <= 0) {
+    throw new Error("Amount must be a positive number")
+  }
+  return await manageFileCountByFolder(folderId, -amount)
+}
+
+/**
  * Manages the user's storage usage (increment or decrement).
  * @param {string} userId - The ID of the user.
  * @param {number} amount - The amount to modify storageUsed (positive to increase, negative to decrease).
@@ -60,6 +91,34 @@ async function manageStorageCount(userId: string, amount: number): Promise<User 
     );
   } catch (error) {
     console.error("Error updating storage usage:", error);
+    throw error;
+  }
+}
+
+/**
+ * Updates the file count for a specific folder by a given amount.
+ *
+ * @param folderId - The ID of the folder (file.fileId) to update.
+ * @param amount - The amount to adjust the file count by. This can be a positive or negative number.
+ * @returns A promise that resolves to the updated file document.
+ * @throws Will throw an error if the update operation fails.
+ */
+async function manageFileCountByFolder(folderId: string, amount: number) {
+  try {
+    return await File.findByIdAndUpdate(
+      { _id: folderId },
+      [
+        {
+          $set: {
+            items: {
+              $max: [{ $add: ["$items", amount] }, 0]
+            }
+          }
+        }
+      ],
+      { new: true }
+    );
+  } catch (error) {
     throw error;
   }
 }

@@ -22,8 +22,10 @@ export default function Text({ file, data }: TextProps) {
 
   return (
     <div className="w-full h-full p-4 overflow-auto">
-      <pre className="text-sm whitespace-pre-wrap font-mono">
-        {text}
+      <pre className="text-sm whitespace-pre-wrap font-mono bg-border rounded-md p-4 overflow-x-auto">
+        <code className="language-plaintext">
+          {text}
+        </code>
       </pre>
     </div>
   )

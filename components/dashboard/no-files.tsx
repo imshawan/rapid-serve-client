@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { FolderIcon, UploadCloud, FolderPlus, FileQuestion } from "lucide-react"
 
 interface NoFilesStateProps {
+  title?: string
+  description?: string
   onUpload?: () => void
   onCreateFolder?: () => void
   onHelp?: () => void
@@ -12,6 +14,8 @@ interface NoFilesStateProps {
 }
 
 export function NoFilesState({ 
+  title,
+  description,
   onUpload, 
   onCreateFolder,
   onHelp,
@@ -20,8 +24,8 @@ export function NoFilesState({
   return (
     <EmptyState
       icon={<FolderIcon className="h-10 w-10 text-muted-foreground" />}
-      title={username ? `${username}'s workspace is empty` : "No files found"}
-      description="Upload files or create a new folder to get started with your workspace."
+      title={username ? `${username}'s workspace is empty` : (title || "No files found")}
+      description={description || "Upload files or create a new folder to get started with your workspace."}
       action={
         <div className="space-y-4">
           <div className="flex flex-col space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0">

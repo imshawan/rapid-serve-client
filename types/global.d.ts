@@ -188,7 +188,15 @@ declare global {
     sharedBy?: SharedWithUser[]
   };
 
+  interface Breadcrumb {
+    fileId: string;
+    fileName: string;
+    parentId: string;
+  }
 
+  type Sort = "ASC" | "DESC"
+
+  type SortBy<T> = keyof T;
 }
 
 declare module "next" {

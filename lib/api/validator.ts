@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ApiError } from './response';
+import { ApiError, ErrorCode, HttpStatus } from './response';
 
 export type ValidationSchema = z.ZodType<any, any>;
 
@@ -12,9 +12,9 @@ export async function validateRequest<T extends ValidationSchema>(
     } catch (error) {
         if (error instanceof z.ZodError) {
             throw new ApiError(
-                'VALIDATION_ERROR',
+                ErrorCode.VALIDATION_ERROR,
                 'Invalid request data',
-                400,
+                HttpStatus.BAD_REQUEST,
                 error.errors.map(err => ({
                     path: err.path.join('.'),
                     message: err.message,

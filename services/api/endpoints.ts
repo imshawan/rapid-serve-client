@@ -17,11 +17,14 @@ export const endpoints = {
   DELETE_FILE: "/api/files/{{fileId}}",
   DELETE_FILE_PERMANENTLY: "/api/files/trash/{{fileId}}/clear",
   DELETE_ALL_FILES_PERMANENTLY: "/api/files/trash/clear",
-  RESTORE_FILE: "/api/files/{{fileId}}/restore",
+  RESTORE_FILE: "/api/files/trash/{{fileId}}/restore",
+  RESTORE_ALL_FILES: "/api/files/trash/restore-all",
   DELETE_RECENT_FILE: "/api/files/recents/{{fileId}}",
   SHARE_FILE: "/api/files/share",
   LOAD_SHARED_FILE: "/api/files/shared/{{fileId}}",
   LOAD_SHARED_FILES: "/api/files/shared/list?{{queryParams}}",
 
   LOAD_PREVIEW: "/api/files/preview/{{fileId}}",
+  LOAD_FOLDER_CONTENTS: "/api/folders/{{folderId}}?{{queryParams}}",
+  CREATE_FOLDER: "/api/folders",
 }

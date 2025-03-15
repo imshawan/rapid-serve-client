@@ -24,6 +24,10 @@ import {
   loadRecentFilesRequest,
   deleteFromRecents,
   deleteFromRecentsRequest,
+  createFolderRequest,
+  addFileToList,
+  restoreAllFromTrashRequest,
+  deleteFilePermanentFromTrashRequest,
 } from "../slices/files";
 import { files, downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
@@ -151,6 +155,46 @@ function* restoreFileFromTrashSaga(action: PayloadAction<{ fileId: string, onSuc
   }
 }
 
+function* restoreAllFromTrashRequestSaga(action: PayloadAction<{ onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.restoreAllFromTrash)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(clearTrashSuccess())
+    action.payload.onSuccess()
+
+    if (response.data && !isNaN(response.data.used)) {
+      yield put(userUpdate({ storageUsed: response.data.used }))
+    }
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to restore all files",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
+} 
+
+function* deleteFilePermanentFromTrashSaga(action: PayloadAction<{ fileId: string, onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.deleteFilePermanently, action.payload.fileId)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    yield put(deleteFromTrash(response.data))
+    action.payload.onSuccess()
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to delete file permanently",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
+}
+
 function* clearTrashSaga(action: PayloadAction<{ onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
   try {
     const response = yield call(files.clearAllInTrash)
@@ -204,7 +248,29 @@ function* deleteFromRecentsSaga(action: PayloadAction<{ fileId: string, onSucces
     })
     action.payload.onError()
   }
+}
 
+function* createFolderSaga(action: PayloadAction<{ fileName: string, parentId: string, onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  try {
+    const response = yield call(files.createFolder, action.payload.fileName, action.payload.parentId)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    // We don't need to update global files state here since folder contents screen 
+    // manages its own local state and doesn't use the global files state.
+    // The global files state is only used in the dashboard view.
+    if (!action.payload.parentId) {
+      yield put(addFileToList(response.data))
+    }
+    action.payload.onSuccess(response.data)
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to create folder",
+      variant: "destructive"
+    })
+    action.payload.onError()
+  }
 }
 
 export default function* watchFilesSaga() {
@@ -215,7 +281,10 @@ export default function* watchFilesSaga() {
   yield takeLatest(fileRenameRequest.type, updateFileNameSaga)
   yield takeLatest(loadTrashRequest.type, loadFilesInTrashSaga)
   yield takeLatest(deleteFromTrashRequest.type, restoreFileFromTrashSaga)
+  yield takeLatest(restoreAllFromTrashRequest.type, restoreAllFromTrashRequestSaga)
   yield takeLatest(clearTrashRequest.type, clearTrashSaga)
   yield takeLatest(loadRecentFilesRequest.type, fetchRecentFilesSaga)
   yield takeLatest(deleteFromRecentsRequest.type, deleteFromRecentsSaga)
+  yield takeLatest(createFolderRequest.type, createFolderSaga)
+  yield takeLatest(deleteFilePermanentFromTrashRequest.type, deleteFilePermanentFromTrashSaga)
 }

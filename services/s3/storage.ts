@@ -317,7 +317,7 @@ export async function deleteChunksFromBucket(fileId: string, hashes: string[], n
   }
 
   if (hashes.length === 0) {
-    console.log("No chunks to delete.");
+    // console.log("No chunks to delete.");
     return;
   }
 
@@ -373,7 +373,7 @@ export async function deleteMultipleFilesFromBucket(files: File[]): Promise<void
       );
 
       if (objectsToDelete.length === 0) {
-        console.log(`No files to delete for storage node ${nodeId}.`);
+        // console.log(`No files to delete for storage node ${nodeId}.`);
         continue;
       }
 

@@ -29,13 +29,14 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const { toast } = useToast()
-  const { files, loading, hasMore, currentPage, loadFiles, appendUpdatedFile, setFileInfoDialog,
+  const { files, loading, hasMore, currentPage, loadFiles, setFileInfoDialog,
     setRenameDialog,
     setShareDialog,
     renameOpen,
     shareOpen,
     fileInfoOpen,
     renameFile,
+    createFolder: createFolderRequest
   } = useFiles()
   const { ref, inView } = useInView()
 
@@ -59,24 +60,12 @@ export default function DashboardPage() {
   }
 
   const createFolder = (name: string) => {
-    const newFolder = {
-      fileId: crypto.randomUUID(),
-      fileName: name,
-      fileSize: 0,
-      isStarred: false,
-      type: "folder",
-      status: "complete",
-      parentId: "", // Root level folder
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    appendUpdatedFile(newFolder as File)
-
-    toast({
-      title: "Folder created",
-      description: `"${name}" has been created successfully.`,
-    })
+    createFolderRequest(name, undefined, () => {
+      toast({
+        title: "Folder created",
+        description: `"${name}" has been created successfully.`,
+      })
+    }, () => {})
   }
 
   const confirmRename = (fileId: string, newName: string) => {

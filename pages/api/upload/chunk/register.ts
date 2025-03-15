@@ -88,7 +88,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const file = !invalidChunkGrouping ? existingFile : await File.create({
       userId,
       fileId,
-      parentId,
+      parentId: parentId || null,
       fileName,
       fileSize,
       chunkHashes,

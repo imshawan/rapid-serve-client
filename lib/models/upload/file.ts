@@ -73,7 +73,11 @@ const fileSchema = new mongoose.Schema({
   accessCount: {
     type: Number,
     default: 0,
-  }
+  },
+  items: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
 })

@@ -16,7 +16,10 @@ export function Breadcrumb({ file }: BreadCrumbProps) {
 
   return (
     <nav className="items-center text-sm text-gray-600 dark:text-gray-400 mb-4 hidden sm:flex">
-      <Home className="w-4 h-4 text-gray-500 dark:text-gray-300 cursor-pointer" onClick={() => router.push("/dashboard")} />
+      <span className="font-medium text-gray-800 dark:text-gray-200 cursor-pointer flex gap-1" onClick={() => router.push("/dashboard")}>
+        My Drive      
+      </span>
+
       <ChevronRight className="w-4 h-4 mx-1" />
       <span className="font-medium text-gray-800 dark:text-gray-200 cursor-pointer" onClick={() => router.push("/dashboard")}>Files</span>
       <ChevronRight className="w-4 h-4 mx-1" />

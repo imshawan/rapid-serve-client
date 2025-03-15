@@ -12,6 +12,7 @@ import { DeleteConfirmationDialog } from "../ui/delete-confirmation";
 import { ResourceContextMenu } from "./resource-context-menu";
 import { File } from "@/lib/models/upload";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 interface ResourceGridItemProps {
   file: TFile & File;
   onToggleStar: (fileId: string) => void;
@@ -28,7 +29,6 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
   const { toast } = useToast()
   const router = useRouter()
   const {
-    loading,
     loadFileMeta,
     setDownloadOpen,
     deleteFile,
@@ -36,6 +36,7 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
     setRenameDialog,
     setShareDialog,
     setFileLoadingState,
+    setCurrentProcessingFile,
     fileLoading
   } = useFiles();
 
@@ -71,8 +72,10 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
 
   const confirmDelete = () => {
     if (deleteConfirmation.fileId) {
+      setCurrentProcessingFile({...file, isDeleting: true})
       setDeleting(deleteConfirmation.fileId)
       deleteFile(deleteConfirmation.fileId, () => {
+        setCurrentProcessingFile({...file, isDeleted: true})
         toast({
           title: "File moved to trash",
           description: deleteConfirmation.fileName + " has been moved to the trash bin."
@@ -96,9 +99,9 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
         onFileInfo={handleFileInfo}
       >
         <Card key={file.fileId} className={
-          cn("p-4 hover:shadow-lg transition-shadow group relative w-full mx-auto cursor-pointer",
+          cn("p-4 hover:shadow-lg transition-shadow group relative w-full mx-auto",
             file.type === 'folder'
-              ? "bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/30 cursor-pointer border border-blue-200 dark:border-blue-800"
+              ? "hover:bg-blue-100/20 dark:hover:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
               : "bg-card hover:bg-muted/30 border",
           )
         }>
@@ -108,14 +111,15 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
             </div>
           )}
-          <div className="absolute top-2 right-2 flex space-x-1">
+          <div className="absolute top-2 right-2 flex space-x-1 z-[1]">
             <Button
               variant="ghost"
               size="icon"
               className={cn(
                 "h-8 w-8 rounded-full",
                 file.isStarred ? "opacity-100" : "opacity-0",
-                "group-hover:opacity-100 transition-opacity"
+                "group-hover:opacity-100 transition-opacity",
+                file.type === "folder" && "hover:bg-blue-100 dark:hover:bg-blue-950/30"
               )}
               disabled={( deleting || fileLoading) === file.fileId}
               onClick={(e) => {
@@ -135,7 +139,8 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" disabled={(deleting || fileLoading) === file.fileId} className={cn(
                   "h-8 w-8 rounded-full opacity-0 hover:opacity-100",
-                  "group-hover:opacity-100 transition-opacity"
+                  "group-hover:opacity-100 transition-opacity",
+                  file.type === "folder" && "hover:bg-blue-100 dark:hover:bg-blue-950/30"
                 )}>
                   <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 </Button>
@@ -195,8 +200,30 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
                 />
               </div>
             ) : (
-              <div className="flex items-center justify-center w-full h-full">
+              <div className="flex items-center justify-center w-full h-full relative group group/icon">
                 <FileIcon fileName={file.fileName} fileType={file.type} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/60 rounded-full h-14 w-14 flex items-center justify-center opacity-0 group-hover/icon:opacity-100 transition-opacity blur-[0.5px]">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-white hover:bg-transparent hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handlePreview(file)
+                            }}
+                          >
+                            <Eye className="h-5 w-5" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{file.type === "folder" ? "Open Folder" : "Preview File"}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -209,15 +236,6 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
               {file.type !== 'folder' ? formatBytes(file.fileSize) : `0 items`} • {timeAgo(file.updatedAt)}
             </p>
           </div>
-
-          {file.type === 'folder' && (
-            <div className={cn(
-              "absolute inset-0 flex items-center justify-center bg-blue-500/10 rounded-lg opacity-0 transition-opacity",
-              "group-hover:opacity-100"
-            )}>
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Open folder</span>
-            </div>
-          )}
         </Card>
 
       </ResourceContextMenu>

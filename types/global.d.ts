@@ -20,6 +20,29 @@ declare global {
     role: string;
   }
 
+  namespace AppSettings {
+    interface Appearance {
+      theme: string,
+      language: string
+    }
+    
+    interface Notifications {
+      email: boolean,
+      desktop: boolean,
+      sharing: boolean,
+      comments: boolean
+    }
+    interface Privacy {
+      twoFactor: boolean,
+      publicLinks: boolean,
+      deviceHistory: boolean,
+      activityLog: boolean
+    }
+    interface Storage {
+      limit: string
+    }
+  }
+
   type ViewMode = "grid" | "list";
 
   interface ApiResponse<T = any> {
@@ -85,19 +108,6 @@ declare global {
     updatedAt: Date
     comparePassword(candidatePassword: string): Promise<boolean>
   }
-
-  // interface File {
-  //   id: string
-  //   name: string
-  //   type: string
-  //   size: string
-  //   modified: string
-  //   path: string
-  //   isStarred: boolean
-  //   isDeleted: boolean
-  //   deletedAt?: string
-  //   originalPath?: string
-  // }
 
   interface UploadUrl {
     url: string;

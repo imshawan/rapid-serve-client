@@ -42,9 +42,9 @@ export function NotificationSettings() {
             </p>
           </div>
           <Switch
-            checked={settings.notifications.desktop}
+            checked={settings.notifications.push}
             onCheckedChange={(checked) =>
-              updateNotifications({ desktop: checked })
+              updateNotifications({ push: checked })
             }
           />
         </div>

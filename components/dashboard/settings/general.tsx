@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useApp } from "@/hooks/use-app";
 import { Globe, Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -20,6 +21,32 @@ export function GeneralSettings() {
     updateAppearance({ language: value })
   }
 
+  const SkeletonCard = () => (
+    <CardContent className="space-y-4">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>
+              <Skeleton className="w-16 h-4" />
+            </Label>
+            <Skeleton className="w-40 h-3" />
+          </div>
+          <Skeleton className="w-[180px] h-10" />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>
+              <Skeleton className="w-20 h-4" />
+            </Label>
+            <Skeleton className="w-40 h-3" />
+          </div>
+          <Skeleton className="w-[180px] h-10" />
+        </div>
+      </div>
+    </CardContent>
+  )
+
   return (
     <Card>
       <CardHeader>
@@ -29,7 +56,7 @@ export function GeneralSettings() {
         </div>
         <CardDescription>Customize your experience</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      {settings.loading ? <SkeletonCard /> : <CardContent className="space-y-4">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -91,7 +118,7 @@ export function GeneralSettings() {
             </Select>
           </div>
         </div>
-      </CardContent>
+      </CardContent>}
     </Card>
   )
 }

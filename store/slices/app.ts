@@ -71,6 +71,9 @@ export const appSlice = createSlice({
     updateStorage: (state, action: PayloadAction<Partial<AppSettings.Storage>>) => {
       state.settings.storage = _.merge(state.settings.storage, action.payload)
     },
+    setSettingsFromUserProfileRequest: (state) => {
+      state.settings.loading = true
+    },
     setSettingsFromUserProfile: (state, action: PayloadAction<User>) => {
       let {security, subscription, preferences, storageLimit} = action.payload
       let {notifications, ...rest} = preferences
@@ -79,6 +82,7 @@ export const appSlice = createSlice({
       state.settings.notifications = notifications
       state.settings.privacy = _.merge(state.settings.privacy, {twoFactorEnabled: security.twoFactorEnabled})
       state.settings.storage = _.merge(state.settings.storage, subscription, {limit: storageLimit})
+      state.settings.loading = false
     },
     loadPlanRequest: (state) => {},
   },
@@ -91,6 +95,7 @@ export const {
   updatePrivacy,
   updateStorage,
   setSettingsFromUserProfile,
+  setSettingsFromUserProfileRequest,
   setSettingsLoading,
   loadPlanRequest
 } = appSlice.actions

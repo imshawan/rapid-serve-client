@@ -76,6 +76,14 @@ const userSchema = new mongoose.Schema<IUser>(
           type: Boolean,
           default: true,
         },
+        sharing: {
+          type: Boolean,
+          default: true,
+        },
+        comments: {
+          type: Boolean,
+          default: true,
+        },
       },
     },
     security: {
@@ -83,7 +91,6 @@ const userSchema = new mongoose.Schema<IUser>(
         type: Boolean,
         default: false,
       },
-      twoFactorSecret: String,
       lastPasswordChange: {
         type: Date,
         default: Date.now,

@@ -4,6 +4,7 @@ export const endpoints = {
   REGISTER: "/api/user/register",
   USER_PROFILE: "/api/user/profile",
   PROFILE_PICTURE_UPDATE: "/api/user/profile-picture",
+  PLAN_DETAILS: "/api/user/plan",
 
   METADATA_REGISTER: "/api/upload/chunk/register",
   CHUNK_UPLOAD: "/api/upload/chunk/{{fileId}}/{{hash}}?token={{token}}",

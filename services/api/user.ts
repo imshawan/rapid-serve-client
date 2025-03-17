@@ -18,4 +18,8 @@ export const user = {
   updateProfilePicture: async (data: FormData) => {
     return await http.post<any>(endpoints.PROFILE_PICTURE_UPDATE, data, {}, true)
   },
+
+  getPlanDetails: async () => {
+    return await http.get<any>(endpoints.PLAN_DETAILS)
+  }
 }

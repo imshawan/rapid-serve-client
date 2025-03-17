@@ -20,6 +20,43 @@ declare global {
     role: string;
   }
 
+  namespace Statistics {
+    interface Trash {
+      items: number
+      size: number
+    }
+  }
+
+  namespace AppSettings {
+    interface Appearance {
+      theme: string
+      language: string
+      timezone: string
+    }
+
+    interface Notifications {
+      email: boolean,
+      push: boolean,
+      sharing: boolean,
+      comments: boolean,
+      storageWarning: boolean
+    }
+    interface Privacy {
+      twoFactorEnabled: boolean,
+      publicLinks: boolean,
+      deviceHistory: boolean,
+      activityLog: boolean
+    }
+    interface Storage {
+      limit: number
+      plan: "free" | "pro" | "enterprise";
+      status: "active" | "inactive" | "cancelled" | "past_due";
+      autoRenew: boolean;
+      trash: Statistics.Trash | null;
+      used: number | null;
+    }
+  }
+
   type ViewMode = "grid" | "list";
 
   interface ApiResponse<T = any> {
@@ -56,11 +93,12 @@ declare global {
         email: boolean
         push: boolean
         storageWarning: boolean
+        sharing: boolean,
+        comments: boolean,
       }
     }
     security: {
       twoFactorEnabled: boolean
-      twoFactorSecret?: string
       lastPasswordChange: Date
       passwordHistory: string[]
       failedLoginAttempts: number
@@ -85,19 +123,6 @@ declare global {
     updatedAt: Date
     comparePassword(candidatePassword: string): Promise<boolean>
   }
-
-  // interface File {
-  //   id: string
-  //   name: string
-  //   type: string
-  //   size: string
-  //   modified: string
-  //   path: string
-  //   isStarred: boolean
-  //   isDeleted: boolean
-  //   deletedAt?: string
-  //   originalPath?: string
-  // }
 
   interface UploadUrl {
     url: string;

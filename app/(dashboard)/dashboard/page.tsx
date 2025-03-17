@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const observerRef = useRef(null)
 
   const { toast } = useToast()
-  const { files, loading, hasMore, currentPage, loadFiles, setFileInfoDialog,
+  const { files, loading, hasMore, totalPages, currentPage, loadFiles, setFileInfoDialog,
     setRenameDialog,
     setShareDialog,
     renameOpen,
@@ -79,7 +79,7 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    if (isFetching && hasMore) {
+    if (isFetching && hasMore && totalPages > currentPage) {
       loadFiles({currentPage: currentPage + 1, limit: 10, onSuccess: () => setIsFetching(false)})
     } else {
       setIsFetching(false)

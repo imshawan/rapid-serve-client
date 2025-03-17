@@ -1,203 +1,143 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { CreditCard, Download, HardDrive, BarChart3, ArrowRight } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Download,
+} from "lucide-react"
+import { BillingSummary } from "@/components/dashboard/billing/summary"
+import { PlanDetails } from "@/components/dashboard/billing/plan-details"
+import { PaymentMethods } from "@/components/dashboard/billing/payment-methods"
 
 export default function BillingPage() {
-  const storageUsed = 23.4
-  const storageLimit = 100
-  const storagePercentage = (storageUsed / storageLimit) * 100
-
-  const plans = [
+  
+  const invoices = [
     {
-      name: "Basic",
-      price: "$8",
-      storage: "100 GB",
-      features: [
-        "100 GB of storage",
-        "File sharing",
-        "Access on all devices",
-        "Basic support"
-      ],
-      current: true
+      id: "INV-2024-001",
+      date: "Mar 1, 2024",
+      amount: "$24.00",
+      status: "Paid",
+      items: [
+        { name: "Professional Plan", period: "Mar 1 - Mar 31, 2024", amount: "$24.00" }
+      ]
     },
     {
-      name: "Professional",
-      price: "$12",
-      storage: "500 GB",
-      features: [
-        "500 GB of storage",
-        "Advanced sharing",
-        "Priority support",
-        "File version history"
-      ],
-      popular: true
+      id: "INV-2024-002",
+      date: "Feb 1, 2024",
+      amount: "$24.00",
+      status: "Paid",
+      items: [
+        { name: "Professional Plan", period: "Feb 1 - Feb 29, 2024", amount: "$24.00" }
+      ]
     },
     {
-      name: "Enterprise",
-      price: "$24",
-      storage: "2 TB",
-      features: [
-        "2 TB of storage",
-        "Advanced security",
-        "24/7 support",
-        "Admin controls"
+      id: "INV-2024-003",
+      date: "Jan 1, 2024",
+      amount: "$24.00",
+      status: "Paid",
+      items: [
+        { name: "Professional Plan", period: "Jan 1 - Jan 31, 2024", amount: "$24.00" }
       ]
     }
   ]
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Billing & Storage</h1>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5" />
-              Storage Usage
-            </CardTitle>
-            <CardDescription>Monitor your storage consumption</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>{storageUsed} GB used</span>
-                <span>{storageLimit} GB total</span>
-              </div>
-              <Progress value={storagePercentage} />
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-1">
-                <p className="text-muted-foreground">Files</p>
-                <p className="font-medium">1,234</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-muted-foreground">Shared</p>
-                <p className="font-medium">256</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Usage Analytics
-            </CardTitle>
-            <CardDescription>Your storage usage patterns</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Documents</span>
-                <span className="text-sm text-muted-foreground">12.5 GB</span>
-              </div>
-              <Progress value={45} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Media</span>
-                <span className="text-sm text-muted-foreground">8.2 GB</span>
-              </div>
-              <Progress value={35} />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Other</span>
-                <span className="text-sm text-muted-foreground">2.7 GB</span>
-              </div>
-              <Progress value={20} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Storage Plans</h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {plans.map((plan) => (
-            <Card key={plan.name} className={plan.popular ? "border-primary" : ""}>
-              <CardHeader>
-                <CardTitle>{plan.name}</CardTitle>
-                <CardDescription>
-                  <span className="text-2xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center">
-                      <ArrowRight className="h-4 w-4 mr-2 text-primary" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" variant={plan.current ? "outline" : "default"}>
-                  {plan.current ? "Current Plan" : "Upgrade"}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Billing & Subscription</h1>
+          <p className="text-muted-foreground mt-1">Manage your subscription and payment methods</p>
         </div>
+        <Button>Contact Sales</Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Payment Method
-          </CardTitle>
-          <CardDescription>Manage your payment details</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="rounded-lg bg-muted p-2">
-                <CreditCard className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-medium">•••• •••• •••• 4242</p>
-                <p className="text-sm text-muted-foreground">Expires 12/24</p>
-              </div>
-            </div>
-            <Button variant="ghost">Update</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Current Usage Summary */}
+      <BillingSummary />
+      
+      <PlanDetails />
 
+      {/* Payment Methods */}
+      <PaymentMethods />
+
+      {/* Billing History */}
       <Card>
         <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>View and download your invoices</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Billing History</CardTitle>
+              <CardDescription>View and download your invoices</CardDescription>
+            </div>
+            <Select defaultValue="all">
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Invoices</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {[
-              { date: "Mar 1, 2024", amount: "$8.00", status: "Paid" },
-              { date: "Feb 1, 2024", amount: "$8.00", status: "Paid" },
-              { date: "Jan 1, 2024", amount: "$8.00", status: "Paid" }
-            ].map((invoice, index) => (
-              <div key={index} className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium">{invoice.date}</p>
-                  <p className="text-sm text-muted-foreground">{invoice.amount}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-green-600">{invoice.status}</span>
-                  <Button variant="ghost" size="icon">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell className="font-medium">{invoice.id}</TableCell>
+                  <TableCell>{invoice.date}</TableCell>
+                  <TableCell>{invoice.amount}</TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      {invoice.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm">
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

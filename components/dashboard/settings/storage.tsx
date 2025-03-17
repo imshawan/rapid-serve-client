@@ -1,11 +1,13 @@
 "use client"
 
+import { storageOptions } from "@/common/plans";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/hooks/use-app";
 import { Database } from "lucide-react";
+import { useState } from "react";
 
 export function StorageSettings() {
   const { settings, updateStorage } = useApp()
@@ -42,19 +44,16 @@ export function StorageSettings() {
             </p>
           </div>
           <Select
-            value={settings.storage.limit}
+            value={String(settings.storage.limit)}
             onValueChange={(value) =>
-              updateStorage({ limit: value })
+              updateStorage({ limit: Number(value) })
             }
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select plan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0.050">50 MB</SelectItem>
-              <SelectItem value="0.50">500 MB</SelectItem>
-              <SelectItem value="1">1 GB</SelectItem>
-              <SelectItem value="5">5 GB</SelectItem>
+              {storageOptions.map(opt => <SelectItem key={opt.storageBytes} value={String(opt.storageBytes)}>{opt.storage}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

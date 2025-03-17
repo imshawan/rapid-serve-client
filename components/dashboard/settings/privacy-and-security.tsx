@@ -27,9 +27,9 @@ export function PrivacySettings() {
             </p>
           </div>
           <Switch
-            checked={settings.privacy.twoFactor}
+            checked={settings.privacy.twoFactorEnabled}
             onCheckedChange={(checked) =>
-              updatePrivacy({ twoFactor: checked })
+              updatePrivacy({ twoFactorEnabled: checked })
             }
           />
         </div>

@@ -1,6 +1,7 @@
-import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { loadPlanRequest, updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
 import { useCallback } from "react";
+import { RootState, useAppDispatch, useAppSelector } from "@/store";
+import { loadPlanRequest, setSettingsFromUserProfile, setSettingsFromUserProfileRequest, updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
+import type { User } from "@/lib/models/user";
 
 export const useApp = () => {
     const dispatch = useAppDispatch();
@@ -21,6 +22,9 @@ export const useApp = () => {
         }, [dispatch]),
         loadPlanDetails: useCallback(() => {
             dispatch(loadPlanRequest())
+        }, [dispatch]),
+        loadSettingsFromUserProfile: useCallback(() => {
+           dispatch(setSettingsFromUserProfileRequest())
         }, [dispatch]),
 
         ...app

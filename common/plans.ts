@@ -13,7 +13,6 @@ import {
   Star,
   Server,
   UserCheck,
-  Network
 } from "lucide-react";
 
 export const plans = [
@@ -21,6 +20,7 @@ export const plans = [
     name: "Free",
     price: "$0",
     storage: "50 MB",
+    storageBytes: 50 * 1024 * 1024,
     bandwidth: "500 MB",
     features: [
       { icon: HardDrive, text: "50 MB of storage" },
@@ -34,6 +34,7 @@ export const plans = [
     name: "Basic",
     price: "$8",
     storage: "100 GB",
+    storageBytes: 100 * 1024 * 1024 * 1024,
     bandwidth: "1 TB",
     features: [
       { icon: HardDrive, text: "100 GB of storage" },
@@ -48,6 +49,7 @@ export const plans = [
     name: "Professional",
     price: "$24",
     storage: "500 GB",
+    storageBytes: 500 * 1024 * 1024 * 1024,
     bandwidth: "5 TB",
     features: [
       { icon: HardDrive, text: "500 GB of storage" },
@@ -65,6 +67,7 @@ export const plans = [
     name: "Enterprise",
     price: "Custom",
     storage: "Custom",
+    storageBytes: 0, // Custom storage, so no fixed value
     bandwidth: "Custom",
     features: [
       { icon: Server, text: "Custom storage limit" },
@@ -78,5 +81,10 @@ export const plans = [
     ],
   },
 ];
+
+export const storageOptions = plans.map(plan => ({
+  storage: plan.storage,
+  storageBytes: plan.storageBytes
+}));
 
 export type PlanName = Lowercase<typeof plans[number]["name"]>;

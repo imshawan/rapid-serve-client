@@ -20,26 +20,40 @@ declare global {
     role: string;
   }
 
+  namespace Statistics {
+    interface Trash {
+      items: number
+      size: number
+    }
+  }
+
   namespace AppSettings {
     interface Appearance {
-      theme: string,
+      theme: string
       language: string
+      timezone: string
     }
-    
+
     interface Notifications {
       email: boolean,
-      desktop: boolean,
+      push: boolean,
       sharing: boolean,
-      comments: boolean
+      comments: boolean,
+      storageWarning: boolean
     }
     interface Privacy {
-      twoFactor: boolean,
+      twoFactorEnabled: boolean,
       publicLinks: boolean,
       deviceHistory: boolean,
       activityLog: boolean
     }
     interface Storage {
-      limit: string
+      limit: number
+      plan: "free" | "pro" | "enterprise";
+      status: "active" | "inactive" | "cancelled" | "past_due";
+      autoRenew: boolean;
+      trash: Statistics.Trash | null;
+      used: number | null;
     }
   }
 
@@ -79,11 +93,12 @@ declare global {
         email: boolean
         push: boolean
         storageWarning: boolean
+        sharing: boolean,
+        comments: boolean,
       }
     }
     security: {
       twoFactorEnabled: boolean
-      twoFactorSecret?: string
       lastPasswordChange: Date
       passwordHistory: string[]
       failedLoginAttempts: number

@@ -1,5 +1,5 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
+import { loadPlanRequest, updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
 import { useCallback } from "react";
 
 export const useApp = () => {
@@ -18,6 +18,9 @@ export const useApp = () => {
         }, [dispatch]),
         updateStorage: useCallback((storage: Partial<AppSettings.Storage>) => {
             dispatch(updateStorage(storage))
+        }, [dispatch]),
+        loadPlanDetails: useCallback(() => {
+            dispatch(loadPlanRequest())
         }, [dispatch]),
 
         ...app

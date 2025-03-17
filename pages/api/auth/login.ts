@@ -49,7 +49,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Generate JWT token
-        const token = await generateToken(user);
+        const [token, filteredUser] = await Promise.all([
+            generateToken(user),
+            User.findById(user._id).select("-_id -__v").lean()
+        ]);
 
         // Store token securely in an HTTP-only cookie
         res.setHeader("Set-Cookie",
@@ -66,12 +69,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return formatApiResponse(res, {
             token,
             user: {
+                ...filteredUser,
                 id: user._id,
-                email: user.email,
-                name: user.name,
-                role: user.role,
-                profilePicture: user.profilePicture,
-                storageUsed: user.storageUsed,
                 storageLimit: parseSizeToBytes(app.maxStoragePerUser)
             },
         }, String(req.url), startTime, HttpStatus.OK);

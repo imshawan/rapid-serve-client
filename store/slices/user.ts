@@ -18,6 +18,8 @@ interface UserStateType {
       email: boolean;
       push: boolean;
       storageWarning: boolean;
+      sharing: boolean;
+      comments: boolean;
     };
   };
   security: {

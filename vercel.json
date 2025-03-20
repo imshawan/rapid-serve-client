@@ -1,3 +1,0 @@
-{
-  "ignoreCommand": "if [ \"$VERCEL_GIT_BRANCH\" = \"development\" ]; then exit 1; fi"
-}

@@ -1,36 +1,182 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# **RapidServe 🚀**
 
-First, run the development server:
+  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Enterprise-Grade Content Distribution Network**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## **Table of Contents**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+  
 
-## Learn More
+- [Introduction](#introduction)
 
-To learn more about Next.js, take a look at the following resources:
+- [Key Features](#key-features)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [System Architecture](docs/system-architecture.md)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Security & Access Control](#security--access-control)
 
-## Deploy on Vercel
+- [Deployment](#deployment)
+- [Environment Variables](#environment-variables)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Future Enhancements](#future-enhancements)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Contributing](#contributing)
+
+- [License](#license)
+
+  
+
+---
+
+  
+
+## **Introduction**
+
+  
+
+**RapidServe** is a **high-performance, monolithic file storage and retrieval system** optimized for **scalability, caching efficiency, and secure access control**. It provides a **scalable, secure, and efficient** solution for storing and distributing files with minimal latency.
+
+  
+
+### **Purpose**
+
+  
+
+RapidServe is designed to:
+
+✅ **Store, retrieve, and distribute files** efficiently.
+
+✅ Ensure **secure file access** with authentication & authorization.
+
+✅ Support **file deduplication, chunking, and multi-layer caching** for optimal performance.
+
+✅ Enable **content preview, sharing, and streaming** with secure tokenized access.
+
+  
+
+### **Scope**
+
+  
+
+RapidServe is built for:
+
+  
+
+-  **Web, Mobile, and Desktop applications** that require file storage and delivery.
+
+- Enterprises requiring **secure, high-availability storage**.
+
+- Optimized **content caching and accelerated downloads**.
+
+  
+
+---
+
+  
+
+## **Key Features**
+
+  
+
+**Efficient File Chunking** – 4MB file chunking for optimal performance.
+
+**Multi-Layer Caching** – LRU and Redis-based distributed caching.
+
+**Secure File Sharing** – Role-Based Access Control (RBAC) with tokenized access.
+
+**Deduplication** – Reduces storage by avoiding redundant uploads.
+
+**Adaptive Streaming** – Video & large file streaming via chunk-based delivery. (upcoming feature)
+
+**High Availability** – Scalable architecture ensuring minimal downtime.
+
+  
+
+---
+
+
+## **Security & Access Control**
+
+  
+
+-  **RBAC (Role-Based Access Control)** → Restricts user permissions.
+
+-  **Secure Tokens for File Access** → Prevents unauthorized downloads.
+
+-  **Data Encryption** → Ensures files are securely stored.
+
+-  **Access Logging & Monitoring** → Detects suspicious activity.
+
+  
+
+---
+
+## **Environment Variables**
+
+Before running the application, create a `.env` file from `.env.example` (in project root). Ensure all necessary values are correctly set before running the application.
+
+## **Deployment**
+
+  
+
+1. **Install Dependencies**
+
+  
+
+2. **Start Development Server**
+
+  
+
+3. **Run Production Build**
+
+---
+## **Future Enhancements**
+
+  
+
+🔹 **Token Refresh Mechanism** for long downloads.
+
+🔹 **Thumbnail & Preview Generation** at upload time.
+
+🔹 **Real-time notifications** for file status updates.
+
+🔹 **File Encryption Mechanisms** for enhanced data security and privacy protection.
+
+---
+
+  
+
+## **Contributing**
+
+  
+
+🚀 **We welcome contributions!**
+
+Whether you're a developer, designer, or documentation enthusiast, there are many ways to contribute to RapidServe. Check out our [Contributing Guidelines](./contributing.md) to get started.
+
+  
+---
+
+  
+
+## **License**
+
+  
+
+📜 **MIT License** – Free to use and modify and distribute it according to the terms of the license
+
+  
+
+---
+
+  
+
+### **RapidServe: Fast, Secure, and Scalable File Distribution! 🚀**
+
+  
+
+This `README.md` is designed to be **developer-friendly, easy to understand, and enterprise-grade**. Let me know if you'd like further refinements! 🚀

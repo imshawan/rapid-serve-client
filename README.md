@@ -76,11 +76,9 @@ RapidServe is built for:
 
 ---
 
-  
 
 ## **Key Features**
 
-  
 
 **Efficient File Chunking** – 4MB file chunking for optimal performance.
 
@@ -94,7 +92,25 @@ RapidServe is built for:
 
 **High Availability** – Scalable architecture ensuring minimal downtime.
 
+---
   
+## **System Architecture**
+
+RapidServe consists of multiple core components to ensure seamless file storage, retrieval, and delivery. Learn more in our [System Architecture Documentation](docs/system-architecture.md).
+
+### **Core Components**
+
+-   **Frontend** – Built with **Next.js & Tailwind CSS**, providing a responsive UI for web, mobile, and desktop.
+    
+-   **Metadata Service** – Handles file metadata storage, integrity validation, and deduplication.
+    
+-   **File Storage Service** – Manages file chunking, storage, retrieval, and cloud-based replication.
+    
+-   **Security Layer** – Implements **RBAC, secure tokens, and encrypted storage**.
+    
+-   **Caching System** – Multi-layer caching using **Redis & LRU-based cache** for instant access.
+    
+-   **File Operations** – Optimized workflows for **upload, retrieval, sharing, and preview generation**.
 
 ---
 

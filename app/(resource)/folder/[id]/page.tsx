@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import _ from "lodash"
 import { Upload, Grid, List, FolderPlus, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { UploadDialog } from "@/components/upload-dialog"
@@ -129,24 +130,32 @@ export default function FolderContentsPage() {
   }
 
   useEffect(() => {
-    let currentPage = (pagination?.currentPage || 1)
-    if (isFetching && currentPage < (pagination?.totalPages || 1)) {
+    let currentPage = Number(pagination?.currentPage),
+      totalPages = Number(pagination?.totalPages);
+
+    if (isFetching && (currentPage < totalPages)) {
       loadFolderContents(currentPage + 1, 10, undefined, "append").then(() => setIsFetching(false))
     } else {
       setIsFetching(false)
     }
-  }, [isFetching])
+  }, [isFetching, pagination])
+
 
   useEffect(() => {
-    loadFolderContents()
+    
+    const handleIntersect = _.debounce(([{ isIntersecting }]) => {
+      if (isIntersecting) setIsFetching(true)
+      }, 200);
+    
+    const io = new IntersectionObserver(handleIntersect, { threshold: 0.1 })
 
-    const io = new IntersectionObserver(([{ isIntersecting, target }]) => {
-      isIntersecting && (setIsFetching(true))
-    }, { threshold: 1 })
-
-    if (observerRef.current) {
-      io.observe(observerRef.current)
-    }
+    loadFolderContents().then(() => {
+      if (observerRef.current) {
+        io.observe(observerRef.current)
+      }
+    })
+    
+    return () => io.disconnect();
   }, [])
 
   useEffect(() => {
@@ -249,8 +258,8 @@ export default function FolderContentsPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>)}
 
-        {/* Intersection Observer target */}
-        <div ref={observerRef} className="" />
+          {/* Intersection Observer target */}
+          <div ref={observerRef} />
       </div>
 
       {/* Upload Dialog */}
@@ -287,7 +296,6 @@ export default function FolderContentsPage() {
         onRename={confirmRename}
         existingNames={[]}
       />
-
     </Fragment>
   )
 }

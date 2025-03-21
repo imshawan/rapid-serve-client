@@ -80,7 +80,7 @@ async function update(req: NextApiRequest, res: NextApiResponse) {
       userId,
       { $set: mergedUserData },
       { new: true, runValidators: true }
-    ).select("-password -__v -_id");
+    ).select("-password");
 
     return formatApiResponse(res, { message: "Profile updated successfully", user: updatedUser }, String(req.url));
   } catch (error) {

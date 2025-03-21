@@ -1,4 +1,5 @@
 import type { User } from "@/lib/models/user"
+import { getJsonFromLocalstorage } from "@/lib/utils/common"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import _ from "lodash"
 interface AppState {
@@ -16,7 +17,7 @@ const initialState: AppState = {
   sidebarOpen: false,
   settings: {
     appearance: {
-      theme: "light",
+      theme: getJsonFromLocalstorage("theme"),
       language: "en",
       timezone: "IST",
     },

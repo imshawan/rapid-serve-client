@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useApp } from "@/hooks/use-app";
 import { Globe, Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 
 export function GeneralSettings() {
@@ -15,11 +16,19 @@ export function GeneralSettings() {
 
   const handleThemeChange = (value: string) => {
     setTheme(value)
+    handleSettingsChange("theme", value)
   }
 
-  const handleLanguageChange = (value: string) => {
-    updateAppearance({ language: value })
+  const handleSettingsChange = (key: string, value: any) => {
+    updateAppearance({ [key]: value })
   }
+
+  useEffect(() => {
+    if (!settings.appearance || !settings.appearance.theme) return
+    if (settings.appearance.theme != theme) {
+      setTheme(settings.appearance.theme)
+    }
+  }, [settings.appearance])
 
   const SkeletonCard = () => (
     <CardContent className="space-y-4">
@@ -104,7 +113,7 @@ export function GeneralSettings() {
             </div>
             <Select
               value={settings.appearance.language}
-              onValueChange={handleLanguageChange}
+              onValueChange={(v)  => handleSettingsChange("language", v)}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select language" />

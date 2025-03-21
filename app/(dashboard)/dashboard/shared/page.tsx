@@ -305,7 +305,7 @@ export default function SharedPage() {
         </div>
       </div>
 
-      <Tabs onValueChange={handleTabChange} defaultValue="shared-with-me" className="space-y-4" >
+      <Tabs onValueChange={handleTabChange} value={activeTab} className="space-y-4" >
         <TabsList>
           <TabsTrigger value="shared-with-me">Shared with me</TabsTrigger>
           <TabsTrigger value="shared-by-me">Shared by me</TabsTrigger>

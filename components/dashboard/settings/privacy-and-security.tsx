@@ -8,7 +8,11 @@ import { Shield } from "lucide-react";
 
 export function PrivacySettings() {
   const { settings, updatePrivacy } = useApp()
-  
+
+  const handleOnSettingsChange = (key: string, value: boolean) => {
+    updatePrivacy({ [key]: value })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -29,7 +33,7 @@ export function PrivacySettings() {
           <Switch
             checked={settings.privacy.twoFactorEnabled}
             onCheckedChange={(checked) =>
-              updatePrivacy({ twoFactorEnabled: checked })
+              handleOnSettingsChange("twoFactorEnabled", checked)
             }
           />
         </div>
@@ -44,7 +48,36 @@ export function PrivacySettings() {
           <Switch
             checked={settings.privacy.publicLinks}
             onCheckedChange={(checked) =>
-              updatePrivacy({ publicLinks: checked })
+              handleOnSettingsChange("publicLinks", checked)
+            }
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>Maintain Device History</Label>
+            <p className="text-sm text-muted-foreground">
+              Keep record of devices used to access your account
+            </p>
+          </div>
+          <Switch
+            checked={settings.privacy.deviceHistory}
+            onCheckedChange={(checked) =>
+              handleOnSettingsChange("deviceHistory", checked)
+            }
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>Activity Logging</Label>
+            <p className="text-sm text-muted-foreground">
+              Keep record of account activity and login attempts
+            </p>
+          </div>
+          <Switch
+            checked={settings.privacy.activityLog}
+            onCheckedChange={(checked) =>
+              handleOnSettingsChange("activityLog", checked)
             }
           />
         </div>

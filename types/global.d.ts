@@ -103,6 +103,9 @@ declare global {
       passwordHistory: string[]
       failedLoginAttempts: number
       lockoutUntil?: Date
+      publicLinks: boolean
+      deviceHistory: boolean
+      activityLog: boolean
     }
     subscription: {
       plan: 'free' | 'pro' | 'enterprise'

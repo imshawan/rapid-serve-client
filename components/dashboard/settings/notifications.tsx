@@ -9,6 +9,10 @@ import { Bell } from "lucide-react";
 export function NotificationSettings() {
   const { settings, updateNotifications } = useApp()
   
+  const handleUpdateNotifications = (key: string, value: boolean) => {
+    updateNotifications({ [key]: value })
+  }
+  
   return (
     <Card>
       <CardHeader>
@@ -29,7 +33,7 @@ export function NotificationSettings() {
           <Switch
             checked={settings.notifications.email}
             onCheckedChange={(checked) =>
-              updateNotifications({ email: checked })
+              handleUpdateNotifications("email", checked)
             }
           />
         </div>
@@ -44,7 +48,22 @@ export function NotificationSettings() {
           <Switch
             checked={settings.notifications.push}
             onCheckedChange={(checked) =>
-              updateNotifications({ push: checked })
+              handleUpdateNotifications("push", checked)
+            }
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>Shared File Notifications</Label>
+            <p className="text-sm text-muted-foreground">
+              Get notified when files are shared with you
+            </p>
+          </div>
+          <Switch
+            checked={settings.notifications.sharing}
+            onCheckedChange={(checked) =>
+              handleUpdateNotifications("sharing", checked)
             }
           />
         </div>

@@ -101,6 +101,18 @@ const userSchema = new mongoose.Schema<IUser>(
         default: 0,
       },
       lockoutUntil: Date,
+      deviceHistory: {
+        type: Boolean,
+        default: false,
+      },
+      publicLinks: {
+        type: Boolean,
+        default: false,
+      },
+      activityLog: {
+        type: Boolean,
+        default: false,
+      },
     },
     subscription: {
       plan: {

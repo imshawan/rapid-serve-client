@@ -7,10 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useApp } from "@/hooks/use-app";
 import { Database } from "lucide-react";
-import { useState } from "react";
 
 export function StorageSettings() {
   const { settings, updateStorage } = useApp()
+
+  const handleStorageSettingsChange = (key: string, value: any) => {
+    updateStorage({ [key]: value })
+  }
 
   return (
     <Card>
@@ -45,9 +48,7 @@ export function StorageSettings() {
           </div>
           <Select
             value={String(settings.storage.limit)}
-            onValueChange={(value) =>
-              updateStorage({ limit: Number(value) })
-            }
+            disabled
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select plan" />

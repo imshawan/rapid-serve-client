@@ -1,4 +1,5 @@
 import type { User } from "@/lib/models/user"
+import { getJsonFromLocalstorage } from "@/lib/utils/common"
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import _ from "lodash"
 interface AppState {
@@ -13,10 +14,10 @@ interface AppState {
 }
 
 const initialState: AppState = {
-  sidebarOpen: true,
+  sidebarOpen: false,
   settings: {
     appearance: {
-      theme: "light",
+      theme: getJsonFromLocalstorage("theme"),
       language: "en",
       timezone: "IST",
     },
@@ -59,15 +60,19 @@ export const appSlice = createSlice({
     setSettingsLoading: (state, action: PayloadAction<boolean>) => {
       state.settings.loading = action.payload
     },
+    updateAppearanceRequest: (state, action: PayloadAction<Partial<AppSettings.Appearance>>) => { },
     updateAppearance: (state, action: PayloadAction<Partial<AppSettings.Appearance>>) => {
       state.settings.appearance = _.merge(state.settings.appearance, action.payload)
     },
+    updateNotificationsRequest: (state, action: PayloadAction<Partial<AppSettings.Notifications>>) => { },
     updateNotifications: (state, action: PayloadAction<Partial<AppSettings.Notifications>>) => {
       state.settings.notifications = _.merge(state.settings.notifications, action.payload)
     },
+    updatePrivacyRequest: (state, action: PayloadAction<Partial<AppSettings.Privacy>>) => { },
     updatePrivacy: (state, action: PayloadAction<Partial<AppSettings.Privacy>>) => {
       state.settings.privacy = _.merge(state.settings.privacy, action.payload)
     },
+    updateStorageRequest: (state, action: PayloadAction<Partial<AppSettings.Storage>>) => { },
     updateStorage: (state, action: PayloadAction<Partial<AppSettings.Storage>>) => {
       state.settings.storage = _.merge(state.settings.storage, action.payload)
     },
@@ -75,24 +80,28 @@ export const appSlice = createSlice({
       state.settings.loading = true
     },
     setSettingsFromUserProfile: (state, action: PayloadAction<User>) => {
-      let {security, subscription, preferences, storageLimit} = action.payload
-      let {notifications, ...rest} = preferences
+      let { security, subscription, preferences, storageLimit } = action.payload
+      let { notifications, ...rest } = preferences
 
       state.settings.appearance = rest
       state.settings.notifications = notifications
-      state.settings.privacy = _.merge(state.settings.privacy, {twoFactorEnabled: security.twoFactorEnabled})
-      state.settings.storage = _.merge(state.settings.storage, subscription, {limit: storageLimit})
+      state.settings.privacy = _.merge(state.settings.privacy, security)
+      state.settings.storage = _.merge(state.settings.storage, subscription, { limit: storageLimit })
       state.settings.loading = false
     },
-    loadPlanRequest: (state) => {},
+    loadPlanRequest: (state) => { },
   },
 })
 
-export const { 
-  toggleSidebar, 
-  updateAppearance,  
+export const {
+  toggleSidebar,
+  updateAppearance,
+  updateAppearanceRequest,
+  updateNotificationsRequest,
   updateNotifications,
+  updatePrivacyRequest,
   updatePrivacy,
+  updateStorageRequest,
   updateStorage,
   setSettingsFromUserProfile,
   setSettingsFromUserProfileRequest,

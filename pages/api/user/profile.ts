@@ -50,7 +50,7 @@ async function update(req: NextApiRequest, res: NextApiResponse) {
     // Allowed nested fields
     const allowedNestedFields: Record<string, string[]> = {
       preferences: ["theme", "language", "timezone", "notifications"],
-      security: ["twoFactorEnabled", "lastPasswordChange", "failedLoginAttempts"],
+      security: ["twoFactorEnabled", "lastPasswordChange", "failedLoginAttempts", "publicLinks", "deviceHistory", "activityLog"],
       subscription: ["plan", "status", "autoRenew"],
       devices: ["id", "name", "type", "lastActive", "ipAddress", "userAgent"],
     };

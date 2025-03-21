@@ -1,3 +1,4 @@
+import { parseSizeToBytes } from "@/lib/utils/common";
 import {
   HardDrive,
   Globe,
@@ -19,12 +20,12 @@ export const plans = [
   {
     name: "Free",
     price: "$0",
-    storage: "50 MB",
-    storageBytes: 50 * 1024 * 1024,
-    bandwidth: "500 MB",
+    storage: "100 MB",
+    storageBytes: parseSizeToBytes("100MB"),
+    bandwidth: "1 GB",
     features: [
-      { icon: HardDrive, text: "50 MB of storage" },
-      { icon: Globe, text: "500 MB monthly bandwidth" },
+      { icon: HardDrive, text: "100 MB of storage" },
+      { icon: Globe, text: "1 GB monthly bandwidth" },
       { icon: Users, text: "Basic file sharing" },
       { icon: File, text: "Access on one device" },
       { icon: PhoneCall, text: "Community support" },
@@ -34,7 +35,7 @@ export const plans = [
     name: "Basic",
     price: "$8",
     storage: "100 GB",
-    storageBytes: 100 * 1024 * 1024 * 1024,
+    storageBytes: parseSizeToBytes("100GB"),
     bandwidth: "1 TB",
     features: [
       { icon: HardDrive, text: "100 GB of storage" },
@@ -49,7 +50,7 @@ export const plans = [
     name: "Professional",
     price: "$24",
     storage: "500 GB",
-    storageBytes: 500 * 1024 * 1024 * 1024,
+    storageBytes: parseSizeToBytes("500GB"),
     bandwidth: "5 TB",
     features: [
       { icon: HardDrive, text: "500 GB of storage" },

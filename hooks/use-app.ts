@@ -1,13 +1,15 @@
 import { useCallback } from "react";
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { loadPlanRequest, setSettingsFromUserProfile, setSettingsFromUserProfileRequest, updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
-import type { User } from "@/lib/models/user";
+import { loadPlanRequest, setSettingsFromUserProfile, setSettingsFromUserProfileRequest, toggleSidebar, updateAppearance, updateNotifications, updatePrivacy, updateStorage } from "@/store/slices/app";
 
 export const useApp = () => {
     const dispatch = useAppDispatch();
     const app = useAppSelector((state: RootState) => state.app);
     
     return {
+        toggleSidebar: useCallback((open?: boolean) => {
+            dispatch(toggleSidebar(open))
+        }, [dispatch]),
         updateAppearance: useCallback((appearance: Partial<AppSettings.Appearance>) => {
             dispatch(updateAppearance(appearance))
         }, [dispatch]),

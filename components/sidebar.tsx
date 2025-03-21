@@ -12,34 +12,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Files,
   Share2,
   Plus,
-  Clock,
-  Star,
-  Trash2,
   FolderPlus,
   Upload,
   FileText,
 } from "lucide-react"
 import { useAppSelector } from "@/store"
 import { useFiles } from "@/hooks/use-files"
-import type { File } from "@/lib/models/upload"
 import { toast } from "@/hooks/use-toast"
 import { useMemo, useState } from "react"
 import { CreateFolderDialog } from "./create-folder-dialog"
 import { useAuth } from "@/hooks/use-auth"
-import { formatBytes } from "@/lib/utils/common"
+import { cn, formatBytes } from "@/lib/utils/common"
 import { Progress } from "./ui/progress"
+import { navigation } from "@/common/paths"
+import { UploadDialog } from "./upload-dialog"
 
 export function Sidebar() {
   const pathname = usePathname()
   const { sidebarOpen } = useAppSelector(state => state.app)
-  const { appendUpdatedFile } = useFiles()
-  const {user} = useAuth()
+  const { createFolder: createFolderRequest } = useFiles()
+  const { user } = useAuth()
 
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const [open, setOpen] = useState(false)
+  const [uploadModal, setUploadModal] = useState(false)
 
   const used = useMemo(() => formatBytes(Number(user?.storageUsed || 0)), [user])
   const total = useMemo(() => formatBytes(Number(user?.storageLimit || 0)), [user])
@@ -54,37 +52,27 @@ export function Sidebar() {
     setOpen(false)
   }
 
-  const createFolder = (name: string) => {
-    const newFolder = {
-      fileId: crypto.randomUUID(),
-      fileName: name,
-      fileSize: 0,
-      isStarred: false,
-      type: "folder",
-      status: "complete",
-      parentId: "", // Root level folder
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    appendUpdatedFile(newFolder as File)
-
-    toast({
-      title: "Folder created",
-      description: `"${name}" has been created successfully.`,
-    })
+  const handleUpload = () => {
+    setUploadModal(true)
+    setOpen(false)
   }
 
-  const navigation = [
-    { name: "My Drive", href: "/dashboard", icon: Files },
-    { name: "Shared", href: "/dashboard/shared", icon: Share2 },
-    { name: "Recent", href: "/dashboard/recent", icon: Clock },
-    { name: "Starred", href: "/dashboard/starred", icon: Star },
-    { name: "Trash", href: "/dashboard/trash", icon: Trash2 },
-  ]
+  const createFolder = (name: string) => {
+    createFolderRequest(name, undefined, () => {
+      toast({
+        title: "Folder created",
+        description: `"${name}" has been created successfully.`,
+      })
+    }, () => {})
+  }
 
   return (
-    <aside className={`w-64 border-r bg-card h-[calc(100vh-4.1rem)] sticky top-16 transition-all duration-300 ${sidebarOpen ? '' : '-ml-64'}`}>
+    <aside className={cn(
+      "w-64 border-r bg-card h-[calc(100vh-4.1rem)] fixed sm:sticky top-16 transition-all duration-300",
+      "left-0 sm:left-auto z-40 sm:z-0",
+      sidebarOpen ? "translate-x-0" : "sm:-ml-64 -translate-x-full",
+      "lg:translate-x-0 lg:block"
+    )}>
       <div className="p-4 space-y-4">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -103,7 +91,7 @@ export function Sidebar() {
                 <FolderPlus className="h-8 w-8" />
                 New Folder
               </Button>
-              <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2">
+              <Button variant="outline" className="h-24 flex flex-col items-center justify-center gap-2" onClick={handleUpload}>
                 <Upload className="h-8 w-8" />
                 Upload Files
               </Button>
@@ -144,7 +132,7 @@ export function Sidebar() {
             </div>
             <div className="space-y-2">
               <div className="text-sm">{used} of {total} used</div>
-                <Progress value={percentage} className="h-3" />
+              <Progress value={percentage} className="h-3" />
             </div>
           </div>
         </div>}
@@ -155,6 +143,8 @@ export function Sidebar() {
         onOpenChange={setCreateFolderOpen}
         onCreateFolder={createFolder}
       />
+
+      <UploadDialog open={uploadModal} setOpen={setUploadModal} />
     </aside>
   )
 }

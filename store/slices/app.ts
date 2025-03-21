@@ -13,7 +13,7 @@ interface AppState {
 }
 
 const initialState: AppState = {
-  sidebarOpen: true,
+  sidebarOpen: false,
   settings: {
     appearance: {
       theme: "light",

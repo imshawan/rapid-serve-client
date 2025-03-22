@@ -2,6 +2,7 @@ import { Document, Types } from "mongoose"
 import { NextApiRequest } from "next"
 import { createClient, RedisClientType } from 'redis';
 import type { File } from "@/lib/models/upload";
+import { NotificationType } from "@/common/enums/notification-types";
 
 export { }
 
@@ -225,6 +226,21 @@ declare global {
   type Sort = "ASC" | "DESC"
 
   type SortBy<T> = keyof T;
+
+  /**
+ * Interface representing the payload for a notification.
+ */
+  interface NotificationPayload {
+    recipient: Types.ObjectId;
+    creator?: Types.ObjectId;
+    entity: {
+      entityId: Types.ObjectId;
+      entityType: "File" | "User" | "Shared";
+    };
+    type: NotificationType;
+    message: string;
+    metadata?: Record<string, any>;
+  }
 }
 
 declare module "next" {

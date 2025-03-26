@@ -26,7 +26,7 @@ export function useWebSocket() {
     if (socketRef.current) return;
 
     try {
-      const WS_URL = String(process.env.NEXT_PUBLIC_SERVER_URL);
+      const WS_URL = String(process.env.NEXT_PUBLIC_SERVER_URL) || location.origin;
       const socket = io(WS_URL, {
         transports: ['websocket'],
         reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,

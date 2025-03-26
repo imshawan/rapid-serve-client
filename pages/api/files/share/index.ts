@@ -5,9 +5,11 @@ import { initializeDbConnection, withCache } from "@/lib/db"
 import { File } from "@/lib/models/upload"
 import { authMiddleware } from "@/lib/middlewares"
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response"
-import { Document } from "mongoose"
+import { Document, Types } from "mongoose"
 import { User } from "@/lib/models/user"
 import { Shared } from "@/lib/models/shared";
+import { NotificationType } from "@/common/enums/notification-types";
+import { sendNotificationToUser } from "@/lib/user/notification";
 
 const shareSchema = z.object({
   fileId: z.string().min(36, "fileId is required and must be valid"),
@@ -38,12 +40,14 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
     const existingSf = await withCache<Shared | null>(`shared:${fileId}:${userId}`, async () => await Shared.findOne({ fileId, ownerId: userId }))
 
+    let sharedWith: User | null = null;
     if (email) {
       const user = await withCache<User | null>("user:" + email, async () => await User.findOne({ email }))
       if (!user) {
         return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "User not found", HttpStatus.NOT_FOUND))
       }
 
+      sharedWith = user
       updateData.$addToSet = {
         sharedWith: {
           userId: user._id,
@@ -76,6 +80,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     );
 
     let link = "/file/share/" + (sharedFile.shareId || existingSf?.shareId)
+
+    if (sharedWith) {
+      let sharedUser = new Types.ObjectId(String(sharedWith._id))
+      sendNotificationToUser({
+        type: NotificationType.FILE_SHARED,
+        recipient: sharedUser,
+        creator: new Types.ObjectId(userId),
+        entity: {
+          entityId: new Types.ObjectId(String(file._id)),
+          entityType: "File",
+        },
+        metadata: { link, accessLevel: accessLevel || "viewer", fileId, fileName: file.fileName },
+        message: `You have been granted access to ${file.fileName}`
+      })
+    }
 
     return formatApiResponse(res, { fileId, shareableLink: link }, "File shared", HttpStatus.OK)
 

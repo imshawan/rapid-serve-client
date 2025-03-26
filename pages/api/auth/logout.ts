@@ -1,3 +1,4 @@
+import { isProduction } from "@/lib/config";
 import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -8,7 +9,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       path: "/",
       expires: new Date(0),
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction(),
       sameSite: "strict",
     })
   );

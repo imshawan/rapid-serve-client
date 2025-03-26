@@ -4,10 +4,10 @@ import { NotificationType } from "@/common/enums/notification-types";
 
 const notificationSchema = new Schema(
   {
-    recipient: { type: Types.ObjectId, ref: "User", required: true }, // User receiving the notification
-    creator: { type: Types.ObjectId, ref: "User", default: null }, // User triggering the notification
+    recipient: { type: Schema.Types.ObjectId, ref: "User", required: true }, // User receiving the notification
+    creator: { type: Schema.Types.ObjectId, ref: "User", default: null }, // User triggering the notification
     entity: {
-      entityId: { type: Types.ObjectId, required: true }, // Related entity (file, user, etc.)
+      entityId: { type: Schema.Types.ObjectId, required: true }, // Related entity (file, user, etc.)
       entityType: {
         type: String,
         required: true,
@@ -22,7 +22,6 @@ const notificationSchema = new Schema(
     message: { type: String, required: true }, // Readable message for UI
     metadata: { type: Schema.Types.Mixed, default: {} },
     isRead: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

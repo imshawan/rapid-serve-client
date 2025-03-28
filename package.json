@@ -92,8 +92,7 @@
     "uuid": "^11.1.0",
     "vaul": "^0.9.9",
     "wavesurfer.js": "^7.9.1",
-    "zod": "^3.24.2",
-    "zustand": "^4.5.2"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

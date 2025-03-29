@@ -79,7 +79,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       { upsert: true, new: true }
     );
 
-    let link = "/file/share/" + (sharedFile.shareId || existingSf?.shareId)
+    let link = ["", file.type, (sharedFile.shareId || existingSf?.shareId)].join("/")
 
     if (sharedWith) {
       let sharedUser = new Types.ObjectId(String(sharedWith._id))
@@ -91,7 +91,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
           entityId: new Types.ObjectId(String(file._id)),
           entityType: "File",
         },
-        metadata: { link, accessLevel: accessLevel || "viewer", fileId, fileName: file.fileName },
+        metadata: { link, accessLevel: accessLevel || "viewer", fileId, fileName: file.fileName, type: file.type },
         message: `You have been granted access to ${file.fileName}`
       })
     }

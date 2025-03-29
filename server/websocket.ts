@@ -110,7 +110,7 @@ export function sendMessageToUser(userId: string, event: string, payload: any) {
 
   const socketId = String(globalSock.Clients.get(userId))
 
-  globalSock.IO.to(socketId).emit(event, {
+  globalSock.IO.to(socketId).emit("message", {
     type: event,
     payload: payload,
   });

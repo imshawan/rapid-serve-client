@@ -1,15 +1,14 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { useToast } from '@/hooks/use-toast';
-import { useAppDispatch } from '@/store';
-import { addNotification } from '@/store/slices/notifications';
+import { useEffect, useRef, useCallback, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { useToast } from "@/hooks/use-toast";
 import {
   WebSocketMessage,
   WebSocketMessageSchema,
-  NotificationEventSchema,
   ConnectionEventSchema,
   ErrorEventSchema,
-} from '@/types/notification';
+} from "@/types/notification";
+import { useNotifications } from "./use-notifications";
+import type { Notification } from "@/lib/models/notification";
 
 const RECONNECT_INTERVAL = 2000; // 2 seconds
 const MAX_RECONNECT_ATTEMPTS = 5;
@@ -19,7 +18,7 @@ export function useWebSocket() {
   const socketRef = useRef<Socket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const { toast } = useToast();
-  const dispatch = useAppDispatch();
+  const {addNotification} = useNotifications()
   const [isConnected, setIsConnected] = useState(false);
 
   const connect = useCallback(() => {
@@ -28,77 +27,88 @@ export function useWebSocket() {
     try {
       const WS_URL = String(process.env.NEXT_PUBLIC_SERVER_URL || location.origin);
       const socket = io(WS_URL, {
-        transports: ['websocket'],
+        transports: ["websocket"],
         reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
         reconnectionDelay: RECONNECT_INTERVAL,
         reconnectionDelayMax: RECONNECT_INTERVAL * BACKOFF_MULTIPLIER ** MAX_RECONNECT_ATTEMPTS,
-        path: '/socket-city',
+        path: "/socket-city",
       });
       socketRef.current = socket;
 
-      socket.on('connect', () => {
-        console.log('Socket.IO connected');
+      socket.on("connect", () => {
+        console.log("Socket.IO connected");
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
       });
 
-      socket.on('disconnect', (reason) => {
-        console.log('Socket.IO disconnected:', reason);
+      socket.on("disconnect", (reason) => {
+        console.log("Socket.IO disconnected:", reason);
         setIsConnected(false);
         handleReconnect(reason);
       });
 
-      socket.on('error', (error) => {
-        console.error('Socket.IO error:', error);
+      socket.on("error", (error) => {
+        console.error("Socket.IO error:", error);
         toast({
-          title: 'Connection Error',
-          description: 'WebSocket encountered an error.',
-          variant: 'destructive',
+          title: "Connection Error",
+          description: "WebSocket encountered an error.",
+          variant: "destructive",
         });
       });
 
-      socket.on('message', (data) => {
+      socket.on("message", (data) => {
         try {
           const message = WebSocketMessageSchema.parse(data);
 
           switch (message.type) {
-            case 'notification': {
-              const notificationEvent = NotificationEventSchema.parse(data);
-              dispatch(addNotification(notificationEvent.payload as any));
+            case "notification": {
+              console.log("notification event", data.payload);
+              addNotification(data.payload as any);
+              showClickableNotification({...(data.payload as any), onClick: () => {}})
               break;
             }
-            case 'connection': {
+            case "connection": {
               const connectionEvent = ConnectionEventSchema.parse(data);
-              if (connectionEvent.payload.status === 'disconnected') {
-                handleReconnect('Server initiated disconnect');
+              if (connectionEvent.payload.status === "disconnected") {
+                handleReconnect("Server initiated disconnect");
               }
               break;
             }
-            case 'error': {
+            case "error": {
               const errorEvent = ErrorEventSchema.parse(data);
               toast({
-                title: 'Server Error',
+                title: "Server Error",
                 description: errorEvent.payload.message,
-                variant: 'destructive',
+                variant: "destructive",
               });
               break;
             }
           }
         } catch (error) {
-          console.error('Failed to process message:', error);
+          console.error("Failed to process message:", error);
         }
       });
     } catch (error) {
-      console.error('Failed to initialize Socket.IO:', error);
+      console.error("Failed to initialize Socket.IO:", error);
     }
-  }, [dispatch, toast]);
+  }, [toast]);
+
+  const showClickableNotification = (notification: Notification & { onClick: () => void; }) => {
+    let {message} = notification
+    toast({
+      title: "Notification received",
+      description: message,
+      onClick: notification.onClick,
+      className: "cursor-pointer"
+    })
+  }
 
   const handleReconnect = useCallback((reason: string) => {
     if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
       toast({
-        title: 'Connection Failed',
-        description: 'Max reconnection attempts reached. Please refresh.',
-        variant: 'destructive',
+        title: "Connection Failed",
+        description: "Max reconnection attempts reached. Please refresh.",
+        variant: "destructive",
       });
       return;
     }
@@ -122,9 +132,9 @@ export function useWebSocket() {
 
   const sendMessage = useCallback((message: WebSocketMessage) => {
     if (socketRef.current?.connected) {
-      socketRef.current.emit('message', message);
+      socketRef.current.emit("message", message);
     } else {
-      console.error('Socket.IO is not connected');
+      console.error("Socket.IO is not connected");
     }
   }, []);
 

@@ -1,4 +1,5 @@
 import { z } from "zod"
+import type { Notification } from "@/lib/models/notification"
 
 export const WebSocketMessageSchema = z.object({
   type: z.enum(["notification", "connection", "error"]),
@@ -7,12 +8,10 @@ export const WebSocketMessageSchema = z.object({
 
 export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>
 
-export const NotificationEventSchema = z.object({
-  type: z.literal("notification"),
-  payload: z.object({}),
-})
-
-export type NotificationEvent = z.infer<typeof NotificationEventSchema>
+export type NotificationEvent = {
+  type: "notification"
+  payload: Partial<Notification>
+}
 
 export const ConnectionEventSchema = z.object({
   type: z.literal("connection"),

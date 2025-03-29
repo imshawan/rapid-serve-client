@@ -27,5 +27,7 @@ export const endpoints = {
 
   LOAD_PREVIEW: "/api/files/preview/{{fileId}}",
   LOAD_FOLDER_CONTENTS: "/api/folders/{{folderId}}?{{queryParams}}",
+  LOAD_NOTIFICATIONS: "/api/notifications?{{queryParams}}",
+  MARK_NOTIFICATION_AS_READ: "/api/notifications/{{notificationId}}/read",
   CREATE_FOLDER: "/api/folders",
 }

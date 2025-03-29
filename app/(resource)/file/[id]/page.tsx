@@ -1,17 +1,33 @@
-
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation"
 import { Preview } from "@/components/dashboard/preview"
 import { File } from "@/lib/models/upload"
 import { initializeDbConnection, withCache } from "@/lib/db"
 import { Breadcrumb } from "@/components/previews/breadcrumb"
+import { verifyToken } from "@/lib/auth/jwt-utils";
+import { Shared } from "@/lib/models/shared";
+import { Types } from "mongoose";
 
 interface FilePageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default async function FilesPreviewPage({ params }: FilePageProps) {
+export default async function FilesPreviewPage({ params, searchParams }: FilePageProps) {
   const { id } = await params
-  const file = await getFile(id)
+  const {sharer} = await searchParams
+  if (!sharer) {
+    return notFound()
+  }
+
+  const cookieStore = await cookies()
+  const token = String(cookieStore.get("token")?.value)
+  const user = await verifyToken(token)
+  if (!user) {
+    return notFound()
+  }
+
+  const file = await getFile(id, user.userId, String(sharer))
   if (!file) {
     return notFound()
   }
@@ -29,11 +45,14 @@ export default async function FilesPreviewPage({ params }: FilePageProps) {
   )
 }
 
-async function getFile(id: string): Promise<File | null> {
+async function getFile(id: string, userId: string, sharer: string): Promise<File | null> {
   await initializeDbConnection()
-  const file = await withCache(`file:${id}`, async () => {
-    return await File.findOne({ fileId: id }).lean()
-  })
-  if (!file) return null;
+  const [file, sharedFile] = await Promise.all([
+    withCache(`file:${id}`, async () => {
+      return await File.findOne({ fileId: id }).lean()
+    }),
+    Shared.findOne({ shareId: sharer, sharedWith: { $elemMatch: { userId: new Types.ObjectId(userId) } } }).lean()
+  ])
+  if (!file || (!sharedFile && String(file.userId) != userId)) return null;
   return JSON.parse(JSON.stringify(file));
 }

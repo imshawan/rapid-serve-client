@@ -3,13 +3,14 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { Notification } from '@/lib/models/notification'
 
 interface NotificationState {
-  notifications: (Notification & {_id: string})[]
+  notifications: (Notification & { _id: string })[]
   unreadCount: number
   loading: boolean
   error: string | null
   currentPage: number;
   totalPages: number;
   hasMore: boolean;
+  markingRead: string
 }
 
 const initialState: NotificationState = {
@@ -20,6 +21,7 @@ const initialState: NotificationState = {
   currentPage: 1,
   totalPages: 1,
   hasMore: true,
+  markingRead: ""
 }
 
 const notificationSlice = createSlice({
@@ -29,8 +31,11 @@ const notificationSlice = createSlice({
     setUnreadCount: (state, action: PayloadAction<number>) => {
       state.unreadCount = action.payload
     },
+    setMarkingReadId: (state, action: PayloadAction<string>) => {
+      state.markingRead = action.payload
+    },
     addNotification: (state, action: PayloadAction<Notification>) => {
-      state.notifications.unshift(action.payload as Notification & {_id: string})
+      state.notifications.unshift(action.payload as Notification & { _id: string })
       if (!action.payload.isRead) {
         state.unreadCount += 1
       }
@@ -41,11 +46,12 @@ const notificationSlice = createSlice({
     },
     appendNotifications: (state, action: PayloadAction<Pagination>) => {
       state.loading = false
-      state.notifications =  _.uniqBy([...state.notifications, ...action.payload.data], "_id")
+      state.notifications = _.uniqBy([...state.notifications, ...action.payload.data], "_id")
       state.totalPages = action.payload.totalPages
       state.hasMore = action.payload.currentPage > (action.payload.end + 1)
       state.currentPage = action.payload.currentPage
     },
+    markAsReadRequest: (state, action: PayloadAction<{ id: string, onSuccess?: Function, onError?: Function }>) => { },
     markAsRead: (state, action: PayloadAction<string>) => {
       const notification = state.notifications.find(n => n._id === action.payload)
       if (notification && !notification.isRead) {
@@ -53,6 +59,7 @@ const notificationSlice = createSlice({
         state.unreadCount -= 1
       }
     },
+    markAllAsReadRequest: (state, action: PayloadAction<{ onSuccess?: Function, onError?: Function }>) => { },
     markAllAsRead: (state) => {
       state.notifications.forEach(notification => {
         notification.isRead = true
@@ -67,7 +74,7 @@ const notificationSlice = createSlice({
       state.notifications = state.notifications.filter(n => n._id !== action.payload)
     },
     setNotifications: (state, action: PayloadAction<Notification[]>) => {
-      state.notifications = action.payload as (Notification & {_id: string})[]
+      state.notifications = action.payload as (Notification & { _id: string })[]
       state.unreadCount = action.payload.filter(n => !n.isRead).length
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -84,11 +91,14 @@ export const {
   appendNotificationsRequest,
   appendNotifications,
   markAsRead,
+  markAsReadRequest,
   markAllAsRead,
+  markAllAsReadRequest,
   removeNotification,
   setLoading,
   setError,
   setUnreadCount,
+  setMarkingReadId,
 } = notificationSlice.actions
 
 export default notificationSlice.reducer

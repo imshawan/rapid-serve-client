@@ -13,12 +13,12 @@ import {
 import { useNotifications } from "@/hooks/use-notifications"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils/common"
-import { Bell,Inbox, Loader } from "lucide-react"
+import { Bell, Inbox, Loader, Check as CheckAll } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import { renderers } from "./renderers"
 
 export function NotificationsTray() {
-  const { notifications, unreadCount, loadNotifications, currentPage, totalPages, loading } = useNotifications()
+  const { notifications, unreadCount, loadNotifications, currentPage, totalPages, loading, markAsRead, markAllAsRead, markingRead } = useNotifications()
 
   const loadFreshData = () => {
     loadNotifications({ currentPage, limit: 10 })
@@ -29,7 +29,11 @@ export function NotificationsTray() {
   }
 
   const handleMarkAsRead = (id: string) => {
-    console.log("Marking as read", id)
+    markAsRead(id)
+  }
+
+  const handleMarkAllAsRead = () => {
+    markAllAsRead()
   }
 
   useEffect(() => {
@@ -53,6 +57,21 @@ export function NotificationsTray() {
             <SheetDescription>Stay updated with your latest activities</SheetDescription>
           </SheetHeader>
           <div className={cn("mt-6 space-y-4 min-h-[90%]")}>
+            {unreadCount > 0 && (
+              <div className="px-4 py-2 bg-gray-50 border">
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {markingRead === "all" ? (
+                    <Loader className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckAll className="w-4 h-4 mr-2" />
+                  )}
+                  Mark all as read
+                </button>
+              </div>
+            )}
             {/* Show Loader while fetching the first batch */}
             {loading && notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10">

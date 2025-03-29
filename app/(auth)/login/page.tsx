@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
-import { LogIn, Loader2, Github, Mail, EyeOff, Eye } from 'lucide-react'
+import { LogIn, Loader, Github, Mail, EyeOff, Eye } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import {
   Form,
@@ -124,7 +124,7 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
                       Signing in...
                     </>
                   ) : (

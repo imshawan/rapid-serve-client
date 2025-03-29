@@ -16,4 +16,14 @@ export const notifications = {
       unreadCount: number;
     }>;
   },
+
+  markRead: async (id: string) => {
+    return await http.post(
+      parseRouteParams(endpoints.MARK_NOTIFICATION_AS_READ, { notificationId: id }), {}
+    ) as ApiResponse<{ unreadCount: number }>
+  },
+
+  markAllRead: async () => {
+    return await http.post(endpoints.MARK_NOTIFICATIONS_AS_READ, {}) as ApiResponse<any>
+  },
 };

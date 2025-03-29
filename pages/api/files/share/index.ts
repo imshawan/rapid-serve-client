@@ -38,6 +38,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (!file) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "File not found", HttpStatus.NOT_FOUND))
     }
+    if (file.type === "folder") {
+      return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "Folder sharing not supported yet", HttpStatus.BAD_REQUEST))
+    
+    }
     const existingSf = await withCache<Shared | null>(`shared:${fileId}:${userId}`, async () => await Shared.findOne({ fileId, ownerId: userId }))
 
     let sharedWith: User | null = null;
@@ -79,7 +83,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       { upsert: true, new: true }
     );
 
-    let link = ["", file.type, (sharedFile.shareId || existingSf?.shareId)].join("/")
+    let link = ["", file.type, file.fileId].join("/") + ("?sharer=" + (sharedFile.shareId || existingSf?.shareId))
 
     if (sharedWith) {
       let sharedUser = new Types.ObjectId(String(sharedWith._id))

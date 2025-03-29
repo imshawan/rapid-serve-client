@@ -1,3 +1,4 @@
+import { useNotifications } from "@/hooks/use-notifications"
 import type { Notification } from "@/lib/models/notification"
 import { cn, timeAgo } from "@/lib/utils/common"
 import { Eye } from "lucide-react"
@@ -8,6 +9,8 @@ interface DefaultProps {
 }
 
 export default function Default({ notification, markAsRead }: DefaultProps) {
+  const {markingRead} = useNotifications()
+  
   const handleRead = () => {
     if (markAsRead && !notification.isRead) {
       markAsRead(notification._id)
@@ -47,6 +50,7 @@ export default function Default({ notification, markAsRead }: DefaultProps) {
             <button
               onClick={handleRead}
               className="text-xs text-gray-500 hover:text-gray-700"
+              disabled={markingRead === notification._id || markingRead === "all"}
             >
               Mark as read
             </button>

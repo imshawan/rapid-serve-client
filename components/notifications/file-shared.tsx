@@ -1,9 +1,10 @@
 import type { Notification } from "@/lib/models/notification"
 import { cn, timeAgo } from "@/lib/utils/common"
-import { Check, Eye } from "lucide-react"
+import { Check, Eye, Loader } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import FileIcon from "../dashboard/file-icon"
+import { useNotifications } from "@/hooks/use-notifications"
 
 interface FileSharedProps {
   notification: Notification & { creator: Partial<IUser>, _id: string }
@@ -11,6 +12,7 @@ interface FileSharedProps {
 }
 
 export default function FileShared({ notification, markAsRead }: FileSharedProps) {
+  const {markingRead} = useNotifications()
   const handleRead = () => {
     if (markAsRead && !notification.isRead) {
       markAsRead(notification._id)
@@ -48,17 +50,18 @@ export default function FileShared({ notification, markAsRead }: FileSharedProps
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <button
+            {!notification.isRead && <button
               onClick={handleRead}
               className="inline-flex items-center text-xs text-gray-500 hover:text-gray-700"
+              disabled={markingRead === notification._id || markingRead === "all"}
             >
               {notification.isRead ? (
                 <Check className="w-4 h-4 mr-1" />
               ) : (
-                <Eye className="w-4 h-4 mr-1" />
+                markingRead === notification._id ? <Loader className="w-4 h-4 mr-1 animate-spin" /> : <Eye className="w-4 h-4 mr-1" />
               )}
               {notification.isRead ? 'Read' : 'Mark as read'}
-            </button>
+            </button>}
             <Link
               href={notification.metadata.link}
               className="text-xs font-medium text-gray-800 underline-offset-4 hover:underline transition"

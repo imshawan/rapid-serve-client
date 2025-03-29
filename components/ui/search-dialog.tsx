@@ -13,7 +13,7 @@ import { useFiles } from "@/hooks/use-files"
 import { Fragment, useEffect, useState } from "react"
 import FileIcon from "../dashboard/file-icon"
 import type { File } from "@/lib/models/upload"
-import { Loader2, Search } from "lucide-react"
+import { Loader, Search } from "lucide-react"
 import _ from "lodash"
 import { ResourceContextMenu } from "../dashboard/resource-context-menu"
 import { FilePreview } from "../dashboard/file-preview"
@@ -175,7 +175,7 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
                       <CommandItem className="cursor-pointer" key={item.fileId}>
                         {
                           (metaLoading === item.fileId || deleting === item.fileId) ? (
-                            <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                            <Loader className="animate-spin h-4 w-4 mr-2" />
                           ) : <FileIcon fileName={item.fileName} fileType={item.type} className="h-4 w-4" outerClassName="p-0 mr-2" />
                         }
                         <span>{item.fileName}</span>
@@ -195,7 +195,7 @@ export function SearchDialog({ isOpen, setIsOpen }: SearchDialogProps) {
                 onClick={handleLoadMore}
                 disabled={loadingMore}
               >
-                {loadingMore ? <Loader2 className="animate-spin h-4 w-4" /> : "Load More"}
+                {loadingMore ? <Loader className="animate-spin h-4 w-4" /> : "Load More"}
               </button>
             </div>
           )}

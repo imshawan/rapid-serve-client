@@ -13,6 +13,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
+  onClick?: () => void;
 };
 
 const actionTypes = {
@@ -139,7 +140,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>;
 
-function toast({ ...props }: Toast) {
+function toast({ onClick, ...props }: Toast) {
   const id = genId();
 
   const update = (props: ToasterToast) =>
@@ -155,6 +156,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
+      onClick,
       onOpenChange: (open) => {
         if (!open) dismiss();
       },

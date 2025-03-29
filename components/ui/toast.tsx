@@ -46,11 +46,12 @@ const toastVariants = cva(
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+  VariantProps<typeof toastVariants> & { onClick?: () => void } 
+>(({ className, variant, onClick, ...props }, ref) => {
   return (
     <ToastPrimitives.Root
       ref={ref}
+      onClick={onClick}
       className={cn(toastVariants({ variant }), className)}
       {...props}
     />

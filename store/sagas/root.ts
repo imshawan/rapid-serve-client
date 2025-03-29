@@ -4,6 +4,7 @@ import userSaga from "./user"
 import filesSaga from "./files"
 import sharedSaga from "./shared"
 import appSaga from "./app"
+import notificationsSaga from "./notifications"
 
 export default function* rootSaga() {
   yield all([
@@ -11,6 +12,7 @@ export default function* rootSaga() {
     fork(userSaga),
     fork(filesSaga),
     fork(sharedSaga),
-    fork(appSaga)
+    fork(appSaga),
+    fork(notificationsSaga)
   ]);
 }

@@ -13,16 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import {
   LogOut,
-  Bell,
   Search,
   Menu,
 } from "lucide-react"
@@ -32,34 +23,20 @@ import { SearchDialog } from "./ui/search-dialog"
 import useScreenSize from "@/hooks/use-screen-size"
 import { useApp } from "@/hooks/use-app"
 import { userNavigation } from "@/common/paths"
+import { useNotifications } from "@/hooks/use-notifications"
+import { NotificationsTray } from "@/components/notifications"
 
 export function Header() {
   const router = useRouter()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { user, logout } = useAuth()
   const { toggleSidebar, sidebarOpen } = useApp()
+  const { loadNotifications } = useNotifications()
   const { screenSize } = useScreenSize()
 
   const handleLogout = () => {
     logout(() => router.push("/login"))
   }
-
-  const notifications = [
-    {
-      id: 1,
-      title: "File shared with you",
-      description: "John Doe shared 'Project Proposal.pdf' with you",
-      time: "2 minutes ago",
-      unread: true,
-    },
-    {
-      id: 2,
-      title: "Storage limit warning",
-      description: "You're approaching your storage limit",
-      time: "1 hour ago",
-      unread: false,
-    },
-  ]
 
   useEffect(() => {
     if (screenSize === "xs" || screenSize === "sm") {
@@ -100,43 +77,7 @@ export function Header() {
               <Button variant="ghost" size="icon" className="relative sm:hidden flex justify-center" onClick={() => setIsSearchOpen(true)}>
                 <Search className="h-5 w-5" />
               </Button>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
-                    {notifications.some(n => n.unread) && (
-                      <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full" />
-                    )}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent>
-                  <SheetHeader>
-                    <SheetTitle>Notifications</SheetTitle>
-                    <SheetDescription>Stay updated with your latest activities</SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-6 space-y-4">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 rounded-lg border ${notification.unread ? "bg-muted" : ""
-                          }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-1">
-                            <p className="font-medium">{notification.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {notification.description}
-                            </p>
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {notification.time}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
+              <NotificationsTray />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative ml-2 h-8 w-8 rounded-full">

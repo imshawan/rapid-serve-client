@@ -37,17 +37,20 @@ export const getEnvValue = <T>(key: string, defaultValue?: T): T => {
 };
 
 // Retrieves the current environment mode (e.g., 'development', 'production')
-export const getEnv = (): string => getEnvValue("NODE_ENV");
+export const getEnv = (): string => getEnvValue("NEXT_PUBLIC_NODE_ENV", "development");
 
 // Determines if the application is running in production mode
-export const isProduction = (): boolean => getEnvValue("NODE_ENV") === "production";
+export const isProduction = (): boolean => getEnvValue("NEXT_PUBLIC_NODE_ENV") === "production";
 
 // Determines if the application is running in development mode
-export const isDevelopment = (): boolean => getEnvValue("NODE_ENV") === "development";
+export const isDevelopment = (): boolean => {
+    const env = getEnvValue("NEXT_PUBLIC_NODE_ENV");
+    return !env || env === "development" || env === "dev";
+};
 
 // Determines the logging level based on the environment
 export const getLoggingLevel = (): "info" | "debug" => {
-    switch (getEnvValue("NODE_ENV")) {
+    switch (getEnvValue("NEXT_PUBLIC_NODE_ENV")) {
         case "production":
             return "info";
         case "development":

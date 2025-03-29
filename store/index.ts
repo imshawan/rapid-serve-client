@@ -1,10 +1,11 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import createSagaMiddleware from "redux-saga"
 import filesReducer from "./slices/files"
-import authReducer from "./slices/auth"
+import authReducer, { logoutRequest } from "./slices/auth"
 import appReducer from "./slices/app"
 import userReducer from "./slices/user"
 import sharedFilesReducer from "./slices/shared"
+import notificationsReducer from "./slices/notifications"
 import { useDispatch, useSelector } from "react-redux"
 import type { TypedUseSelectorHook } from "react-redux"
 import rootSaga from "./sagas/root"
@@ -17,11 +18,12 @@ const combinedReducersFn = combineReducers({
   auth: authReducer,
   user: userReducer,
   shared: sharedFilesReducer,
+  notifications: notificationsReducer,
 })
 
 // Reset the store when logoutSuccess action is dispatched
 const rootReducer = (state: any, action: any) => {
-  if (action.type === "auth/logoutSuccess") {
+  if (action.type === logoutRequest.type) {
     state = undefined
   }
   return combinedReducersFn(state, action)

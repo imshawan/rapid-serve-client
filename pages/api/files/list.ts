@@ -76,7 +76,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (["file", "folder"].includes(String(type).toLowerCase())) {
     query.type = String(type).toLowerCase()
   }
-console.log(query)
+
   const [files, total] = await Promise.all([
     File.find(query)
       .select(fieldSelection)

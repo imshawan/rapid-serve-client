@@ -16,9 +16,6 @@ interface FilePageProps {
 export default async function FilesPreviewPage({ params, searchParams }: FilePageProps) {
   const { id } = await params
   const {sharer} = await searchParams
-  if (!sharer) {
-    return notFound()
-  }
 
   const cookieStore = await cookies()
   const token = String(cookieStore.get("token")?.value)
@@ -27,7 +24,7 @@ export default async function FilesPreviewPage({ params, searchParams }: FilePag
     return notFound()
   }
 
-  const file = await getFile(id, user.userId, String(sharer))
+  const file = await getFile(id, user.userId, typeof sharer === "string" ? sharer : Array.isArray(sharer) && sharer.length ? sharer[0] : undefined)
   if (!file) {
     return notFound()
   }
@@ -45,14 +42,18 @@ export default async function FilesPreviewPage({ params, searchParams }: FilePag
   )
 }
 
-async function getFile(id: string, userId: string, sharer: string): Promise<File | null> {
+async function getFile(id: string, userId: string, sharer: string | undefined): Promise<File | undefined> {
   await initializeDbConnection()
-  const [file, sharedFile] = await Promise.all([
-    withCache(`file:${id}`, async () => {
-      return await File.findOne({ fileId: id }).lean()
-    }),
-    Shared.findOne({ shareId: sharer, sharedWith: { $elemMatch: { userId: new Types.ObjectId(userId) } } }).lean()
-  ])
-  if (!file || (!sharedFile && String(file.userId) != userId)) return null;
-  return JSON.parse(JSON.stringify(file));
+  const file = await withCache(`file:${id}`, async () => {
+    return await File.findOne({ fileId: id }).lean()
+  })
+  if (!file) return;
+
+  if (sharer) {
+    const sharedFile = Shared.findOne({ shareId: sharer, sharedWith: { $elemMatch: { userId: new Types.ObjectId(userId) } } }).lean()
+    if (!sharedFile) return;
+  } else if (String(file.userId) != userId) {
+    return
+  }
+  return JSON.parse(JSON.stringify(file))
 }

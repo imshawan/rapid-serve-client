@@ -84,7 +84,7 @@ export function NotificationsTray() {
                   icon={<Inbox className="h-6 w-6 text-gray-500" />}
                   title="No New Notifications"
                   description="Stay tuned for updates on your activities"
-                  className="h-full min-h-full"
+                  className="h-full min-h-full w-full border-0"
                 />
               </div>
             ) : (

@@ -21,12 +21,14 @@ import { ResourceListItem } from "@/components/dashboard/resource-list-item"
 import { ShareDialog } from "@/components/ui/share-dialog"
 import { FileInfoModal } from "@/components/dashboard/file-info-dialog"
 import { RenameDialog } from "@/components/dashboard/rename-dialog"
+import { cn } from "@/lib/utils/common"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [createFolderOpen, setCreateFolderOpen] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const observerRef = useRef(null)
 
   const { toast } = useToast()
@@ -56,7 +58,15 @@ export default function DashboardPage() {
   }
 
   const handleRefresh = () => {
-    loadFiles({ currentPage, limit: 10 })
+    setRefreshing(true)
+    const onSuccess = () => {
+      toast({
+        description: "Reloaded drive contents"
+      })
+      setRefreshing(false)
+    }
+
+    loadFiles({ currentPage, limit: 10, onSuccess })
   }
 
   const createFolder = (name: string) => {
@@ -149,7 +159,7 @@ export default function DashboardPage() {
               </Button>
             </div>
             <Button variant="outline" size="icon" className="hidden sm:flex" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
             </Button>
             <Button onClick={handleCreateFolder} variant="outline" className="">
               <FolderPlus className="h-4 w-4" />

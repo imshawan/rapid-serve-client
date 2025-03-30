@@ -41,8 +41,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   await initializeDbConnection()
 
   const { page = 1, limit = 10, fields = "", search = "", type = "", loc = "", sort = "", sortBy = "", includeAll = "false" } = req.query,
-    pageNumber = parseInt(page as string, 10),
-    limitNumber = parseInt(limit as string, 10),
+    pageNumber = parseInt(page as string, 10) || 1,
+    limitNumber = parseInt(limit as string, 10) || 10,
     fieldArray = (fields as string).split(",").filter(Boolean);
 
   const userId = String(req.user?.userId)

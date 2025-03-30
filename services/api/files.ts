@@ -5,7 +5,7 @@ import { TFile } from "@/store/slices/files"
 
 export const files = {
   fetchFiles: async (page: number, limit: number = 20, search?: string, fields?: string[]) => {
-    let query: any = { limit: String(limit), page: String(page) }
+    let query: any = { limit: String(limit), page: String(page), includeAll: true }
     if (search) query['search'] = search;
 
     let queryParams = new URLSearchParams(query).toString()

@@ -26,6 +26,7 @@ import { TFile } from "@/store/slices/files"
 import { files as filesApi } from "@/services/api"
 import { useParams } from "next/navigation"
 import { Breadcrumbs } from "@/components/folders/breadcrumbs"
+import { cn } from "@/lib/utils/common"
 
 export default function FolderContentsPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -37,6 +38,7 @@ export default function FolderContentsPage() {
   const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[] | []>([])
   const [loading, setLoading] = useState(true)
   const [isFetching, setIsFetching] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const observerRef = useRef(null)
 
   const { toast } = useToast()
@@ -70,7 +72,13 @@ export default function FolderContentsPage() {
   }
 
   const handleRefresh = () => {
-    loadFolderContents()
+    setRefreshing(true)
+    loadFolderContents().then(() => {
+      toast({
+        description: "Reloaded drive contents"
+      })
+      setRefreshing(false)
+    })
   }
 
   const createFolder = (name: string) => {
@@ -226,7 +234,7 @@ export default function FolderContentsPage() {
               </Button>
             </div>
             <Button variant="outline" size="icon" className="hidden sm:flex" onClick={handleRefresh}>
-              <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
             </Button>
             <Button onClick={handleCreateFolder} variant="outline" className="">
               <FolderPlus className="h-4 w-4" />

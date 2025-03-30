@@ -52,11 +52,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       }
 
       sharedWith = user
-      updateData.$addToSet = {
-        sharedWith: {
-          userId: user._id,
-          accessLevel: accessLevel || "viewer",
-        },
+      let sharedWithIdx = existingSf?.sharedWith.findIndex(withFile => (new Types.ObjectId(withFile.userId).equals(new Types.ObjectId(user._id as Types.ObjectId))))
+      if (sharedWithIdx === -1) {
+        updateData.$push = {
+          sharedWith: {
+            userId: user._id,
+            accessLevel: accessLevel || "viewer",
+          },
+        }
+      } else {
+        updateData.$set = {
+          [`sharedWith.${sharedWithIdx}.accessLevel`]: accessLevel || "viewer",
+        }
       }
     }
     if (password && (!existingSf || !existingSf.isPasswordProtected)) {
@@ -68,12 +75,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         updateData.expirationDate = new Date(expirationDate)
       }
     }
-    if (["editor", "full"].includes(String(accessLevel)) && !password) {
+    if (["editor", "full"].includes(String(accessLevel)) && !password && !email) {
       return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "Password is required for edit and full access levels", HttpStatus.BAD_REQUEST))
     }
 
     updateData.linkAccessLevel = accessLevel || "viewer"; // Password-protected files default have viewer access.
-    updateData.shareId = uuidv4()
+    updateData.shareId = existingSf?.shareId || uuidv4()
     updateData.linkShared = true
     updateData.fileName = file.fileName
 

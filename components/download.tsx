@@ -15,13 +15,12 @@ import {
   Zap,
   Puzzle
 } from "lucide-react";
-import { calculateSHA256 } from "@/lib/utils/chunk";
+import { validateChunkHash } from "@/lib/utils/chunk";
 import { Progress } from "@/components/ui/progress";
 import { downloader } from "@/services/api/chunk-download";
 import { useFiles } from "@/hooks/use-files";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { formatBytes, timeAgo } from "@/lib/utils/common";
 import { toast } from "@/hooks/use-toast";
@@ -139,6 +138,8 @@ export function Download() {
             buffer.set(part, position)
             position += part.byteLength
           }
+
+          validateChunkHash(Buffer.from(buffer.buffer), hash)
       
           // Store chunk in correct order using `index`
           chunkBuffers[index] = buffer.buffer // Store as ArrayBuffer

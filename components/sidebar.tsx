@@ -18,7 +18,6 @@ import {
   Upload,
   FileText,
 } from "lucide-react"
-import { useAppSelector } from "@/store"
 import { useFiles } from "@/hooks/use-files"
 import { toast } from "@/hooks/use-toast"
 import { useMemo, useState } from "react"
@@ -28,11 +27,12 @@ import { cn, formatBytes } from "@/lib/utils/common"
 import { Progress } from "./ui/progress"
 import { navigation } from "@/common/paths"
 import { UploadDialog } from "./upload-dialog"
+import { useApp } from "@/hooks/use-app"
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { sidebarOpen } = useAppSelector(state => state.app)
   const { createFolder: createFolderRequest } = useFiles()
+  const {sidebarOpen} = useApp()
   const { user } = useAuth()
 
   const [createFolderOpen, setCreateFolderOpen] = useState(false)

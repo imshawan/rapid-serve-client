@@ -39,7 +39,7 @@ export function Header() {
   }
 
   useEffect(() => {
-    if (screenSize === "xs" || screenSize === "sm") {
+    if (screenSize === "xs" || screenSize === "sm" || screenSize === "md") {
       toggleSidebar(false)
     } else {
       toggleSidebar(true)

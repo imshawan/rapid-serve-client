@@ -66,7 +66,7 @@ export function UploadDialog({ open, setOpen }: UploadDialogProps) {
 
       const chunks = splitFileIntoChunks(file)
       const chunkHashes = await Promise.all(chunks.map(calculateSHA256))
-      const parentId = String(params?.id) || undefined
+      const parentId = (params && typeof params.id === "string" ? params.id : "") || undefined
 
       // Step 1: Register upload and get pre-signed URLs
       const registerResponse = await uploader.register({

@@ -26,6 +26,8 @@ export const endpoints = {
   LOAD_SHARED_FILE: "/api/files/shared/{{fileId}}",
   LOAD_SHARED_FILES: "/api/files/shared/list?{{queryParams}}",
 
+  STAR_FILE: "/api/files/star/{{fileId}}",
+
   LOAD_PREVIEW: "/api/files/preview/{{fileId}}",
   LOAD_FOLDER_CONTENTS: "/api/folders/{{folderId}}?{{queryParams}}",
   LOAD_NOTIFICATIONS: "/api/notifications?{{queryParams}}",

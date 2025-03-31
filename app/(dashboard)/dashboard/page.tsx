@@ -22,6 +22,8 @@ import { ShareDialog } from "@/components/ui/share-dialog"
 import { FileInfoModal } from "@/components/dashboard/file-info-dialog"
 import { RenameDialog } from "@/components/dashboard/rename-dialog"
 import { cn } from "@/lib/utils/common"
+import { TFile } from "@/store/slices/files"
+import { capitalize } from "lodash"
 
 export default function DashboardPage() {
   const [uploadModal, setUploadModal] = useState(false)
@@ -39,7 +41,8 @@ export default function DashboardPage() {
     shareOpen,
     fileInfoOpen,
     renameFile,
-    createFolder: createFolderRequest
+    createFolder: createFolderRequest,
+    setStarred,
   } = useFiles()
 
   const handleCreateFolder = () => {
@@ -88,6 +91,14 @@ export default function DashboardPage() {
       () => { })
   }
 
+  const onToggleStar = (file: TFile, value: boolean) => {
+    setStarred(file.fileId, value, () => {
+      toast({
+        description: `${capitalize(file.type)} has been ${value ? "starred" : "unstarred"}.`
+      })
+    }, () => { })
+  }
+
   useEffect(() => {
     if (isFetching && hasMore && totalPages > currentPage) {
       loadFiles({currentPage: currentPage + 1, limit: 10, onSuccess: () => setIsFetching(false)})
@@ -110,7 +121,7 @@ export default function DashboardPage() {
 
   const GridView = () => (
     <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
-      {files.map((file) => <ResourceGridItem key={file.fileId} file={file} onToggleStar={() => { }} onOpenMenu={() => { }} />)}
+      {files.map((file) => <ResourceGridItem key={file.fileId} file={file} onToggleStar={() => onToggleStar(file, !file.isStarred)} onOpenMenu={() => { }} />)}
     </div>
   )
 
@@ -127,7 +138,7 @@ export default function DashboardPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {files.map((file) => <ResourceListItem key={file.fileId} file={file} onToggleStar={() => { }} onOpenMenu={() => { }} />)}
+          {files.map((file) => <ResourceListItem key={file.fileId} file={file} onToggleStar={() => onToggleStar(file, !file.isStarred)} onOpenMenu={() => { }} />)}
         </TableBody>
       </Table>
     </div>

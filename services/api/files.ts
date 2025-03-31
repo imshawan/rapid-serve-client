@@ -62,6 +62,20 @@ export const files = {
     if (search) query['search'] = search;
 
     let queryParams = new URLSearchParams(query).toString()
-    return await http.get(parseRouteParams(endpoints.LOAD_FOLDER_CONTENTS, { queryParams, folderId })) as ApiResponse<{paginated: Pagination, breadcrumbs: Breadcrumb[], folder: TFile}>
+    return await http.get(parseRouteParams(endpoints.LOAD_FOLDER_CONTENTS, { queryParams, folderId })) as ApiResponse<{ paginated: Pagination, breadcrumbs: Breadcrumb[], folder: TFile }>
+  },
+  star: async (fileId: string) => {
+    return await http.post(parseRouteParams(endpoints.STAR_FILE, { fileId }), {})
+  },
+  unstar: async (fileId: string) => {
+    return await http.delete(parseRouteParams(endpoints.STAR_FILE, { fileId }))
+  },
+  getStarred: async (page: number, limit: number = 20, search?: string) => {
+    let query: any = { limit: String(limit), page: String(page), starred: true }
+    if (search) query['search'] = search;
+
+    let queryParams = new URLSearchParams(query).toString()
+
+    return await http.get(parseRouteParams(endpoints.LOAD_FILES, { queryParams })) as ApiResponse<Pagination>
   }
 }

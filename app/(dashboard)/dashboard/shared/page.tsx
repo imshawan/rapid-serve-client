@@ -117,7 +117,7 @@ export default function SharedPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(file.name, file.fileId)}>
+                    <DropdownMenuItem onClick={() => handleShare(file.fileName, file.fileId)}>
                       <LinkIcon className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>
@@ -267,7 +267,7 @@ export default function SharedPage() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleShare(file.name, file.fileId)}>
+                    <DropdownMenuItem onClick={() => handleShare(file.fileName, file.fileId)}>
                       <LinkIcon className="h-4 w-4 mr-2" />
                       Share
                     </DropdownMenuItem>

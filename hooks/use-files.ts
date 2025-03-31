@@ -22,7 +22,8 @@ import {
   createFolderRequest,
   setCurrentProcessingFile,
   restoreAllFromTrashRequest,
-  deleteFilePermanentFromTrashRequest
+  deleteFilePermanentFromTrashRequest,
+  toggleStarRequest
 } from "@/store/slices/files";
 import { useCallback } from "react";
 import type { File } from "@/lib/models/upload";
@@ -100,6 +101,9 @@ export const useFiles = () => {
     }, [dispatch]),
     setCurrentProcessingFile: useCallback((file: File & { isUploading?: boolean, isUploaded?: boolean, isDeleting?: boolean, isDeleted?: boolean } | null) => {
       dispatch(setCurrentProcessingFile(file));
+    }, [dispatch]),
+    setStarred: useCallback((fileId: string, isStarred: boolean, onSuccess: Function, onError: Function) => {
+      dispatch(toggleStarRequest({ fileId, isStarred, onSuccess, onError }));
     }, [dispatch]),
 
     ...files

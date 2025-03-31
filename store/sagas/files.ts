@@ -28,6 +28,8 @@ import {
   addFileToList,
   restoreAllFromTrashRequest,
   deleteFilePermanentFromTrashRequest,
+  toggleStar,
+  toggleStarRequest,
 } from "../slices/files";
 import { files, downloader } from "@/services/api"
 import { toast } from "@/hooks/use-toast"
@@ -276,6 +278,27 @@ function* createFolderSaga(action: PayloadAction<{ fileName: string, parentId: s
   }
 }
 
+function* toggleStarSaga(action: PayloadAction<{ fileId: string, isStarred: boolean, onSuccess: Function, onError: Function }>): Generator<any, void, ApiResponse<any>> {
+  const {fileId, isStarred} = action.payload
+  yield put(toggleStar({fileId, isStarred}))
+  
+  try {
+    const response = yield call(files[!isStarred ? "unstar" : "star"], fileId)
+    if (!response.success) {
+      throw new Error(response.error?.message)
+    }
+    action.payload.onSuccess()
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to " + (!isStarred ? "unstar" : "star"),
+      variant: "destructive"
+    })
+    action.payload.onError()
+    yield put(toggleStar({fileId, isStarred: !isStarred}))
+  }
+}
+
 export default function* watchFilesSaga() {
   yield takeLatest(fetchFilesRequest.type, fetchFilesSaga)
   yield takeLatest(fetchFileMeta.type, fetchFileMetaSaga)
@@ -290,4 +313,5 @@ export default function* watchFilesSaga() {
   yield takeLatest(deleteFromRecentsRequest.type, deleteFromRecentsSaga)
   yield takeLatest(createFolderRequest.type, createFolderSaga)
   yield takeLatest(deleteFilePermanentFromTrashRequest.type, deleteFilePermanentFromTrashSaga)
+  yield takeLatest(toggleStarRequest.type, toggleStarSaga)
 }

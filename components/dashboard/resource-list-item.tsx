@@ -116,7 +116,7 @@ export function ResourceListItem({ file, onToggleStar, onOpenMenu }: ResourceGri
                 className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-background transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation()
-                  // onToggleStar(folder.fileId)
+                  onToggleStar(file.fileId)
                 }}
               >
                 <Star className={`h-4 w-4 ${file.isStarred ? "fill-yellow-400 text-yellow-400" : "text-black-400"}`} />

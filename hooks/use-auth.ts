@@ -1,5 +1,5 @@
 import { RootState, useAppDispatch, useAppSelector } from "@/store";
-import { AuthUser, loginRequest, logoutRequest, userUpdate } from "@/store/slices/auth";
+import { AuthUser, loginRequest, loginSuccess, logoutRequest, userUpdate } from "@/store/slices/auth";
 import { useCallback } from "react";
 
 export const useAuth = () => {
@@ -15,7 +15,10 @@ export const useAuth = () => {
         }, [dispatch]),
         updateAuthUser: useCallback((payload: Partial<AuthUser>) => {
             dispatch(userUpdate(payload));
-        }, [dispatch]), 
+        }, [dispatch]),
+        onLoginSuccess: useCallback((user: AuthUser, token: string) => {
+            dispatch(loginSuccess({user, token}));
+        }, [dispatch]),
 
         ...auth
     }

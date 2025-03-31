@@ -9,5 +9,8 @@ export const auth = {
   },
   logOut: async () => {
     return await http.post(endpoints.LOG_OUT, {})
+  },
+  googleLogin: async (token: string) => {
+    return await http.post(endpoints.LOG_IN_GOOGLE, { token }) as ApiResponse<{token: string, user: User, message: string}>
   }
 }

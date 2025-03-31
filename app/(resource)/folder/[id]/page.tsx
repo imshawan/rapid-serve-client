@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import _ from "lodash"
+import _, { capitalize } from "lodash"
 import { Upload, Grid, List, FolderPlus, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { UploadDialog } from "@/components/upload-dialog"
@@ -53,8 +53,17 @@ export default function FolderContentsPage() {
     renameFile,
     createFolder: createFolderRequest,
     currentProcessingFile,
-    setCurrentProcessingFile
+    setCurrentProcessingFile,
+    setStarred,
   } = useFiles()
+
+  const onToggleStar = (file: TFile, value: boolean) => {
+    setStarred(file.fileId, value, () => {
+      toast({
+        description: `${capitalize(file.type)} has been ${value ? "starred" : "unstarred"}.`
+      })
+    }, () => { })
+  }
 
   const handleCreateFolder = () => {
     setCreateFolderOpen(true)
@@ -188,7 +197,7 @@ export default function FolderContentsPage() {
 
   const GridView = () => (
     <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
-      {files.map((file) => <ResourceGridItem key={file.fileId} file={file} onToggleStar={() => { }} onOpenMenu={() => { }} />)}
+      {files.map((file) => <ResourceGridItem key={file.fileId} file={file} onToggleStar={() => onToggleStar(file, !file.isStarred)} onOpenMenu={() => { }} />)}
     </div>
   )
 
@@ -205,7 +214,7 @@ export default function FolderContentsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {files.map((file) => <ResourceListItem key={file.fileId} file={file} onToggleStar={() => { }} onOpenMenu={() => { }} />)}
+          {files.map((file) => <ResourceListItem key={file.fileId} file={file} onToggleStar={() => onToggleStar(file, !file.isStarred)} onOpenMenu={() => { }} />)}
         </TableBody>
       </Table>
     </div>

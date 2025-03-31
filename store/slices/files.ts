@@ -112,15 +112,6 @@ const filesSlice = createSlice({
       state.files = state.files.filter(f => f.fileId !== fileId)
       delete state.deletedFiles[fileId]
     },
-    toggleStarred: (state, action: PayloadAction<string>) => {
-      const fileId = action.payload
-      const fileIndex = state.starredFiles.indexOf(fileId)
-      if (fileIndex === -1) {
-        state.starredFiles.push(fileId)
-      } else {
-        state.starredFiles.splice(fileIndex, 1)
-      }
-    },
     resetPagination: (state) => {
       state.currentPage = 1
       state.hasMore = true
@@ -220,6 +211,13 @@ const filesSlice = createSlice({
     setCurrentProcessingFile: (state, action: PayloadAction<File & { isUploading?: boolean, isUploaded?: boolean, isDeleting?: boolean, isDeleted?: boolean } | null>) => {
       state.currentProcessingFile = action.payload as TFile
     },
+    toggleStarRequest: (state, action: PayloadAction<{ fileId: string, isStarred: boolean, onSuccess: Function, onError: Function }>) => { },
+    toggleStar: (state, action: PayloadAction<{ fileId: string, isStarred: boolean}>) => {
+      const fileIndex = state.files.findIndex(f => f.fileId === action.payload.fileId)
+      if (fileIndex !== -1) {
+        state.files[fileIndex].isStarred = action.payload.isStarred
+      }
+    }
   }
 })
 
@@ -227,7 +225,6 @@ export const {
   setLoading,
   setFiles,
   permanentlyDeleteFile,
-  toggleStarred,
   resetPagination,
   fetchFilesRequest,
   fetchFilesSuccess,
@@ -251,6 +248,8 @@ export const {
   setFileLoading,
   setCurrentProcessingFile,
   setDeleteOpen,
+  toggleStar,
+  toggleStarRequest,
   fileRenameRequest,
   fileRenameSuccess,
   loadTrashRequest,

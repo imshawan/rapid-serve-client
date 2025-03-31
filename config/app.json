@@ -1,3 +1,6 @@
 {
-    "maxStoragePerUser": "100mb"
+    "maxStoragePerUser": "100mb",
+    "cookie": {
+        "maxAge": "7d"
+    }
 }

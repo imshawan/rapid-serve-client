@@ -23,7 +23,6 @@ import { SearchDialog } from "./ui/search-dialog"
 import useScreenSize from "@/hooks/use-screen-size"
 import { useApp } from "@/hooks/use-app"
 import { userNavigation } from "@/common/paths"
-import { useNotifications } from "@/hooks/use-notifications"
 import { NotificationsTray } from "@/components/notifications"
 
 export function Header() {
@@ -31,7 +30,6 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { user, logout } = useAuth()
   const { toggleSidebar, sidebarOpen } = useApp()
-  const { loadNotifications } = useNotifications()
   const { screenSize } = useScreenSize()
 
   const handleLogout = () => {
@@ -39,7 +37,7 @@ export function Header() {
   }
 
   useEffect(() => {
-    if (screenSize === "xs" || screenSize === "sm") {
+    if (screenSize === "xs" || screenSize === "sm" || screenSize === "md") {
       toggleSidebar(false)
     } else {
       toggleSidebar(true)

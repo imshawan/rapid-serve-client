@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
-import { LogIn, Loader, Github, Mail, EyeOff, Eye } from 'lucide-react'
+import { LogIn, Loader, Github, EyeOff, Eye } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import {
   Form,
@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/form'
 import { useState } from 'react'
 import { useUser } from '@/hooks/use-user'
+import GoogleAuthButton from '@/components/google-auth-button'
 
 // Validation schema
 const loginSchema = z.object({
@@ -50,12 +51,16 @@ export default function LoginPage() {
     },
   })
 
+  const onLoginSuccess = () => {
+    router.push('/dashboard')
+    loadUserProfile()
+ }
+
   const handleLogin = async (data: LoginFormData) => {
     await new Promise((resolve) => {
       login(data, (success: boolean) => {
         if (success) {
-          router.push('/dashboard')
-          loadUserProfile()
+          onLoginSuccess()
           // Resolve not required as we are moving to homepage
         } else {
           resolve(null)
@@ -144,15 +149,12 @@ export default function LoginPage() {
                 </div>
 
                 {/* Social Login Buttons */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <Button variant="outline" type="button">
                     <Github className="mr-2 h-4 w-4" />
                     Github
                   </Button>
-                  <Button variant="outline" type="button">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Google
-                  </Button>
+                  <GoogleAuthButton onLoginSuccess={onLoginSuccess}/>
                 </div>
               </div>
             </CardContent>

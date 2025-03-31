@@ -129,8 +129,9 @@ export function ResourceGridItem({ file, onToggleStar, onOpenMenu }: ResourceGri
             >
               <Star
                 className={cn(
-                  "h-4 w-4",
-                  file.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                  "h-4 w-4 opacity-0",
+                  file.isStarred ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground",
+                  "group-hover:opacity-100 transition-opacity",
                 )}
               />
             </Button>

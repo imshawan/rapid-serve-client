@@ -70,7 +70,7 @@ export const getMongoURI = (): string => getEnvValue("MONGODB_URI");
 export const getRedisURI = (): string => getEnvValue("REDIS_URL");
 
 // Retrieves Google OAuth credentials
-export const getGoogleClientID = (): string => getEnvValue("GOOGLE_CLIENT_ID");
+export const getGoogleClientID = (): string => getEnvValue("GOOGLE_CLIENT_ID") || getEnvValue("NEXT_PUBLIC_GOOGLE_CLIENT_ID");
 export const getGoogleClientSecret = (): string => getEnvValue("GOOGLE_CLIENT_SECRET");
 export const getGoogleCallbackURL = (): string => getEnvValue("GOOGLE_CALLBACK_URL");
 

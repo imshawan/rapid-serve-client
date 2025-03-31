@@ -53,4 +53,21 @@ export default function filterSensitiveData<T extends Document>(sensitiveFields:
       }
     })
   });
+
+  // Method to return a sanitized object without sensitive fields
+  schema.method("toSafeObject", function () {
+    const docObject = this.toObject() // Convert Mongoose document to plain object
+
+    Object.keys(sensitiveFields).forEach(field => {
+      const keys = field.split(".")
+      let obj = docObject as any
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!obj[keys[i]]) return;
+        obj = obj[keys[i]]
+      }
+      delete obj[keys[keys.length - 1]]
+    });
+
+    return docObject as T
+  })
 }

@@ -108,6 +108,8 @@ declare global {
       deviceHistory: boolean
       activityLog: boolean
     }
+    authType: 'password' | 'oauth'
+    authProvider: 'google' | 'github' | 'facebook' | 'twitter' | 'microsoft' | 'apple' | 'linkedin' | 'yahoo' | null
     subscription: {
       plan: 'free' | 'pro' | 'enterprise'
       status: 'active' | 'inactive' | 'cancelled' | 'past_due'
@@ -126,6 +128,7 @@ declare global {
     createdAt: Date
     updatedAt: Date
     comparePassword(candidatePassword: string): Promise<boolean>
+    toSafeObject(): IUser
   }
 
   interface UploadUrl {

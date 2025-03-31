@@ -1,5 +1,6 @@
 export const endpoints = {
   LOG_IN: "/api/auth/login",
+  LOG_IN_GOOGLE: "/api/oauth/google",
   LOG_OUT: "/api/auth/logout",
   REGISTER: "/api/user/register",
   USER_PROFILE: "/api/user/profile",
@@ -24,6 +25,8 @@ export const endpoints = {
   SHARE_FILE: "/api/files/share",
   LOAD_SHARED_FILE: "/api/files/shared/{{fileId}}",
   LOAD_SHARED_FILES: "/api/files/shared/list?{{queryParams}}",
+
+  STAR_FILE: "/api/files/star/{{fileId}}",
 
   LOAD_PREVIEW: "/api/files/preview/{{fileId}}",
   LOAD_FOLDER_CONTENTS: "/api/folders/{{folderId}}?{{queryParams}}",

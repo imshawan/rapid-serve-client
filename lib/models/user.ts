@@ -16,8 +16,6 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
-      minlength: [8, 'Password must be at least 8 characters long'],
     },
     name: {
       type: String,
@@ -114,6 +112,16 @@ const userSchema = new mongoose.Schema<IUser>(
         default: false,
       },
     },
+    authType: {
+      type: String,
+      enum: ['password', 'oauth'],
+      default: 'password'
+    },
+    authProvider: {
+      type: String,
+      enum: ['google', 'github', 'facebook', 'twitter', 'microsoft', 'apple', 'linkedin', 'yahoo'],
+      default: null
+    },
     subscription: {
       plan: {
         type: String,
@@ -154,6 +162,7 @@ const userSchema = new mongoose.Schema<IUser>(
 
 const sensitiveFields = {
   password: 0,
+  authType: 0,
   "security.twoFactorSecret": 0,
   "security.passwordHistory": 0,
   "security.failedLoginAttempts": 0,
@@ -163,6 +172,7 @@ const sensitiveFields = {
 // Hash password before saving
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
+  if (this.authType === 'oauth') return next();
 
   try {
     const salt = await bcrypt.genSalt(10);

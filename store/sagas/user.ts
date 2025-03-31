@@ -59,7 +59,6 @@ function* registerSaga(action: PayloadAction<{ name: string; email: string; pass
 
 function* updateProfileSaga(action: PayloadAction<{ user: Partial<IUser>; onSuccess: Function }>): Generator<any, void, ApiResponse<any>> {
   try {
-    yield put(requestStart());
     const response = yield call(
       userApi.updateProfile,
       action.payload.user,
@@ -80,6 +79,7 @@ function* updateProfileSaga(action: PayloadAction<{ user: Partial<IUser>; onSucc
     }
 
     yield put(updateProfileSuccess(response.data.user))
+    yield put(profilePictureUpdate(response.data.user.profilePicture))
     action.payload.onSuccess(true)
 
     toast({
@@ -108,7 +108,7 @@ function* loadProfileSaga(): Generator<any, void, ApiResponse<any>> {
       return
     }
 
-    yield put(updateProfileSuccess(response.data.user))
+    yield put(updateProfileSuccess(response.data))
   } catch (error: any) {
     yield put(requestFailure(error.response?.data?.message || "Profile loading failed"))
   }

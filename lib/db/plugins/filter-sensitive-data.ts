@@ -43,7 +43,7 @@ export default function filterSensitiveData<T extends Document>(sensitiveFields:
           }
         });
 
-        let key = String(doc._id)
+        let key = String(doc._id).trim()
 
         // Delete from LRU Cache
         lruCache.delete(key)

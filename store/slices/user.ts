@@ -23,11 +23,17 @@ interface UserStateType {
     };
   };
   security: {
-    twoFactorEnabled: boolean;
-    lastPasswordChange: Date;
-    failedLoginAttempts: number;
-    lockoutUntil?: Date;
+    twoFactorEnabled: boolean
+    lastPasswordChange: Date
+    passwordHistory: string[]
+    failedLoginAttempts: number
+    lockoutUntil?: Date
+    publicLinks: boolean
+    deviceHistory: boolean
+    activityLog: boolean
   };
+  authType: 'password' | 'oauth'
+  authProvider: 'google' | 'github' | 'facebook' | 'twitter' | 'microsoft' | 'apple' | 'linkedin' | 'yahoo' | null
   subscription: {
     plan: "free" | "pro" | "enterprise";
     status: "active" | "inactive" | "cancelled" | "past_due";
@@ -54,9 +60,9 @@ interface UserState {
 }
 
 const initialState: UserState = {
-  user: getJsonFromLocalstorage("user") as UserStateType,
+  user: null,
   token: getJsonFromLocalstorage("token"),
-  loading: false,
+  loading: true,
   error: null,
 };
 
@@ -81,8 +87,13 @@ const userSlice = createSlice({
     },
 
     updateProfileSuccess: (state, action: PayloadAction<IUser>) => {
+      if (!action.payload) return;
       state.user = action.payload;
       state.loading = false;
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("user", JSON.stringify(action.payload))
+      }
     },
     updateProfileRequest: (state, action: PayloadAction<{ user: Partial<UserStateType>, onSuccess: Function }>) => { },
     updateProfilePictureRequest: (state, action: PayloadAction<{ data: FormData, onSuccess: Function, onError: Function }>) => { },

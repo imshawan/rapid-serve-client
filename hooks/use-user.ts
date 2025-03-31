@@ -3,7 +3,8 @@ import { loadProfileRequest, registerRequest, updateProfilePictureRequest, updat
 import { useCallback } from "react";
 
 export const useUser = () => {
-  const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch()
+  const userState = useAppSelector((state: RootState) => state.user)
 
   return {
     register: useCallback((payload: { email: string; password: string; name: string }, onSuccess: Function) => {
@@ -22,9 +23,6 @@ export const useUser = () => {
       dispatch(updateProfilePictureRequest({...payload, onSuccess, onError}));
     }, [dispatch]),
 
-    user: useAppSelector((state: RootState) => state.user.user),
-    token: useAppSelector((state: RootState) => state.user.token),
-    loading: useAppSelector((state: RootState) => state.user.loading),
-    error: useAppSelector((state: RootState) => state.user.error),
+    ...userState
   }
 }

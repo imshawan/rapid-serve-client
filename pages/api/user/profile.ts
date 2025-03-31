@@ -24,7 +24,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 async function get(req: NextApiRequest, res: NextApiResponse) {
   try {
     const userId = req.user?.userId;
-    const user = await withCache(String(userId), async () => await User.findById(userId).select("-password"));
+    const user = await withCache(String(userId).trim(), async () => await User.findById(userId).select("-password"));
     if (!user) {
       return formatApiResponse(res, new Error("User not found"), String(req.url));
     }
@@ -75,6 +75,11 @@ async function update(req: NextApiRequest, res: NextApiResponse) {
     // Deep merge with existing user data
     const mergedUserData = merge(existingUser.toObject(), updates);
 
+    if (req.body.hasOwnProperty("profilePicture")) {
+      // Handle profile picture separately because we might want to not have a picture
+      mergedUserData.profilePicture = req.body.profilePicture;
+    }
+    
     // Update the user
     const updatedUser = await User.findByIdAndUpdate(
       userId,

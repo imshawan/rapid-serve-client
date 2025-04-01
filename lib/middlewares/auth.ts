@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import _ from "lodash"
 import { User } from "../models/user";
 import { initializeDbConnection, withCache } from "../db";
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
@@ -52,7 +53,8 @@ export function authMiddleware(handler: NextApiHandler) {
       if (!decoded) return formatApiResponse(res, new ApiError(ErrorCode.UNAUTHORIZED, "Invalid or expired token", HttpStatus.UNAUTHORIZED), String(req.url), startDate);
 
       // Attach user info to request object
-      req.user = decoded;
+      const user = await withCache(decoded.userId, async () => await User.findById(decoded.userId).lean() as unknown as User)
+      req.user = _.merge(decoded, user);
 
       return handler(req, res); // Proceed to the actual API handler
     } catch (error) {

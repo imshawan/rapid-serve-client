@@ -53,6 +53,7 @@ export function authMiddleware(handler: NextApiHandler) {
       if (!decoded) return formatApiResponse(res, new ApiError(ErrorCode.UNAUTHORIZED, "Invalid or expired token", HttpStatus.UNAUTHORIZED), String(req.url), startDate);
 
       // Attach user info to request object
+      await initializeDbConnection()
       const user = await withCache(decoded.userId, async () => await User.findById(decoded.userId).lean() as unknown as User)
       req.user = _.merge(decoded, user);
 

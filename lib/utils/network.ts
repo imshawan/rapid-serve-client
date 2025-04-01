@@ -17,3 +17,13 @@ export const getIpAddress = (req: NextApiRequest) => {
 
   return ip
 }
+
+/**
+ * Retrieves the User-Agent string from the headers of a Next.js API request.
+ *
+ * @param req - The Next.js API request object.
+ * @returns The User-Agent string from the request headers.
+ */
+export const getUserAgent = (req: NextApiRequest) => {
+  return req.headers["user-agent"] as string
+}

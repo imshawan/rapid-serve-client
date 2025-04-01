@@ -6,6 +6,7 @@ import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/re
 import { getChunkStreamFromBucket, validateUploadToken } from "@/services/s3/storage"
 import { Shared } from "@/lib/models/shared"
 import { Types } from "mongoose"
+import { trackHttpBandwidth } from "@/lib/user/analytics/bandwidth"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -39,13 +40,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     // Get chunk metadata
-    const chunk = await Chunk.findOne({ fileId, hash }) as Chunk
+    const chunk = await Chunk.findOne({ fileId, hash }).lean() as unknown as Chunk & {_id: Types.ObjectId}
     if (!chunk) {
       return formatApiResponse(res, new ApiError(ErrorCode.NOT_FOUND, "Chunk not found", HttpStatus.NOT_FOUND))
     }
 
     // Stream the data from S3
     const stream = await getChunkStreamFromBucket(fileId, hash, chunk.storageNode)
+
+    // I do not want to block the JS thread, so not awaiting. 
+    trackHttpBandwidth({...chunk, callerId: userId, chunkId: chunk._id, type: file.type}, req, "download")
 
     res.setHeader("Content-Type", chunk.mimeType)
     res.setHeader("Content-Disposition", `attachment; filename="${hash}"`);

@@ -58,10 +58,10 @@ export const trackHttpBandwidth = async (
  *                   It can be one of the following values: "week", "month", or "year".
  * 
  * @returns A promise that resolves to an object containing the following properties:
- *          - `totalUpload`: Total size of uploaded data in the specified duration.
- *          - `totalDownload`: Total size of downloaded data in the specified duration.
- *          - `totalPreview`: Total size of previewed data in the specified duration.
- *          - `totalUsage`: Total size of all data (upload, download, preview) in the specified duration.
+ *          - `upload`: Total size of uploaded data in the specified duration.
+ *          - `download`: Total size of downloaded data in the specified duration.
+ *          - `preview`: Total size of previewed data in the specified duration.
+ *          - `total`: Total size of all data (upload, download, preview) in the specified duration.
  *          If no data is found, the returned object will have all properties set to 0.
  *
  * @throws Will throw an error if the aggregation query fails.
@@ -93,25 +93,28 @@ export async function getBandwidthUsage(callerId: string | Types.ObjectId, durat
     {
       $group: {
         _id: "$callerId",
-        totalUpload: {
+        upload: {
           $sum: {
             $cond: [{ $eq: ["$type", "upload"] }, "$size", 0],
           },
         },
-        totalDownload: {
+        download: {
           $sum: {
             $cond: [{ $eq: ["$type", "download"] }, "$size", 0],
           },
         },
-        totalPreview: {
+        preview: {
           $sum: {
             $cond: [{ $eq: ["$type", "preview"] }, "$size", 0],
           },
         },
-        totalUsage: { $sum: "$size" },
+        total: { $sum: "$size" },
       },
     },
+    {
+      $project: { _id: 0 },
+    }
   ]);
 
-  return result.length > 0 ? result[0] : { totalUpload: 0, totalDownload: 0, totalPreview: 0, totalUsage: 0 };
+  return result.length > 0 ? result[0] : { upload: 0, download: 0, preview: 0, total: 0 };
 }

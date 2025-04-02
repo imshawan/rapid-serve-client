@@ -1,19 +1,5 @@
-"use client"
-
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
@@ -36,7 +22,7 @@ import { BillingSummary } from "@/components/dashboard/billing/summary"
 import { PlanDetails } from "@/components/dashboard/billing/plan-details"
 import { PaymentMethods } from "@/components/dashboard/billing/payment-methods"
 
-export default function BillingPage() {
+export default async function BillingPage() {
   
   const invoices = [
     {

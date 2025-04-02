@@ -8,7 +8,14 @@ interface AppState {
     appearance: AppSettings.Appearance
     notifications: AppSettings.Notifications
     privacy: AppSettings.Privacy
-    storage: AppSettings.Storage
+    storage: AppSettings.Storage & {
+      bandwidth: {
+        upload: number;
+        download: number;
+        preview: number;
+        total: number;
+      } | null;
+    }
     loading: boolean
   }
 }
@@ -41,6 +48,7 @@ const initialState: AppState = {
       autoRenew: true,
       trash: null,
       used: 0,
+      bandwidth: null
     },
     loading: false
   }

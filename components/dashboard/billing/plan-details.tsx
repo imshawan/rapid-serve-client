@@ -22,7 +22,7 @@ export function PlanDetails() {
   useEffect(() => {
     if (settings.loading) return
 
-    const selectedPlan = plans.find((p) => p.name.toLowerCase() === "free");
+    const selectedPlan = plans.find((p) => p.name.toLowerCase() === settings.storage.plan.toLowerCase());
     if (!selectedPlan) return;
     setPlan(selectedPlan);
 

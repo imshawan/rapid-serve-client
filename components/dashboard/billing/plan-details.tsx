@@ -8,6 +8,7 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils/common";
 import { ArrowRight, Globe, HardDrive } from "lucide-react";
 import { useApp } from "@/hooks/use-app";
+import { Skeleton as SkeletonPrimitive } from "@/components/ui/skeleton";
 
 export function PlanDetails() {
   const { settings, loadPlanDetails } = useApp()
@@ -32,18 +33,18 @@ export function PlanDetails() {
   const Skeleton = () => (
     <div className="p-6 space-y-6 animate-pulse">
       {/* Skeleton for Current Plan Title and Description */}
-      <div className="h-6 w-1/4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-      <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-600 rounded"></div>
+      <SkeletonPrimitive className="h-6 w-1/4 rounded"></SkeletonPrimitive>
+      <SkeletonPrimitive className="h-4 w-2/3 rounded"></SkeletonPrimitive>
 
       {/* Price and Actions Skeleton */}
       <div className="flex justify-between items-center">
         <div>
-          <div className="h-8 w-16 bg-gray-300 dark:bg-gray-700 rounded"></div>
-          <div className="h-4 w-32 bg-gray-200 dark:bg-gray-600 rounded mt-1"></div>
+          <SkeletonPrimitive className="h-8 w-16 rounded"></SkeletonPrimitive>
+          <SkeletonPrimitive className="h-4 w-32 rounded mt-1"></SkeletonPrimitive>
         </div>
         <div className="flex gap-3">
-          <div className="h-10 w-36 bg-gray-300 dark:bg-gray-700 rounded"></div>
-          <div className="h-10 w-36 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <SkeletonPrimitive className="h-10 w-36 rounded"></SkeletonPrimitive>
+          <SkeletonPrimitive className="h-10 w-36 rounded"></SkeletonPrimitive>
         </div>
       </div>
 
@@ -53,8 +54,8 @@ export function PlanDetails() {
           .fill(null)
           .map((_, index) => (
             <div key={index} className="flex items-center gap-2">
-              <div className="h-4 w-4 bg-gray-300 dark:bg-gray-700 rounded"></div>
-              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-600 rounded"></div>
+              <SkeletonPrimitive className="h-4 w-4 rounded"></SkeletonPrimitive>
+              <SkeletonPrimitive className="h-4 w-3/4 rounded"></SkeletonPrimitive>
             </div>
           ))}
       </div>

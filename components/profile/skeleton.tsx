@@ -13,7 +13,6 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 const ProfileSkeleton = () => {
@@ -38,10 +37,8 @@ const ProfileSkeleton = () => {
             <CardContent>
               <div className="flex items-center space-x-4 mb-6">
                 {/* Avatar Skeleton */}
-                <Skeleton className="h-20 w-20 rounded-full" />
-                <Button variant="outline" disabled>
-                  Change Avatar
-                </Button>
+                <Skeleton className="h-20 w-20 rounded-full animate-pulse" />
+                <Skeleton className="h-10 w-32 animate-pulse" />
               </div>
 
               <div className="space-y-4">

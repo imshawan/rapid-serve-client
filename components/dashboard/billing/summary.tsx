@@ -7,6 +7,7 @@ import { formatBytes, parseSizeToBytes } from "@/lib/utils/common";
 import { Globe, HardDrive, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { plans } from "@/common/plans";
+import { Skeleton as SkeletonPrimitive } from "@/components/ui/skeleton";
 
 export function BillingSummary() {
   const { settings } = useApp()
@@ -50,27 +51,27 @@ export function BillingSummary() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <div className="h-5 w-5 bg-gray-300 dark:bg-gray-700 rounded"></div>
-          <div className="h-5 w-32 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <SkeletonPrimitive className="animate-pulse h-5 w-5 rounded"></SkeletonPrimitive>
+          <SkeletonPrimitive className="animate-pulse h-5 w-32 rounded"></SkeletonPrimitive>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded"></div>
-            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <SkeletonPrimitive className="animate-pulse h-4 w-20 rounded"></SkeletonPrimitive>
+            <SkeletonPrimitive className="animate-pulse h-4 w-20 rounded"></SkeletonPrimitive>
           </div>
 
-          <div className="h-3 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <SkeletonPrimitive className="animate-pulse h-3 w-full rounded"></SkeletonPrimitive>
         </div>
 
-        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-600 rounded"></div>
+        <SkeletonPrimitive className="animate-pulse h-4 w-32 rounded"></SkeletonPrimitive>
       </CardContent>
     </Card>
 
   )
 
-  if (settings.loading) {
+  if (settings.loading || !plan) {
     return (
       <div className="grid gap-6 md:grid-cols-3">
         {Array(3)

@@ -137,7 +137,7 @@ export function PaymentMethods() {
         {savedCards.map((card, index) => (
           <div key={card.id} className={cn(
             "flex items-center justify-between p-4 border rounded-lg",
-            card.default ? "border-primary bg-gray-100" : ""
+            card.default ? "border-primary bg-gray-100 dark:bg-blue-500/5" : ""
             )}>
             <div className="flex items-center gap-4">
               <div className="rounded-lg bg-muted p-2">

@@ -8,6 +8,7 @@ import { authMiddleware } from "@/lib/middlewares";
 import { ApiError, ErrorCode, formatApiResponse, HttpStatus } from "@/lib/api/response";
 import multer from "multer";
 import { Types } from "mongoose";
+import { trackHttpBandwidth } from "@/lib/user/analytics/bandwidth";
 
 // Configure Multer (store file in memory)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -23,7 +24,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const userId = new Types.ObjectId(req.user?.userId)
     const { fileId, hash, token } = req.query as { [key: string]: string };
 
-    const existingFile = await withCache(fileId, async () => await FileModel.findOne({fileId, userId})) as FileModelType
+    const existingFile = await withCache(fileId, async () => await FileModel.findOne({fileId, userId}).lean()) as FileModelType
     if (!existingFile) {
       return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "File not found", HttpStatus.BAD_REQUEST))
     }
@@ -62,17 +63,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "Hash mismatch", HttpStatus.BAD_REQUEST))
     }
 
-    await uploadChunkByNode(fileId, hash, file.buffer, node)
-    await verifyChunkUpload(fileId, hash, node)
+    await uploadChunkByNode(fileId, hash, file.buffer, node) // Uploads the chunk to s3
+    await verifyChunkUpload(fileId, hash, node) // Verifies after upload if the chunk was successfully saved to s3
 
-    await Chunk.create({
+    const chunk = await Chunk.create({
       userId,
       fileId,
       hash,
       storageNode: node.id,
       size: file.size,
       mimeType: file.mimetype
-    });
+    })
+
+    // I do not want to block the JS thread, so not awaiting. 
+    trackHttpBandwidth({...existingFile, chunkId: (chunk._id as Types.ObjectId), callerId: userId}, req, "upload")
 
     return formatApiResponse(res, { success: true })
   } catch (error) {

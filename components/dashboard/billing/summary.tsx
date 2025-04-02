@@ -1,46 +1,77 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useApp } from "@/hooks/use-app";
-import { formatBytes } from "@/lib/utils/common";
-import { Globe, HardDrive, Trash2, Users } from "lucide-react";
-import { useMemo } from "react";
+import { formatBytes, parseSizeToBytes } from "@/lib/utils/common";
+import { Globe, HardDrive, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { plans } from "@/common/plans";
+import { Skeleton as SkeletonPrimitive } from "@/components/ui/skeleton";
 
 export function BillingSummary() {
   const { settings } = useApp()
-  const storageUsed = 23.4
-  const storageLimit = 100
-  const storagePercentage = (storageUsed / storageLimit) * 100
+  const [plan, setPlan] = useState<(typeof plans)[number] | null>(null)
 
   const percentage = useMemo(() => ((settings.storage.used || 0) / (settings.storage.limit || 0) * 100), [settings])
   const available = useMemo(() => formatBytes((settings.storage.limit || 0) - (settings.storage.used || 0)), [settings])
+  const trashUsage = useMemo(() => {
+    if (!settings.storage.limit || !settings.storage.trash?.items) return 0;
+    let percent = (settings.storage.trash?.size / (settings.storage.limit || 0)) * 100
+    return parseFloat(percent.toFixed(2))
+  }, [settings.storage])
+  const resetsIn = useMemo(() => {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const diff = nextMonth.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }, [])
+  const bandwidthUsed = useMemo(() => {
+    if (!settings.storage.bandwidth || !plan?.bandwidth) return {
+      label: "0 B",
+      percent: 0
+    }
+    let percent = (settings.storage.bandwidth.total || 0) / (parseSizeToBytes(plan?.bandwidth) || 0) * 100
+    return {
+      label: formatBytes(settings.storage.bandwidth.total || 0),
+      percent: parseFloat(percent.toFixed(2))
+    }
+  }, [settings.storage, plan])
+
+  useEffect(() => {
+    if (settings.loading) return
+
+    const selectedPlan = plans.find((p) => p.name.toLowerCase() === settings.storage.plan);
+    if (!selectedPlan) return;
+    setPlan(selectedPlan);
+
+  }, []);
 
   const Skeleton = () => (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <div className="h-5 w-5 bg-gray-300 dark:bg-gray-700 rounded"></div>
-          <div className="h-5 w-32 bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <SkeletonPrimitive className="animate-pulse h-5 w-5 rounded"></SkeletonPrimitive>
+          <SkeletonPrimitive className="animate-pulse h-5 w-32 rounded"></SkeletonPrimitive>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded"></div>
-            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded"></div>
+            <SkeletonPrimitive className="animate-pulse h-4 w-20 rounded"></SkeletonPrimitive>
+            <SkeletonPrimitive className="animate-pulse h-4 w-20 rounded"></SkeletonPrimitive>
           </div>
 
-          <div className="h-3 w-full bg-gray-300 dark:bg-gray-700 rounded"></div>
+          <SkeletonPrimitive className="animate-pulse h-3 w-full rounded"></SkeletonPrimitive>
         </div>
 
-        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-600 rounded"></div>
+        <SkeletonPrimitive className="animate-pulse h-4 w-32 rounded"></SkeletonPrimitive>
       </CardContent>
     </Card>
 
   )
 
-  if (settings.loading) {
+  if (settings.loading || !plan) {
     return (
       <div className="grid gap-6 md:grid-cols-3">
         {Array(3)
@@ -83,13 +114,13 @@ export function BillingSummary() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>756.2 GB used</span>
-              <span>1 TB total</span>
+              <span>{bandwidthUsed.label} used</span>
+              <span>{plan?.bandwidth.toUpperCase()} total</span>
             </div>
-            <Progress value={75.62} />
+            <Progress value={bandwidthUsed.percent} />
           </div>
           <p className="text-sm text-muted-foreground">
-            Resets in 8 days
+            Resets in {resetsIn} days
           </p>
         </CardContent>
       </Card>
@@ -105,9 +136,9 @@ export function BillingSummary() {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>{settings.storage.trash?.items} items in trash</span>
-              <span>{formatBytes(settings.storage.trash?.size || 0, 1)} total</span>
+              <span>{formatBytes(settings.storage.limit || 0)} total</span>
             </div>
-            <Progress value={50} />
+            <Progress value={trashUsage} />
           </div>
           <p className="text-sm text-muted-foreground">
             Auto deletes in 30 days

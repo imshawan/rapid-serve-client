@@ -12,6 +12,7 @@ import { getChunkStreamFromBucket } from "@/services/s3/storage"
 import { getMimeType } from "@/lib/utils/mimetype"
 import { Readable } from "stream"
 import { mergeChunks } from "@/lib/utils/server-chunk"
+import { trackHttpBandwidth } from "@/lib/user/analytics/bandwidth"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
 
@@ -27,7 +28,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Get file record
     const [file, sharedWithMe] = await Promise.all([
-      File.findOne({ fileId }),
+      File.findOne({ fileId }).lean(),
       Shared.findOne({ fileId, "sharedWith.userId": String(userId) })
     ])
     if (!file) {
@@ -57,6 +58,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     if (stream) {
+      // I do not want to block the JS thread, so not awaiting. 
+      trackHttpBandwidth({...file, callerId: userId}, req, "preview")
+      
       res.setHeader("Content-Type", mimeType)
       res.setHeader("Content-Disposition", `attachment; filename="${file.fileName}"`)
       stream.pipe(res)

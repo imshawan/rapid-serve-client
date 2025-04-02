@@ -8,6 +8,7 @@ import app from "@/config/app.json"
 import { parseSizeToBytes } from "@/lib/utils/common"
 import { Types } from "mongoose"
 import { getTrashStatistics } from "@/lib/user/stats"
+import { getBandwidthUsage } from "@/lib/user/analytics/bandwidth"
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {
@@ -23,10 +24,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return formatApiResponse(res, new ApiError(ErrorCode.BAD_REQUEST, "User not found", HttpStatus.BAD_REQUEST))
     }
 
-    const trash = await getTrashStatistics(userId)
+    const [trash, bandwidth] = await Promise.all([
+      getTrashStatistics(userId),
+      getBandwidthUsage(userId, "month")
+    ])
     const payload = _.merge(
       user.subscription,
-      { limit: parseSizeToBytes(app.maxStoragePerUser), trash, used: user.storageUsed },
+      { limit: parseSizeToBytes(app.maxStoragePerUser), trash, used: user.storageUsed, bandwidth },
     )
 
     formatApiResponse(res, payload)

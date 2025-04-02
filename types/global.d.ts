@@ -2,6 +2,7 @@ import { Document, Types } from "mongoose"
 import { NextApiRequest } from "next"
 import { createClient, RedisClientType } from 'redis';
 import type { File } from "@/lib/models/upload";
+import type { User } from "@/lib/models/user";
 import { NotificationType } from "@/common/enums/notification-types";
 
 export { }
@@ -248,7 +249,7 @@ declare global {
 
 declare module "next" {
   interface NextApiRequest {
-    user?: {
+    user?: User & {
       userId: string;
       email: string;
       role?: string;

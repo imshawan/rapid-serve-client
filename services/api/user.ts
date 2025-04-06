@@ -21,5 +21,9 @@ export const user = {
 
   getPlanDetails: async () => {
     return await http.get<any>(endpoints.PLAN_DETAILS)
+  },
+
+  getAnalyticsOverview: async () => {
+    return await http.get<AnalyticsOverview>(endpoints.LOAD_ANALYTICS_OVERVIEW)
   }
 }

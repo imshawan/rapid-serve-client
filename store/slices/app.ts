@@ -9,12 +9,7 @@ interface AppState {
     notifications: AppSettings.Notifications
     privacy: AppSettings.Privacy
     storage: AppSettings.Storage & {
-      bandwidth: {
-        upload: number;
-        download: number;
-        preview: number;
-        total: number;
-      } | null;
+      bandwidth: Bandwidth | null;
     }
     loading: boolean
   }

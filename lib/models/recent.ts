@@ -4,9 +4,7 @@ import softDelete, { SoftDeleteModel } from "../db/plugins/soft-delete"
 const recentSchema = new mongoose.Schema({
   fileId: {
     type: String,
-    ref: "File",
     required: true,
-    unique: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

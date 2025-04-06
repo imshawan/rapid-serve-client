@@ -34,4 +34,6 @@ export const endpoints = {
   MARK_NOTIFICATION_AS_READ: "/api/notifications/{{notificationId}}/read",
   MARK_NOTIFICATIONS_AS_READ: "/api/notifications/read",
   CREATE_FOLDER: "/api/folders",
+
+  LOAD_ANALYTICS_OVERVIEW: "/api/user/analytics/overview"
 }

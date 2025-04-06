@@ -19,6 +19,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    const start = Date.now()
     await initializeDbConnection();
 
     const userId = new Types.ObjectId(req.user?.userId)
@@ -75,8 +76,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       mimeType: file.mimetype
     })
 
+    const elapsed = (Date.now() - start)
+
     // I do not want to block the JS thread, so not awaiting. 
-    trackHttpBandwidth({...existingFile, chunkId: (chunk._id as Types.ObjectId), callerId: userId}, req, "upload")
+    trackHttpBandwidth({...existingFile, chunkId: (chunk._id as Types.ObjectId), callerId: userId}, req, "upload", elapsed)
 
     return formatApiResponse(res, { success: true })
   } catch (error) {

@@ -60,7 +60,7 @@ export default function SharedPage() {
   }
 
   const handlePreview = (file: SharedFilePopulated) => {
-    router.push(["/", file.type, "/", file.fileId].join(""))
+    router.push(["/", file.fileType, "/", file.fileId, "?sharer=", file.shareId].join(""))
   }
 
   const handleTabChange = (value: string) => {

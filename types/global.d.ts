@@ -244,6 +244,45 @@ declare global {
     message: string;
     metadata?: Record<string, any>;
   }
+
+  type Duration = "week" | "last-week" | "month" | "last-month" | "year" | "last-year"
+  interface Bandwidth {
+    upload: number;
+    download: number;
+    preview: number;
+    total: number;
+  }
+
+  interface AnalyticsOverviewComparison {
+    bandwidth: {
+      type: "inc" | "dec";
+      value: number;
+    };
+    averageResponseTimeMs: {
+      type: "inc" | "dec";
+      value: number;
+    };
+    storageUsed: {
+      type: "inc" | "dec";
+      value: number;
+    };
+    userEngagement: {
+      type: "inc" | "dec";
+      value: number;
+    };
+  }
+  interface UserEngagement {
+    download: number
+    preview: number
+    total: number
+  }
+  interface AnalyticsOverview extends AppSettings.Storage {
+    bandwidth: Bandwidth;
+    averageResponseTimeMs: number;
+    totalRequests: any;
+    userEngagement: UserEngagement;
+    comparisons: AnalyticsOverviewComparison
+  }
 }
 
 declare module "next" {

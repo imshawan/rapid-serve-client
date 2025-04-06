@@ -31,7 +31,14 @@ export async function middleware(request: NextRequest) {
 
   if (token && authPage) {
     if (!await verifyToken(token)) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const response = NextResponse.redirect(new URL('/login', request.url))
+      response.cookies.set({
+        name: 'token',
+        value: '',
+        path: '/',
+        expires: new Date(0), // immediately expires the cookie
+      })
+      return response
     }
 
     return NextResponse.redirect(new URL('/dashboard', request.url))

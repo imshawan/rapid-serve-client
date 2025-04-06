@@ -14,6 +14,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    const start = Date.now()
     await initializeDbConnection()
 
     const { fileId, hash, token } = req.query as { [key: string]: string }
@@ -47,9 +48,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     // Stream the data from S3
     const stream = await getChunkStreamFromBucket(fileId, hash, chunk.storageNode)
+    const elapsed = (Date.now() - start)
 
     // I do not want to block the JS thread, so not awaiting. 
-    trackHttpBandwidth({...chunk, callerId: userId, chunkId: chunk._id, type: file.type}, req, "download")
+    trackHttpBandwidth({...chunk, callerId: userId, chunkId: chunk._id, type: file.type}, req, "download", elapsed)
 
     res.setHeader("Content-Type", chunk.mimeType)
     res.setHeader("Content-Disposition", `attachment; filename="${hash}"`);

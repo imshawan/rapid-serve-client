@@ -1,8 +1,9 @@
-import { Bandwidth } from "@/lib/models/analytics/bandwidth"
+import { Bandwidth as BandwidthModel } from "@/lib/models/analytics/bandwidth"
 import type { File } from "../../models/upload"
 import { NextApiRequest } from "next/types"
 import { getIpAddress, getUserAgent } from "../../utils/network"
 import { Types } from "mongoose"
+import { getDateRangeFromDuration } from "@/lib/utils/analytics"
 
 /**
  * Tracks HTTP bandwidth usage for a file operation such as upload, download, or preview.
@@ -23,7 +24,8 @@ import { Types } from "mongoose"
 export const trackHttpBandwidth = async (
   file: Partial<File> & { chunkId?: Types.ObjectId, size?: number, callerId: Types.ObjectId | string },
   req: NextApiRequest,
-  type: "upload" | "download" | "preview"
+  type: "upload" | "download" | "preview",
+  timeElapsed: number
 ) => {
   try {
     if (!file.fileId || !file.userId) {
@@ -34,13 +36,14 @@ export const trackHttpBandwidth = async (
     const fileSize = (file.fileSize || file.size) ?? 0 // Ensure it’s a number
     const callerId = typeof file.callerId === 'string' ? new Types.ObjectId(file.callerId) : file.callerId
 
-    await Bandwidth.create({
+    await BandwidthModel.create({
       fileId: file.fileId,
       ownerId: file.userId,
       callerId,
       type,
       resourceType: file.type,
       size: fileSize,
+      requestDuration: timeElapsed ?? 0,
       chunk: file.chunkId || null,
       ipAddress: getIpAddress(req),
       userAgent: getUserAgent(req),
@@ -66,28 +69,15 @@ export const trackHttpBandwidth = async (
  *
  * @throws Will throw an error if the aggregation query fails.
  */
-export async function getBandwidthUsage(callerId: string | Types.ObjectId, duration: "week" | "month" | "year") {
-  const now = new Date();
+export async function getBandwidthUsage(callerId: string | Types.ObjectId, duration: Duration): Promise<Bandwidth> {
   const callerIdparsed = typeof callerId === 'string' ? new Types.ObjectId(callerId) : callerId
-  let startDate = new Date();
+  const { startDate, endDate } = getDateRangeFromDuration(duration)
 
-  switch (duration) {
-    case "week":
-      startDate.setDate(now.getDate() - 7);
-      break;
-    case "month":
-      startDate.setMonth(now.getMonth() - 1);
-      break;
-    case "year":
-      startDate.setFullYear(now.getFullYear() - 1);
-      break;
-  }
-
-  const result = await Bandwidth.aggregate([
+  const result = await BandwidthModel.aggregate([
     {
       $match: {
         callerId: callerIdparsed,
-        createdAt: { $gte: startDate, $lte: now },
+        createdAt: { $gte: startDate, $lte: endDate },
       },
     },
     {
@@ -114,7 +104,40 @@ export async function getBandwidthUsage(callerId: string | Types.ObjectId, durat
     {
       $project: { _id: 0 },
     }
-  ]);
+  ])
 
-  return result.length > 0 ? result[0] : { upload: 0, download: 0, preview: 0, total: 0 };
+  return result.length > 0 ? result[0] : { upload: 0, download: 0, preview: 0, total: 0 }
+}
+
+export async function getAverageResponseTimeByUserId(userId: string | Types.ObjectId, duration: Duration) {
+  const { startDate, endDate } = getDateRangeFromDuration(duration)
+  const user = typeof userId === 'string' ? new Types.ObjectId(userId) : userId
+
+  const result = await BandwidthModel.aggregate([
+    {
+      $match: {
+        createdAt: { $gte: startDate, $lte: endDate },
+        $or: [{ ownerId: user }, { callerId: user }],
+      },
+    },
+    {
+      $group: {
+        _id: null, // No grouping
+        averageResponseTimeMs: { $avg: "$requestDuration" },
+        requestCount: { $sum: 1 },
+      },
+    },
+  ])
+
+  if (result.length === 0) {
+    return {
+      averageResponseTimeMs: 0,
+      totalRequests: 0,
+    }
+  }
+
+  return {
+    averageResponseTimeMs: Math.round(result[0].averageResponseTimeMs),
+    totalRequests: result[0].requestCount,
+  }
 }

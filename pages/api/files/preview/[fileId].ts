@@ -21,6 +21,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    const start = Date.now()
     await initializeDbConnection()
 
     const { fileId } = req.query as { [key: string]: string }
@@ -58,8 +59,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     if (stream) {
+      const elapsed = (Date.now() - start)
       // I do not want to block the JS thread, so not awaiting. 
-      trackHttpBandwidth({...file, callerId: userId}, req, "preview")
+      trackHttpBandwidth({...file, callerId: userId}, req, "preview", elapsed)
       
       res.setHeader("Content-Type", mimeType)
       res.setHeader("Content-Disposition", `attachment; filename="${file.fileName}"`)

@@ -19,14 +19,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Globe,
-  HardDrive,
-  Clock,
-  ArrowUpRight,
-  ArrowDownRight,
   FileText,
   Image as ImageIcon,
   Video,
@@ -34,9 +26,11 @@ import {
   Download,
 } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, LineChart, Line } from 'recharts'
+import { KeyMetrics } from "@/components/dashboard/analytics/key-metrics"
+import { filterDurations } from "@/common/analytics"
 
 export default function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState("7d")
+  const [timeRange, setTimeRange] = useState("week")
   
   const storageData = [
     { name: "Mon", value: 23 },
@@ -111,84 +105,13 @@ export default function AnalyticsPage() {
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="24h">Last 24 hours</SelectItem>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
+            {filterDurations.map((e) => <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Storage Used</CardTitle>
-            <HardDrive className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">38.8 GB</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-500 inline-flex items-center">
-                <ArrowUpRight className="h-4 w-4 mr-1" />
-                +2.5%
-              </span>{" "}
-              vs last week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bandwidth Usage</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1.2 TB</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-red-500 inline-flex items-center">
-                <ArrowDownRight className="h-4 w-4 mr-1" />
-                -0.8%
-              </span>{" "}
-              vs last week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1,482</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-500 inline-flex items-center">
-                <ArrowUpRight className="h-4 w-4 mr-1" />
-                +12.3%
-              </span>{" "}
-              vs last week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Response Time</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">85ms</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-500 inline-flex items-center">
-                <ArrowUpRight className="h-4 w-4 mr-1" />
-                +5.2%
-              </span>{" "}
-              vs last week
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <KeyMetrics />
 
       {/* Storage Trends */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -296,38 +219,57 @@ export default function AnalyticsPage() {
 
       {/* Top Files */}
       <Card>
-        <CardHeader>
-          <CardTitle>Most Accessed Files</CardTitle>
-          <CardDescription>Files with highest bandwidth consumption</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Downloads</TableHead>
-                <TableHead>Bandwidth Used</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topFiles.map((file) => (
-                <TableRow key={file.name}>
-                  <TableCell className="font-medium">{file.name}</TableCell>
-                  <TableCell>{file.type}</TableCell>
-                  <TableCell>{file.size}</TableCell>
-                  <TableCell>{file.downloads}</TableCell>
-                  <TableCell>{file.bandwidth}</TableCell>
-                  <TableCell className="text-right">
-                    <Download className="h-4 w-4 inline-block" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+  <CardHeader>
+    <CardTitle>Most Accessed Files</CardTitle>
+    <CardDescription>Files with highest bandwidth consumption</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div className="overflow-x-auto">
+      <Table className="min-w-full">
+        <TableHeader>
+          <TableRow className="hidden md:table-row">
+            <TableHead>File Name</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Size</TableHead>
+            <TableHead>Downloads</TableHead>
+            <TableHead>Bandwidth Used</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+          <TableRow className="table-row md:hidden">
+            <TableHead>File Name</TableHead>
+            <TableHead>Details</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {topFiles.map((file) => (
+            <TableRow key={file.name} className="block md:table-row">
+              <TableCell className="font-medium">{file.name}</TableCell>
+              <TableCell className="hidden md:table-cell">{file.type}</TableCell>
+              <TableCell className="hidden md:table-cell">{file.size}</TableCell>
+              <TableCell className="hidden md:table-cell">{file.downloads}</TableCell>
+              <TableCell className="hidden md:table-cell">{file.bandwidth}</TableCell>
+              {/* Mobile View - Stack rows */}
+              <TableCell className="md:hidden">
+                <div className="flex flex-col gap-1 text-sm">
+                  <span>Type: {file.type}</span>
+                  <span>Size: {file.size}</span>
+                  <span>Downloads: {file.downloads}</span>
+                  <span>Bandwidth: {file.bandwidth}</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-right ">
+                <Download className="h-4 w-4 inline-block" />
+              </TableCell>
+
+              
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  </CardContent>
+</Card>
+
     </div>
   )}

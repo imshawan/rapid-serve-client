@@ -7,6 +7,7 @@ import {
   CreditCard,
   Settings,
   User,
+  Activity,
 } from "lucide-react"
 
 export const navigation = [
@@ -21,4 +22,5 @@ export const userNavigation = [
   { name: "Profile", href: "/dashboard/profile", icon: User },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
+  { name: "Usage Analytics", href: "/dashboard/analytics", icon: Activity },
 ]

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/providers/theme-provider"
 import { Providers } from './providers'
 import { WebSocketProvider } from '@/providers/websocket-provider'
+import RouteProgress from '@/components/route-progress'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <WebSocketProvider>
+              <RouteProgress />
             {children}
             </WebSocketProvider>
             <Toaster />

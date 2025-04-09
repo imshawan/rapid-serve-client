@@ -169,3 +169,20 @@ html {
 .dark .gradient-blur {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0) 70%);
 }
+
+#nprogress .bar {
+  background: black!important;
+  height: 3px!important;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3)!important;
+}
+/* Change color and shadow in dark mode */
+.dark #nprogress .bar {
+  background: white!important;
+}
+
+.dark #nprogress .peg {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5)!important;
+}

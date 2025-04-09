@@ -7,92 +7,101 @@
  * @author Shawan Mandal <github@imshawan.dev>
  */
 
-const mimeTypeMap: Record<string, string> = {
+type FileTypeCategory = "image" | "video" | "audio" | "document" | "archive" | "code" | "executable" | "other";
+
+interface MimeTypeEntry {
+  mime: string;
+  type: FileTypeCategory;
+}
+
+const mimeTypeMap: Record<string, MimeTypeEntry> = {
   // Images
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  gif: "image/gif",
-  svg: "image/svg+xml",
-  webp: "image/webp",
-  bmp: "image/bmp",
-  tiff: "image/tiff",
+  jpg: { mime: "image/jpeg", type: "image" },
+  jpeg: { mime: "image/jpeg", type: "image" },
+  png: { mime: "image/png", type: "image" },
+  gif: { mime: "image/gif", type: "image" },
+  svg: { mime: "image/svg+xml", type: "image" },
+  webp: { mime: "image/webp", type: "image" },
+  bmp: { mime: "image/bmp", type: "image" },
+  tiff: { mime: "image/tiff", type: "image" },
 
   // Videos
-  mp4: "video/mp4",
-  mov: "video/quicktime",
-  avi: "video/x-msvideo",
-  mkv: "video/x-matroska",
-  flv: "video/x-flv",
-  webm: "video/webm",
+  mp4: { mime: "video/mp4", type: "video" },
+  mov: { mime: "video/quicktime", type: "video" },
+  avi: { mime: "video/x-msvideo", type: "video" },
+  mkv: { mime: "video/x-matroska", type: "video" },
+  flv: { mime: "video/x-flv", type: "video" },
+  webm: { mime: "video/webm", type: "video" },
 
   // Audio
-  mp3: "audio/mpeg",
-  wav: "audio/wav",
-  flac: "audio/flac",
-  aac: "audio/aac",
-  ogg: "audio/ogg",
+  mp3: { mime: "audio/mpeg", type: "audio" },
+  wav: { mime: "audio/wav", type: "audio" },
+  flac: { mime: "audio/flac", type: "audio" },
+  aac: { mime: "audio/aac", type: "audio" },
+  ogg: { mime: "audio/ogg", type: "audio" },
 
   // Documents
-  pdf: "application/pdf",
-  doc: "application/msword",
-  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  xls: "application/vnd.ms-excel",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ppt: "application/vnd.ms-powerpoint",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  txt: "text/plain",
-  md: "text/markdown",
+  pdf: { mime: "application/pdf", type: "document" },
+  doc: { mime: "application/msword", type: "document" },
+  docx: { mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", type: "document" },
+  xls: { mime: "application/vnd.ms-excel", type: "document" },
+  xlsx: { mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", type: "document" },
+  ppt: { mime: "application/vnd.ms-powerpoint", type: "document" },
+  pptx: { mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation", type: "document" },
+  txt: { mime: "text/plain", type: "document" },
+  md: { mime: "text/markdown", type: "document" },
 
   // Archives
-  zip: "application/zip",
-  rar: "application/x-rar-compressed",
-  tar: "application/x-tar",
-  "7z": "application/x-7z-compressed",
-  gz: "application/gzip",
-  bz2: "application/x-bzip2",
-  xz: "application/x-xz",
+  zip: { mime: "application/zip", type: "archive" },
+  rar: { mime: "application/x-rar-compressed", type: "archive" },
+  tar: { mime: "application/x-tar", type: "archive" },
+  "7z": { mime: "application/x-7z-compressed", type: "archive" },
+  gz: { mime: "application/gzip", type: "archive" },
+  bz2: { mime: "application/x-bzip2", type: "archive" },
+  xz: { mime: "application/x-xz", type: "archive" },
 
   // Code files
-  js: "text/javascript",
-  jsx: "text/javascript",
-  ts: "text/typescript", 
-  tsx: "text/typescript",
-  json: "application/json",
-  html: "text/html",
-  css: "text/css",
-  scss: "text/x-scss",
-  less: "text/x-less",
-  php: "application/x-httpd-php",
-  py: "text/x-python",
-  rb: "text/x-ruby",
-  go: "text/x-go",
-  rs: "text/x-rust",
-  c: "text/x-c",
-  cpp: "text/x-c++",
-  java: "text/x-java-source",
-  sh: "application/x-shellscript",
-  bat: "application/x-msdos-program",
-  yaml: "text/yaml",
-  yml: "text/yaml",
-  xml: "text/xml",
-  sql: "text/x-sql",
+  js: { mime: "text/javascript", type: "code" },
+  jsx: { mime: "text/javascript", type: "code" },
+  ts: { mime: "text/typescript", type: "code" },
+  tsx: { mime: "text/typescript", type: "code" },
+  json: { mime: "application/json", type: "code" },
+  html: { mime: "text/html", type: "code" },
+  css: { mime: "text/css", type: "code" },
+  scss: { mime: "text/x-scss", type: "code" },
+  less: { mime: "text/x-less", type: "code" },
+  php: { mime: "application/x-httpd-php", type: "code" },
+  py: { mime: "text/x-python", type: "code" },
+  rb: { mime: "text/x-ruby", type: "code" },
+  go: { mime: "text/x-go", type: "code" },
+  rs: { mime: "text/x-rust", type: "code" },
+  c: { mime: "text/x-c", type: "code" },
+  cpp: { mime: "text/x-c++", type: "code" },
+  java: { mime: "text/x-java-source", type: "code" },
+  sh: { mime: "application/x-shellscript", type: "code" },
+  bat: { mime: "application/x-msdos-program", type: "code" },
+  yaml: { mime: "text/yaml", type: "code" },
+  yml: { mime: "text/yaml", type: "code" },
+  xml: { mime: "text/xml", type: "code" },
+  sql: { mime: "text/x-sql", type: "code" },
 
   // Executables & System Files
-  exe: "application/vnd.microsoft.portable-executable",
-  msi: "application/x-ms-installer",
-  dmg: "application/x-apple-diskimage",
-  app: "application/octet-stream",
-  pkg: "application/x-newton-compatible-pkg",
-  deb: "application/vnd.debian.binary-package",
-  rpm: "application/x-rpm",
-  appimage: "application/octet-stream",
-  iso: "application/x-iso9660-image",
-  lnk: "application/x-ms-shortcut",
+  exe: { mime: "application/vnd.microsoft.portable-executable", type: "executable" },
+  msi: { mime: "application/x-ms-installer", type: "executable" },
+  dmg: { mime: "application/x-apple-diskimage", type: "executable" },
+  app: { mime: "application/octet-stream", type: "executable" },
+  pkg: { mime: "application/x-newton-compatible-pkg", type: "executable" },
+  deb: { mime: "application/vnd.debian.binary-package", type: "executable" },
+  rpm: { mime: "application/x-rpm", type: "executable" },
+  appimage: { mime: "application/octet-stream", type: "executable" },
+  iso: { mime: "application/x-iso9660-image", type: "executable" },
+  lnk: { mime: "application/x-ms-shortcut", type: "executable" },
 
   // Default
-  unknown: "application/octet-stream",
-};
+  unknown: { mime: "application/octet-stream", type: "other" },
+}
+
+export const validFileCategories: FileTypeCategory[] = ["image", "video", "audio", "document", "archive", "code", "executable", "other"]
 
 /**
  * Get the MIME type of a file based on its extension.
@@ -102,5 +111,16 @@ const mimeTypeMap: Record<string, string> = {
  */
 export const getMimeType = (fileName: string): string => {
   const extension = fileName.split(".").pop()?.toLowerCase() || "unknown";
-  return mimeTypeMap[extension] || "application/octet-stream";
+  return mimeTypeMap[extension]["mime"] || "application/octet-stream";
+};
+
+/**
+ * Get the general file type (e.g., image, video, audio, document).
+ *
+ * @param fileName - The name of the file, including its extension.
+ * @returns {string} A general category like "image", "video", "audio", "document", "code", "archive", or "other".
+ */
+export const getFileCategory = (fileName: string): FileTypeCategory => {
+  const extension = fileName.split(".").pop()?.toLowerCase() || "unknown";
+  return mimeTypeMap[extension]["type"] || "other";
 };

@@ -128,7 +128,7 @@ export default function SharedPage() {
               {file.sharedBy && file.sharedBy.length > 0 && (
                 <div className="flex items-center justify-between">
                   {file.sharedBy.map((item: SharedWithUser) => (
-                    <HoverCard>
+                    <HoverCard key={item.userId}>
                       <HoverCardTrigger asChild>
                         <div className="flex items-center gap-2 cursor-pointer">
                           <Avatar className="h-6 w-6">

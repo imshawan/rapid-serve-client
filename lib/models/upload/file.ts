@@ -1,4 +1,5 @@
 import softDelete, { SoftDeleteModel } from '@/lib/db/plugins/soft-delete'
+import { validFileCategories } from '@/lib/utils/mimetype'
 import mongoose, { InferSchemaType, Document } from 'mongoose'
 
 const fileSchema = new mongoose.Schema({
@@ -33,6 +34,11 @@ const fileSchema = new mongoose.Schema({
     type: String,
     enum: ["file", "folder"],
     required: true,
+  },
+  category: {
+    type: String,
+    enum: validFileCategories,
+    default: "",
   },
   chunkHashes: [{
     type: String,

@@ -11,6 +11,7 @@ import app from "@/config/app.json"
 import { Types } from "mongoose"
 import { z } from 'zod'
 import { validateRequest } from "@/lib/api/validator"
+import { getFileCategory } from "@/lib/utils/mimetype"
 
 const chunkRegisterSchema = z.object({
   fileName: z.string().min(1, "File name is required"),
@@ -93,6 +94,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       fileSize,
       chunkHashes,
       type: "file",
+      category: getFileCategory(fileName),
       status: "pending",
       storageNode: node.id
     })

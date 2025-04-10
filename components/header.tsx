@@ -24,6 +24,7 @@ import useScreenSize from "@/hooks/use-screen-size"
 import { useApp } from "@/hooks/use-app"
 import { userNavigation } from "@/common/paths"
 import { NotificationsTray } from "@/components/notifications"
+import { Logo } from "./logo"
 
 export function Header() {
   const router = useRouter()
@@ -54,7 +55,7 @@ export function Header() {
             </Button>
             {/* Logo */}
             <div className="flex hidden sm:flex items-center">
-              <span className="text-xl font-semibold">RapidServe</span>
+              <Logo withIcon={false}/>
             </div>
           </div>
           <div className="flex justify-between">

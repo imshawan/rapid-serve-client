@@ -1,0 +1,35 @@
+{
+    "name": "RapidServe",
+    "short_name": "RapidServe",
+    "description": "RapidServe revolutionizes content delivery with blazing-fast enterprise-grade CDN infrastructure and modern tech solutions.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "theme_color": "#000000",
+    "background_color": "#ffffff",
+    "dir": "ltr",
+    "lang": "en",
+    "categories": ["productivity", "utilities", "cloud", "drive", "cdn"],
+    "prefer_related_applications": false,
+    "icons": [
+      {
+        "src": "/android-chrome-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/android-chrome-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/apple-touch-icon.png",
+        "sizes": "180x180",
+        "type": "image/png"
+      }
+    ]
+  }
+  

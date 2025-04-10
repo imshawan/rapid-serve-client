@@ -14,6 +14,63 @@ import {
   RefreshCw,
   Share2,
 } from "lucide-react";
+import type { Metadata } from "next"
+import { getEnvValue } from "@/lib/config";
+
+const serverUrl = getEnvValue<string>("NEXT_PUBLIC_SERVER_URL", "")
+console.log(serverUrl)
+
+export const siteMetadata: Metadata = {
+  title: "RapidServe - Enterprise CDN Solution",
+  description: "Enterprise-grade content distribution network for seamless file storage, sharing, and blazing-fast global delivery.",
+  keywords: [
+    "CDN",
+    "Content Delivery Network",
+    "RapidServe",
+    "Enterprise CDN",
+    "File Storage",
+    "File Delivery",
+    "Cloud CDN",
+    "Global CDN",
+    "Fast File Hosting",
+    "Secure File Sharing",
+    "Drive",
+    "Storage"
+  ],
+  authors: [{ name: "Shawan Mandal", url: "https://www.imshawan.dev" }],
+  creator: "Shawan Mandal",
+  metadataBase: serverUrl as unknown as URL,
+  openGraph: {
+    title: "RapidServe - Enterprise CDN Solution",
+    description: "RapidServe revolutionizes content delivery with blazing-fast enterprise-grade CDN infrastructure and modern tech solutions.",
+    url: serverUrl,
+    siteName: "RapidServe",
+    images: [
+      {
+        url: serverUrl + "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "RapidServe CDN Platform",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RapidServe - Enterprise CDN Solution",
+    description: "Enterprise-grade content distribution network with ultra-fast performance and global scalability.",
+    images: [serverUrl + "/og-image.png"],
+    creator: "@rapidservecdn",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/site.webmanifest",
+}
+
 
 export const stats = [
   { value: "99.99%", label: "Uptime Guarantee" },
@@ -45,7 +102,7 @@ export const values = [
     Icon: Rocket,
     title: "Innovation",
     description:
-      "We push the boundaries of what's possible in content delivery, constantly evolving and improving our technology.",
+      "We push the boundaries of what\"s possible in content delivery, constantly evolving and improving our technology.",
   },
   {
     Icon: Shield,
@@ -218,7 +275,7 @@ export const testimonials = [
     name: "Lisa Chen",
     role: "Engineering Lead at StreamFlow",
     content:
-      "The reliability and global reach of RapidServe's CDN have been crucial for our streaming platform's success.",
+      "The reliability and global reach of RapidServe\"s CDN have been crucial for our streaming platform\"s success.",
     avatar:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
     rating: 5,

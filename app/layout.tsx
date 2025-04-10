@@ -6,13 +6,11 @@ import { ThemeProvider } from "@/providers/theme-provider"
 import { Providers } from './providers'
 import { WebSocketProvider } from '@/providers/websocket-provider'
 import RouteProgress from '@/components/route-progress'
+import { siteMetadata } from '@/common/meta'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'RapidServe - Enterprise CDN Solution',
-  description: 'Enterprise-grade content distribution network for seamless file storage and delivery',
-}
+export const metadata: Metadata = siteMetadata
 
 export default function RootLayout({
   children,
@@ -34,4 +32,13 @@ export default function RootLayout({
       </body>
     </html>
   )
+}
+
+export function generateViewport() {
+  return {
+    themeColor: [
+      { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+      { media: '(prefers-color-scheme: dark)', color: '#000000' },
+    ],
+  }
 }

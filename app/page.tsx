@@ -164,10 +164,10 @@ export default function Home() {
                     <FadeInWhenVisible key={index} delay={index * 0.1}>
                       <motion.div
                         whileHover={{ scale: 1.02 }}
-                        className="relative group"
+                        className="relative group h-full"
                       >
                         <div className="absolute min-h-[274px] -inset-2 bg-gradient-to-r from-blue-600/10 to-blue-400/10 dark:from-blue-600/5 dark:to-blue-400/5 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="relative min-h-[274px] p-8 bg-background rounded-lg border hover:border-blue-500/50 transition-colors duration-300">
+                        <div className="relative min-h-[274px] h-full p-8 bg-background rounded-lg border hover:border-blue-500/50 transition-colors duration-300">
                           <motion.div
                             whileHover={{ scale: 1.1 }}
                             className="p-3 bg-blue-600/10 dark:bg-blue-500/5 rounded-lg w-fit mb-4"

@@ -49,10 +49,10 @@ export default function GoogleAuthButton({ onLoginSuccess }: GoogleAuthButtonPro
       <GoogleLogin
         onSuccess={handleLogin}
         onError={onError}
-        text="continue_with"
+        text="signin"
         logo_alignment="center"
         useOneTap
-        width={350}
+        width={192}
       />
     </GoogleOAuthProvider>
   );

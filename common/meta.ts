@@ -392,3 +392,21 @@ export const navBarLinks = [
     href: "#contact",
   },
 ];
+
+export const features = [
+  {
+    icon: Zap,
+    title: "Fast",
+    description: "<50ms latency"
+  },
+  {
+    icon: Server,
+    title: "Global",
+    description: "200+ locations"
+  },
+  {
+    icon: Shield,
+    title: "Secure",
+    description: "Data protection"
+  }
+];

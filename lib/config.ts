@@ -89,3 +89,7 @@ export const getAwsConnectionConfig = () => ({
 
 // Retrieves the Amazon S3 bucket name
 export const getS3BucketName = (): string => getEnvValue("AWS_S3_BUCKET_NAME", "");
+
+export const getSendGridAPIKey = (): string => getEnvValue("SENDGRID_API_KEY", "");
+export const getSendGridFromEmail = (): string => getEnvValue("SENDGRID_FROM_EMAIL", "");
+export const getSendGridFromName = (): string => getEnvValue("SENDGRID_FROM_NAME", "RapidServe");

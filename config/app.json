@@ -2,5 +2,6 @@
     "maxStoragePerUser": "100mb",
     "cookie": {
         "maxAge": "7d"
-    }
+    },
+    "passwordTokenExpiration": "1h"
 }

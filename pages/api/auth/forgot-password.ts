@@ -7,8 +7,8 @@ import { initializeDbConnection } from "@/lib/db";
 import { generateResetToken } from "@/lib/user/auth";
 import { PasswordResetToken } from "@/lib/models/password-token";
 import { getEnvValue } from "@/lib/config";
-import { getPasswordResetEmailTemplate } from "@/lib/email/templates/passwords";
 import { sendEmail } from "@/lib/email/emailer";
+import { getRenderedTemplate } from "@/lib/email/templates";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -43,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
      const baseUrl = getEnvValue("NEXT_PUBLIC_SERVER_URL", "")
      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
-     const emailContent = getPasswordResetEmailTemplate({
+     const emailContent = getRenderedTemplate("password-reset", {
       resetLink,
       userName: user.name,
     })

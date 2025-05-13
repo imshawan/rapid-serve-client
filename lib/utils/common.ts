@@ -189,3 +189,48 @@ export async function objectUrlToText(objectUrl: string): Promise<string> {
   if (!response.ok) throw new Error("Failed to fetch the object URL");
   return await response.text();
 }
+
+/**
+ * Converts an HTML string into plain text by removing HTML tags and decoding common HTML entities.
+ * 
+ * The function performs the following transformations:
+ * - Replaces `<br>` and `<p>` tags with newlines.
+ * - Converts anchor (`<a>`) tags into the format "text (link)".
+ * - Removes all other HTML tags.
+ * - Decodes common HTML entities such as `&nbsp;`, `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&#39;`.
+ * - Collapses multiple spaces into a single space and multiple newlines into a single newline.
+ * - Trims leading and trailing whitespace.
+ * 
+ * @param html - The HTML string to be converted into plain text.
+ * @returns The plain text representation of the input HTML.
+ */
+export function htmlToText(html: string): string {
+  // Replace <br> and <p> with newlines
+  let text = html
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<\s*p[^>]*>/gi, '\n')
+    .replace(/<\/p>/gi, '\n');
+
+  // Replace anchor tags with "text (link)"
+  text = text.replace(
+    /<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi,
+    (_match, href, linkText) => `${linkText} (${href})`
+  );
+
+  // Remove all other HTML tags
+  text = text.replace(/<[^>]+>/g, '');
+
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+
+  // Collapse multiple spaces/newlines
+  text = text.replace(/\s{2,}/g, ' ').replace(/\n{2,}/g, '\n').trim();
+
+  return text;
+}

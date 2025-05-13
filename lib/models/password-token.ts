@@ -24,7 +24,8 @@ const passwordResetSchema = new Schema({
     type: Date,
     default: function () {
       return new Date(Date.now() + passwordTokenExpiry)
-    }
+    },
+    index: { expireAfterSeconds: 0 } 
   }
 })
 

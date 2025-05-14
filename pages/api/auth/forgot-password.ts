@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { initializeDbConnection } from "@/lib/db";
 import { generateResetToken } from "@/lib/user/auth";
 import { PasswordResetToken } from "@/lib/models/password-token";
-import { getEnvValue } from "@/lib/config";
+import { getEnvValue, getPublicURL } from "@/lib/config";
 import { sendEmail } from "@/lib/email/emailer";
 import { getRenderedTemplate } from "@/lib/email/templates";
 
@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
      // Create reset link - make sure to use the actual frontend URL from environment
-     const baseUrl = getEnvValue("NEXT_PUBLIC_SERVER_URL", "")
+     const baseUrl = getPublicURL()
      const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
      const emailContent = getRenderedTemplate("password-reset", {

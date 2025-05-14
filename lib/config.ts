@@ -69,6 +69,8 @@ export const getMongoURI = (): string => getEnvValue("MONGODB_URI");
 // Retrieves the Redis connection URI
 export const getRedisURI = (): string => getEnvValue("REDIS_URL");
 
+export const getPublicURL = (): string => getEnvValue("NEXT_PUBLIC_SERVER_URL", "http://localhost:3000");
+
 // Retrieves Google OAuth credentials
 export const getGoogleClientID = (): string => getEnvValue("GOOGLE_CLIENT_ID") || getEnvValue("NEXT_PUBLIC_GOOGLE_CLIENT_ID");
 export const getGoogleClientSecret = (): string => getEnvValue("GOOGLE_CLIENT_SECRET");

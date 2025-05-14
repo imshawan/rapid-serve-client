@@ -1,26 +1,29 @@
-import ReactDOMServer from 'react-dom/server'
+import React from "react"
+import ReactDOMServer from "react-dom/server"
+import { htmlToText } from "@/lib/utils/common"
 import { PasswordResetEmail, PasswordResetEmailProps } from "./password-reset-email"
-import React from 'react'
-import { htmlToText } from '@/lib/utils/common'
+import { PasswordResetSuccessEmail, PasswordResetSuccessEmailProps } from "./password-reset-success"
 
-export const Templates = {
+export const TemplateMap = {
   "password-reset": PasswordResetEmail,
+  "password-reset-success": PasswordResetSuccessEmail,
 } as const
 
-type TemplateMap = {
-  "password-reset": PasswordResetEmailProps
+type TemplatePropTypeMap = {
+  "password-reset": PasswordResetEmailProps,
+  "password-reset-success": PasswordResetSuccessEmailProps,
 }
 
-export const getRenderedTemplate = <T extends keyof typeof Templates>(
+export const getRenderedTemplate = <T extends keyof typeof TemplateMap>(
   templateName: T,
-  props: TemplateMap[T]
+  props: TemplatePropTypeMap[T]
 ) => {
-  const Template = Templates[templateName]
+  const Template = TemplateMap[templateName]
   if (!Template) {
     throw new Error(`Template ${templateName} not found`)
   }
   const html = ReactDOMServer.renderToStaticMarkup(
-    React.createElement(Template, props)
+    React.createElement(Template as React.FunctionComponent<typeof props>, props)
   )
   
   const fullHtml = `<!DOCTYPE html>${html}`;

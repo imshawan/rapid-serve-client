@@ -6,7 +6,7 @@ import crypto from 'crypto';
  * @returns {string} A hexadecimal string representation of a 40-byte random token.
  */
 export function generateResetToken(): string {
-  return crypto.randomBytes(40).toString('hex');
+  return crypto.randomBytes(32).toString('hex');
 }
 
 /**

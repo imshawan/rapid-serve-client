@@ -29,6 +29,6 @@ const passwordResetSchema = new Schema({
   }
 })
 
-export const PasswordResetToken = mongoose.model<PasswordResetToken>('PasswordResetToken', passwordResetSchema)
+export const PasswordResetToken = mongoose.models.PasswordResetToken || mongoose.model<PasswordResetToken>('PasswordResetToken', passwordResetSchema)
 
 export type PasswordResetToken = InferSchemaType<typeof passwordResetSchema>

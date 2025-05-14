@@ -69,6 +69,8 @@ export const getMongoURI = (): string => getEnvValue("MONGODB_URI");
 // Retrieves the Redis connection URI
 export const getRedisURI = (): string => getEnvValue("REDIS_URL");
 
+export const getPublicURL = (): string => getEnvValue("NEXT_PUBLIC_SERVER_URL", "http://localhost:3000");
+
 // Retrieves Google OAuth credentials
 export const getGoogleClientID = (): string => getEnvValue("GOOGLE_CLIENT_ID") || getEnvValue("NEXT_PUBLIC_GOOGLE_CLIENT_ID");
 export const getGoogleClientSecret = (): string => getEnvValue("GOOGLE_CLIENT_SECRET");
@@ -89,3 +91,7 @@ export const getAwsConnectionConfig = () => ({
 
 // Retrieves the Amazon S3 bucket name
 export const getS3BucketName = (): string => getEnvValue("AWS_S3_BUCKET_NAME", "");
+
+export const getSendGridAPIKey = (): string => getEnvValue("SENDGRID_API_KEY", "");
+export const getSendGridFromEmail = (): string => getEnvValue("SENDGRID_FROM_EMAIL", "");
+export const getSendGridFromName = (): string => getEnvValue("SENDGRID_FROM_NAME", "RapidServe");

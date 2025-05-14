@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from "next/link"
 import { Mail, ArrowLeft } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { auth } from "@/services/api"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -21,8 +22,8 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await auth.sendForgotPasswordEmail(email)
+
       setIsEmailSent(true)
       toast({
         title: "Reset link sent",

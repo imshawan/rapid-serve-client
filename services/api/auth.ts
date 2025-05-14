@@ -12,5 +12,13 @@ export const auth = {
   },
   googleLogin: async (token: string) => {
     return await http.post(endpoints.LOG_IN_GOOGLE, { token }) as ApiResponse<{token: string, user: User, message: string}>
-  }
+  },
+
+  sendForgotPasswordEmail: async (email: string) => {
+    return await http.post(endpoints.FORGOT_PASSWORD, { email }) as ApiResponse<{message: string}>
+  },
+
+  resetPassword: async (token: string, password: string, confirmPassword: string) => {
+    return await http.post(endpoints.RESET_PASSWORD, { token, password, confirmPassword }) as ApiResponse
+  },
 }

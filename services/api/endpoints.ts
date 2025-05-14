@@ -2,6 +2,8 @@ export const endpoints = {
   LOG_IN: "/api/auth/login",
   LOG_IN_GOOGLE: "/api/oauth/google",
   LOG_OUT: "/api/auth/logout",
+  FORGOT_PASSWORD: "/api/auth/forgot-password",
+  RESET_PASSWORD: "/api/auth/reset-password",
   REGISTER: "/api/user/register",
   USER_PROFILE: "/api/user/profile",
   PROFILE_PICTURE_UPDATE: "/api/user/profile-picture",

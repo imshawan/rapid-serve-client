@@ -8,6 +8,10 @@ export { }
 
 declare global {
 
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+
   var mongoose: {
     conn: mongoose.Connection | null
     promise: Promise<mongoose.Connection> | null

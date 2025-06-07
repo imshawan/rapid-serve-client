@@ -9,6 +9,7 @@ import { WebSocketProvider } from '@/providers/websocket-provider'
 import RouteProgress from '@/components/route-progress'
 import { siteMetadata } from '@/common/meta'
 import GoogleAnalytics from '@/components/google-analytics'
+import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -50,7 +51,9 @@ export default function RootLayout({
             </WebSocketProvider>
             <Toaster />
           </ThemeProvider>
-          <GoogleAnalytics />
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
         </Providers>
       </body>
     </html>

@@ -13,8 +13,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.750.0",
-    "@aws-sdk/client-secrets-manager": "^3.750.0",
+    "@aws-sdk/client-s3": "^3.1027.0",
+    "@aws-sdk/client-secrets-manager": "^3.1027.0",
     "@aws-sdk/lib-storage": "^3.750.0",
     "@hookform/resolvers": "^3.9.0",
     "@next/swc-wasm-nodejs": "13.5.1",
